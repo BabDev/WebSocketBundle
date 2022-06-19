@@ -1,0 +1,53 @@
+{
+    "name": "babdev/websocket-bundle",
+    "type": "symfony-bundle",
+    "description": "Bundle integrating the WebSocket Server library with Symfony",
+    "keywords": [
+        "symfony",
+        "WAMP",
+        "websocket",
+        "websocket server"
+    ],
+    "license": "MIT",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../websocket-server"
+        }
+    ],
+    "require": {
+        "php": "8.1.*",
+        "babdev/websocket-server": "*",
+        "symfony/config": "^5.4 || ^6.0",
+        "symfony/dependency-injection": "^5.4 || ^6.0",
+        "symfony/deprecation-contracts": "^2.1 || ^3.0",
+        "symfony/http-kernel": "^5.4 || ^6.0"
+    },
+    "require-dev": {
+        "matthiasnoback/symfony-config-test": "^4.3",
+        "matthiasnoback/symfony-dependency-injection-test": "^4.3",
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan": "1.7.14",
+        "phpstan/phpstan-phpunit": "1.1.1",
+        "phpstan/phpstan-symfony": "1.2.5",
+        "phpunit/phpunit": "9.5.21",
+        "symfony/phpunit-bridge": "^5.4 || ^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "BabDev\\WebSocketBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "BabDev\\WebSocketBundle\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "minimum-stability": "dev"
+}
