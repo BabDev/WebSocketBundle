@@ -20,4 +20,12 @@ final class ConfigurationTest extends TestCase
     {
         $this->assertConfigurationIsValid([[]]);
     }
+
+    public function testConfigurationIsValidWithServerConfiguration(): void
+    {
+        $this->assertProcessedConfigurationEquals(
+            [['server' => ['uri' => 'tcp://localhost:8080', 'context' => ['tls' => ['verify_peer' => false]]]]],
+            ['server' => ['uri' => 'tcp://localhost:8080', 'context' => ['tls' => ['verify_peer' => false]]]],
+        );
+    }
 }
