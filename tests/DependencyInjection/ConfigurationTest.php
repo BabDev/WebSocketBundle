@@ -24,8 +24,8 @@ final class ConfigurationTest extends TestCase
     public function testConfigurationIsValidWithServerConfiguration(): void
     {
         $this->assertProcessedConfigurationEquals(
-            [['server' => ['uri' => 'tcp://localhost:8080', 'context' => ['tls' => ['verify_peer' => false]]]]],
-            ['server' => ['uri' => 'tcp://localhost:8080', 'context' => ['tls' => ['verify_peer' => false]]]],
+            [['server' => ['uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1']]]],
+            ['server' => ['uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1']]],
         );
     }
 }
