@@ -6,6 +6,8 @@ use BabDev\WebSocket\Server\Http\GuzzleRequestParser;
 use BabDev\WebSocket\Server\Http\RequestParser;
 use BabDev\WebSocket\Server\IniOptionsHandler;
 use BabDev\WebSocket\Server\OptionsHandler;
+use BabDev\WebSocket\Server\Session\SessionFactory;
+use BabDev\WebSocket\Server\Session\Storage\ReadOnlyNativeSessionStorageFactory;
 use BabDev\WebSocket\Server\WAMP\ArrayTopicRegistry;
 use BabDev\WebSocket\Server\WAMP\TopicRegistry;
 use BabDev\WebSocketBundle\Command\RunWebSocketServerCommand;
@@ -75,4 +77,20 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set('babdev_websocket_server.server.topic_registry', ArrayTopicRegistry::class);
     $services->alias(TopicRegistry::class, 'babdev_websocket_server.server.topic_registry');
+
+    $services->set('babdev_websocket_server.server.session.factory', SessionFactory::class)
+        ->args([
+            abstract_arg('session storage factory'),
+        ])
+    ;
+
+    $services->set('babdev_websocket_server.server.session.storage.factory.read_only_native', ReadOnlyNativeSessionStorageFactory::class)
+        ->args([
+            service(OptionsHandler::class),
+            null, // session reader, initialized by the session storage from the PHP options at runtime
+            param('session.storage.options'),
+            abstract_arg('session handler'),
+            null, // metadata bag
+        ])
+    ;
 };

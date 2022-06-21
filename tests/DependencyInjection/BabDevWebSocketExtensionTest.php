@@ -31,14 +31,103 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
 
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(
             'babdev_websocket_server.server.configuration_based_middleware_stack_builder',
-            4,
+            5,
             $origins,
         );
 
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(
             'babdev_websocket_server.server.configuration_based_middleware_stack_builder',
-            5,
+            6,
             $blockedIps,
+        );
+
+        $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.factory');
+        $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.storage.factory.read_only_native');
+    }
+
+    public function testContainerIsLoadedWithConfiguredSessionFactory(): void
+    {
+        $this->load([
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'context' => [],
+                'allowed_origins' => [],
+                'blocked_ip_addresses' => [],
+                'session' => [
+                    'factory_service_id' => 'session.factory.test',
+                ],
+            ],
+        ]);
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.configuration_based_middleware_stack_builder',
+            4,
+            'session.factory.test',
+        );
+
+        $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.factory');
+        $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.storage.factory.read_only_native');
+    }
+
+    public function testContainerIsLoadedWithConfiguredSessionStorageFactory(): void
+    {
+        $this->load([
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'context' => [],
+                'allowed_origins' => [],
+                'blocked_ip_addresses' => [],
+                'session' => [
+                    'storage_factory_service_id' => 'session.storage.factory.test',
+                ],
+            ],
+        ]);
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.configuration_based_middleware_stack_builder',
+            4,
+            'babdev_websocket_server.server.session.factory',
+        );
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.session.factory',
+            0,
+            'session.storage.factory.test',
+        );
+
+        $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.storage.factory.read_only_native');
+    }
+
+    public function testContainerIsLoadedWithConfiguredSessionHandler(): void
+    {
+        $this->load([
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'context' => [],
+                'allowed_origins' => [],
+                'blocked_ip_addresses' => [],
+                'session' => [
+                    'handler_service_id' => 'session.handler.test',
+                ],
+            ],
+        ]);
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.configuration_based_middleware_stack_builder',
+            4,
+            'babdev_websocket_server.server.session.factory',
+        );
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.session.factory',
+            0,
+            'babdev_websocket_server.server.session.storage.factory.read_only_native',
+        );
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.session.storage.factory.read_only_native',
+            3,
+            'session.handler.test',
         );
     }
 
