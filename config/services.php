@@ -61,7 +61,7 @@ return static function (ContainerConfigurator $container): void {
     $services->set('babdev_websocket_server.factory.default', DefaultServerFactory::class)
         ->args(
             [
-                service('babdev_websocket_server.server.middleware_stack_builder'),
+                service(MiddlewareStackBuilder::class),
                 service('babdev_websocket_server.event_loop'),
                 abstract_arg('server context'),
             ]
