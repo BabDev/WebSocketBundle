@@ -6,14 +6,13 @@ use BabDev\WebSocketBundle\Server\ServerFactory;
 use React\EventLoop\LoopInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Command\SignalableCommandInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(name: 'babdev:websocket-server:run', description: 'Runs the websocket server.')]
-final class RunWebSocketServerCommand extends Command implements SignalableCommandInterface
+final class RunWebSocketServerCommand extends Command
 {
     private SymfonyStyle $style;
 
@@ -39,22 +38,24 @@ final class RunWebSocketServerCommand extends Command implements SignalableComma
 
         $this->style->info(sprintf('Launching websocket server, listening on "%s"', $uri));
 
+        if (\defined('SIGINT')) {
+            $this->loop->addSignal(\SIGINT, $this->shutdownServer(...));
+        }
+
+        if (\defined('SIGTERM')) {
+            $this->loop->addSignal(\SIGTERM, $this->shutdownServer(...));
+        }
+
         $this->serverFactory->build($uri)->run();
 
         return 0;
     }
 
-    public function getSubscribedSignals(): array
+    /**
+     * @internal
+     */
+    public function shutdownServer(): void
     {
-        return [\SIGINT, \SIGTERM];
-    }
-
-    public function handleSignal(int $signal): void
-    {
-        if (!\in_array($signal, [\SIGINT, \SIGTERM], true)) {
-            return;
-        }
-
         $this->loop->stop();
 
         $this->style->info('The websocket server has been stopped.');
