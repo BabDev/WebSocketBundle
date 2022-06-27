@@ -29,7 +29,7 @@
         "matthiasnoback/symfony-config-test": "^4.3",
         "matthiasnoback/symfony-dependency-injection-test": "^4.3",
         "phpstan/extension-installer": "^1.1",
-        "phpstan/phpstan": "1.7.14",
+        "phpstan/phpstan": "1.7.15",
         "phpstan/phpstan-phpunit": "1.1.1",
         "phpstan/phpstan-symfony": "1.2.5",
         "phpunit/phpunit": "9.5.21",
