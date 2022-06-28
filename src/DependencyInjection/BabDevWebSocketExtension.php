@@ -28,10 +28,25 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
             ->replaceArgument(2, $mergedConfig['server']['context'])
         ;
 
-        $container->getDefinition('babdev_websocket_server.server.configuration_based_middleware_stack_builder')
-            ->replaceArgument(5, $mergedConfig['server']['allowed_origins'])
-            ->replaceArgument(6, $mergedConfig['server']['blocked_ip_addresses'])
-        ;
+        if ([] !== $mergedConfig['server']['allowed_origins']) {
+            $definition = $container->getDefinition('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins');
+
+            foreach ($mergedConfig['server']['allowed_origins'] as $origin) {
+                $definition->addMethodCall('allowOrigin', [$origin]);
+            }
+        } else {
+            $container->removeDefinition('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins');
+        }
+
+        if ([] !== $mergedConfig['server']['blocked_ip_addresses']) {
+            $definition = $container->getDefinition('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address');
+
+            foreach ($mergedConfig['server']['blocked_ip_addresses'] as $address) {
+                $definition->addMethodCall('blockAddress', [$address]);
+            }
+        } else {
+            $container->removeDefinition('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address');
+        }
 
         $this->configureWebSocketSession($mergedConfig['server']['session'], $container);
     }
@@ -42,8 +57,8 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
             $container->removeDefinition('babdev_websocket_server.server.session.factory');
             $container->removeDefinition('babdev_websocket_server.server.session.storage.factory.read_only_native');
 
-            $container->getDefinition('babdev_websocket_server.server.configuration_based_middleware_stack_builder')
-                ->replaceArgument(4, new Reference($sessionConfig['factory_service_id']))
+            $container->getDefinition('babdev_websocket_server.server.server_middleware.initialize_session')
+                ->replaceArgument(1, new Reference($sessionConfig['factory_service_id']))
             ;
 
             return;
@@ -56,8 +71,8 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
                 ->replaceArgument(0, new Reference($sessionConfig['storage_factory_service_id']))
             ;
 
-            $container->getDefinition('babdev_websocket_server.server.configuration_based_middleware_stack_builder')
-                ->replaceArgument(4, new Reference('babdev_websocket_server.server.session.factory'))
+            $container->getDefinition('babdev_websocket_server.server.server_middleware.initialize_session')
+                ->replaceArgument(1, new Reference('babdev_websocket_server.server.session.factory'))
             ;
 
             return;
@@ -72,14 +87,15 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
                 ->replaceArgument(0, new Reference('babdev_websocket_server.server.session.storage.factory.read_only_native'))
             ;
 
-            $container->getDefinition('babdev_websocket_server.server.configuration_based_middleware_stack_builder')
-                ->replaceArgument(4, new Reference('babdev_websocket_server.server.session.factory'))
+            $container->getDefinition('babdev_websocket_server.server.server_middleware.initialize_session')
+                ->replaceArgument(1, new Reference('babdev_websocket_server.server.session.factory'))
             ;
 
             return;
         }
 
-        // The session is not available through the bundle configuration, remove the session factories
+        // The session is not available through the bundle configuration, remove the session factories and middleware
+        $container->removeDefinition('babdev_websocket_server.server.server_middleware.initialize_session');
         $container->removeDefinition('babdev_websocket_server.server.session.factory');
         $container->removeDefinition('babdev_websocket_server.server.session.storage.factory.read_only_native');
     }

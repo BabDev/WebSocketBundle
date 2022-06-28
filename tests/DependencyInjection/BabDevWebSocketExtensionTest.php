@@ -29,18 +29,23 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             $uri,
         );
 
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
-            'babdev_websocket_server.server.configuration_based_middleware_stack_builder',
-            5,
-            $origins,
-        );
+        foreach ($origins as $origin) {
+            $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
+                'babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins',
+                'allowOrigin',
+                [$origin],
+            );
+        }
 
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
-            'babdev_websocket_server.server.configuration_based_middleware_stack_builder',
-            6,
-            $blockedIps,
-        );
+        foreach ($blockedIps as $blockedIp) {
+            $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
+                'babdev_websocket_server.server.server_middleware.reject_blocked_ip_address',
+                'blockAddress',
+                [$blockedIp],
+            );
+        }
 
+        $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.server_middleware.initialize_session');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.factory');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.storage.factory.read_only_native');
     }
@@ -60,11 +65,13 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
         ]);
 
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(
-            'babdev_websocket_server.server.configuration_based_middleware_stack_builder',
-            4,
+            'babdev_websocket_server.server.server_middleware.initialize_session',
+            1,
             'session.factory.test',
         );
 
+        $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address');
+        $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.factory');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.storage.factory.read_only_native');
     }
@@ -84,8 +91,8 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
         ]);
 
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(
-            'babdev_websocket_server.server.configuration_based_middleware_stack_builder',
-            4,
+            'babdev_websocket_server.server.server_middleware.initialize_session',
+            1,
             'babdev_websocket_server.server.session.factory',
         );
 
@@ -95,6 +102,8 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             'session.storage.factory.test',
         );
 
+        $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address');
+        $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.storage.factory.read_only_native');
     }
 
@@ -113,8 +122,8 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
         ]);
 
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(
-            'babdev_websocket_server.server.configuration_based_middleware_stack_builder',
-            4,
+            'babdev_websocket_server.server.server_middleware.initialize_session',
+            1,
             'babdev_websocket_server.server.session.factory',
         );
 
@@ -129,6 +138,9 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             3,
             'session.handler.test',
         );
+
+        $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address');
+        $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins');
     }
 
     /**
