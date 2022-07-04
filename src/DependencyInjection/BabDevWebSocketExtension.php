@@ -2,7 +2,9 @@
 
 namespace BabDev\WebSocketBundle\DependencyInjection;
 
+use BabDev\WebSocketBundle\Attribute\AsMessageHandler;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
@@ -19,6 +21,10 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
     {
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__.'/../../config'));
         $loader->load('services.php');
+
+        $container->registerAttributeForAutoconfiguration(AsMessageHandler::class, static function (ChildDefinition $definition, AsMessageHandler $attribute): void {
+            $definition->addTag('babdev_websocket_server.message_handler');
+        });
 
         $container->getDefinition('babdev_websocket_server.command.run_websocket_server')
             ->replaceArgument(2, $mergedConfig['server']['uri'])

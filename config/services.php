@@ -14,7 +14,8 @@ use BabDev\WebSocket\Server\Session\Middleware\InitializeSession;
 use BabDev\WebSocket\Server\Session\SessionFactory;
 use BabDev\WebSocket\Server\Session\Storage\ReadOnlyNativeSessionStorageFactory;
 use BabDev\WebSocket\Server\WAMP\ArrayTopicRegistry;
-use BabDev\WebSocket\Server\WAMP\MessageHandler\DefaultMessageHandlerResolver;
+use BabDev\WebSocket\Server\WAMP\MessageHandler\MessageHandlerResolver;
+use BabDev\WebSocket\Server\WAMP\MessageHandler\PsrContainerMessageHandlerResolver;
 use BabDev\WebSocket\Server\WAMP\Middleware\DispatchMessageToHandler;
 use BabDev\WebSocket\Server\WAMP\Middleware\ParseWAMPMessage;
 use BabDev\WebSocket\Server\WAMP\Middleware\UpdateTopicSubscriptions;
@@ -76,6 +77,15 @@ return static function (ContainerConfigurator $container): void {
     ;
     $services->alias(ServerFactory::class, 'babdev_websocket_server.factory.default');
 
+    $services->set('babdev_websocket_server.message_handler_resolver.psr_container', PsrContainerMessageHandlerResolver::class)
+        ->args(
+            [
+                tagged_locator('babdev_websocket_server.message_handler'),
+            ]
+        )
+    ;
+    $services->alias(MessageHandlerResolver::class, 'babdev_websocket_server.message_handler_resolver.psr_container');
+
     // TODO - Set the real services
     $services->set('babdev_websocket_server.server.server_middleware.dispatch_to_message_handler', DispatchMessageToHandler::class)
         ->args([
@@ -83,7 +93,7 @@ return static function (ContainerConfigurator $container): void {
                 inline_service(RouteCollection::class),
                 inline_service(RequestContext::class),
             ]),
-            inline_service(DefaultMessageHandlerResolver::class),
+            service(MessageHandlerResolver::class),
         ])
         ->tag('babdev.websocket_server.server_middleware', ['priority' => 0])
     ;
