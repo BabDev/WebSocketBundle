@@ -227,6 +227,7 @@ return static function (ContainerConfigurator $container): void {
         ->args([
             service('babdev_websocket_server.router'),
             service(MessageHandlerResolver::class),
+            service('event_dispatcher')->nullOnInvalid(),
         ])
         ->tag('babdev.websocket_server.server_middleware', ['priority' => 0])
     ;
