@@ -34,6 +34,10 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
             ->replaceArgument(2, $mergedConfig['server']['context'])
         ;
 
+        $container->getDefinition('babdev_websocket_server.router')
+            ->replaceArgument(1, $mergedConfig['server']['router']['resource'])
+        ;
+
         if ([] !== $mergedConfig['server']['allowed_origins']) {
             $definition = $container->getDefinition('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins');
 

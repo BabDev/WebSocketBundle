@@ -1,0 +1,96 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Method BabDev\\\\WebSocketBundle\\\\Routing\\\\Loader\\\\AttributeLoader\\:\\:configureRoute\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
+			count: 1
+			path: src/Routing/Loader/AttributeLoader.php
+
+		-
+			message: "#^Method BabDev\\\\WebSocketBundle\\\\Routing\\\\Loader\\\\AttributeLoader\\:\\:getDefaultRouteName\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
+			count: 1
+			path: src/Routing/Loader/AttributeLoader.php
+
+		-
+			message: "#^Parameter \\#1 \\$class of function class_exists expects string, mixed given\\.$#"
+			count: 1
+			path: src/Routing/Loader/AttributeLoader.php
+
+		-
+			message: "#^Parameter \\#1 \\$resource of class Symfony\\\\Component\\\\Config\\\\Resource\\\\FileResource constructor expects string, string\\|false given\\.$#"
+			count: 1
+			path: src/Routing/Loader/AttributeLoader.php
+
+		-
+			message: "#^Parameter \\#2 \\.\\.\\.\\$values of function sprintf expects bool\\|float\\|int\\|string\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Routing/Loader/AttributeLoader.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of function str_replace expects array\\|string, string\\|null given\\.$#"
+			count: 1
+			path: src/Routing/Loader/AttributeLoader.php
+
+		-
+			message: "#^Cannot call method addResource\\(\\) on Symfony\\\\Component\\\\Routing\\\\RouteCollection\\|null\\.$#"
+			count: 3
+			path: src/Routing/Router.php
+
+		-
+			message: "#^Cannot call method load\\(\\) on mixed\\.$#"
+			count: 1
+			path: src/Routing/Router.php
+
+		-
+			message: "#^Method BabDev\\\\WebSocketBundle\\\\Routing\\\\Router\\:\\:getRouteCollection\\(\\) should return Symfony\\\\Component\\\\Routing\\\\RouteCollection but returns Symfony\\\\Component\\\\Routing\\\\RouteCollection\\|null\\.$#"
+			count: 1
+			path: src/Routing/Router.php
+
+		-
+			message: "#^Method BabDev\\\\WebSocketBundle\\\\Routing\\\\Router\\:\\:warmUp\\(\\) should return array\\<class\\-string\\> but returns array\\<int, mixed\\>\\.$#"
+			count: 1
+			path: src/Routing/Router.php
+
+		-
+			message: "#^Parameter \\#1 \\$condition of method Symfony\\\\Component\\\\Routing\\\\Route\\:\\:setCondition\\(\\) expects string\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Routing/Router.php
+
+		-
+			message: "#^Parameter \\#1 \\$pattern of method Symfony\\\\Component\\\\Routing\\\\Route\\:\\:setHost\\(\\) expects string\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Routing/Router.php
+
+		-
+			message: "#^Parameter \\#1 \\$pattern of method Symfony\\\\Component\\\\Routing\\\\Route\\:\\:setPath\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: src/Routing/Router.php
+
+		-
+			message: "#^Parameter \\#2 \\$regex of method Symfony\\\\Component\\\\Routing\\\\Route\\:\\:setRequirement\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: src/Routing/Router.php
+
+		-
+			message: "#^Parameter \\#2 \\$string of function explode expects string, mixed given\\.$#"
+			count: 2
+			path: src/Routing/Router.php
+
+		-
+			message: "#^Parameter \\#3 \\$subject of function str_replace expects array\\|string, string\\|null given\\.$#"
+			count: 1
+			path: src/Routing/Router.php
+
+		-
+			message: "#^Readonly property BabDev\\\\WebSocketBundle\\\\Routing\\\\Router\\:\\:\\$paramFetcher is already assigned\\.$#"
+			count: 1
+			path: src/Routing/Router.php
+
+		-
+			message: "#^Cannot call method getCondition\\(\\) on Symfony\\\\Component\\\\Routing\\\\Route\\|null\\.$#"
+			count: 2
+			path: tests/Routing/RouterTest.php
+
+		-
+			message: "#^Cannot call method getRequirements\\(\\) on Symfony\\\\Component\\\\Routing\\\\Route\\|null\\.$#"
+			count: 2
+			path: tests/Routing/RouterTest.php

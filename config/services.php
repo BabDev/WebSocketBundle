@@ -21,18 +21,35 @@ use BabDev\WebSocket\Server\WAMP\Middleware\ParseWAMPMessage;
 use BabDev\WebSocket\Server\WAMP\Middleware\UpdateTopicSubscriptions;
 use BabDev\WebSocket\Server\WAMP\TopicRegistry;
 use BabDev\WebSocket\Server\WebSocket\Middleware\EstablishWebSocketConnection;
+use BabDev\WebSocketBundle\CacheWarmer\RouterCacheWarmer;
 use BabDev\WebSocketBundle\Command\RunWebSocketServerCommand;
+use BabDev\WebSocketBundle\Routing\AnnotatedMessageHandlerLoader;
+use BabDev\WebSocketBundle\Routing\Loader\AttributeLoader;
+use BabDev\WebSocketBundle\Routing\Router;
 use BabDev\WebSocketBundle\Server\ServiceBasedMiddlewareStackBuilder;
 use BabDev\WebSocketBundle\Server\DefaultServerFactory;
 use BabDev\WebSocketBundle\Server\MiddlewareStackBuilder;
 use BabDev\WebSocketBundle\Server\ServerFactory;
+use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Ratchet\RFC6455\Handshake\RequestVerifier;
 use Ratchet\RFC6455\Handshake\ServerNegotiator;
 use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
-use Symfony\Component\Routing\Matcher\UrlMatcher;
+use Symfony\Component\Config\Loader\DelegatingLoader;
+use Symfony\Component\Config\Loader\LoaderResolver;
+use Symfony\Component\Routing\Generator\CompiledUrlGenerator;
+use Symfony\Component\Routing\Generator\Dumper\CompiledUrlGeneratorDumper;
+use Symfony\Component\Routing\Loader\AnnotationDirectoryLoader;
+use Symfony\Component\Routing\Loader\AnnotationFileLoader;
+use Symfony\Component\Routing\Loader\ContainerLoader;
+use Symfony\Component\Routing\Loader\DirectoryLoader;
+use Symfony\Component\Routing\Loader\GlobFileLoader;
+use Symfony\Component\Routing\Loader\PhpFileLoader;
+use Symfony\Component\Routing\Loader\XmlFileLoader;
+use Symfony\Component\Routing\Loader\YamlFileLoader;
+use Symfony\Component\Routing\Matcher\CompiledUrlMatcher;
+use Symfony\Component\Routing\Matcher\Dumper\CompiledUrlMatcherDumper;
 use Symfony\Component\Routing\RequestContext;
-use Symfony\Component\Routing\RouteCollection;
 
 return static function (ContainerConfigurator $container): void {
     $services = $container->services();
@@ -86,13 +103,129 @@ return static function (ContainerConfigurator $container): void {
     ;
     $services->alias(MessageHandlerResolver::class, 'babdev_websocket_server.message_handler_resolver.psr_container');
 
-    // TODO - Set the real services
+    $services->set('babdev_websocket_server.router', Router::class)
+        ->args([
+            service(PsrContainerInterface::class),
+            abstract_arg('routing resource'),
+            [
+                'cache_dir' => param('kernel.cache_dir') . '/websocket-router',
+                'debug' => param('kernel.debug'),
+                'generator_class' => CompiledUrlGenerator::class,
+                'generator_dumper_class' => CompiledUrlGeneratorDumper::class,
+                'matcher_class' => CompiledUrlMatcher::class,
+                'matcher_dumper_class' => CompiledUrlMatcherDumper::class,
+            ],
+            service('babdev_websocket_server.router.request_context')->ignoreOnInvalid(),
+            service('parameter_bag')->ignoreOnInvalid(),
+            service('logger')->ignoreOnInvalid(),
+            param('kernel.default_locale'),
+        ])
+        ->call('setConfigCacheFactory', [
+            service('config_cache_factory'),
+        ])
+        ->tag('monolog.logger', ['channel' => 'websocket_router'])
+        ->tag('container.service_subscriber', ['id' => 'babdev_websocket_server.routing.loader'])
+    ;
+
+    $services->set('babdev_websocket_server.router.cache_warmer', RouterCacheWarmer::class)
+        ->args([
+            service(PsrContainerInterface::class),
+            param('kernel.cache_dir') . '/websocket-router',
+        ])
+        ->tag('container.service_subscriber', ['id' => 'babdev_websocket_server.router'])
+        ->tag('kernel.cache_warmer')
+    ;
+
+    $services->set('babdev_websocket_server.router.request_context', RequestContext::class)
+        ->call('setParameter', [
+            '_functions',
+            service('router.expression_language_provider')->ignoreOnInvalid(),
+        ])
+    ;
+
+    $services->set('babdev_websocket_server.routing.loader', DelegatingLoader::class)
+        ->public()
+        ->args([
+            service('babdev_websocket_server.routing.resolver'),
+        ])
+    ;
+
+    $services->set('babdev_websocket_server.routing.loader.attribute', AttributeLoader::class)
+        ->args([
+            param('kernel.environment'),
+        ])
+        ->tag('babdev_websocket_server.routing.loader', ['priority' => -10])
+    ;
+
+    $services->set('babdev_websocket_server.routing.loader.attribute.directory', AnnotationDirectoryLoader::class)
+        ->args([
+            service('file_locator'),
+            service('babdev_websocket_server.routing.loader.attribute'),
+        ])
+        ->tag('babdev_websocket_server.routing.loader', ['priority' => -10])
+    ;
+
+    $services->set('babdev_websocket_server.routing.loader.attribute.file', AnnotationFileLoader::class)
+        ->args([
+            service('file_locator'),
+            service('babdev_websocket_server.routing.loader.attribute'),
+        ])
+        ->tag('babdev_websocket_server.routing.loader', ['priority' => -10])
+    ;
+
+    $services->set('babdev_websocket_server.routing.loader.container', ContainerLoader::class)
+        ->args([
+            tagged_locator('babdev_websocket_server.routing.route_loader'),
+            param('kernel.environment'),
+        ])
+        ->tag('babdev_websocket_server.routing.loader')
+    ;
+
+    $services->set('babdev_websocket_server.routing.loader.directory', DirectoryLoader::class)
+        ->args([
+            service('file_locator'),
+            param('kernel.environment'),
+        ])
+        ->tag('babdev_websocket_server.routing.loader')
+    ;
+
+    $services->set('babdev_websocket_server.routing.loader.glob', GlobFileLoader::class)
+        ->args([
+            service('file_locator'),
+            param('kernel.environment'),
+        ])
+        ->tag('babdev_websocket_server.routing.loader')
+    ;
+
+    $services->set('babdev_websocket_server.routing.loader.php', PhpFileLoader::class)
+        ->args([
+            service('file_locator'),
+            param('kernel.environment'),
+        ])
+        ->tag('babdev_websocket_server.routing.loader')
+    ;
+
+    $services->set('babdev_websocket_server.routing.loader.xml', XmlFileLoader::class)
+        ->args([
+            service('file_locator'),
+            param('kernel.environment'),
+        ])
+        ->tag('babdev_websocket_server.routing.loader')
+    ;
+
+    $services->set('babdev_websocket_server.routing.loader.yml', YamlFileLoader::class)
+        ->args([
+            service('file_locator'),
+            param('kernel.environment'),
+        ])
+        ->tag('babdev_websocket_server.routing.loader')
+    ;
+
+    $services->set('babdev_websocket_server.routing.resolver', LoaderResolver::class);
+
     $services->set('babdev_websocket_server.server.server_middleware.dispatch_to_message_handler', DispatchMessageToHandler::class)
         ->args([
-            inline_service(UrlMatcher::class)->args([
-                inline_service(RouteCollection::class),
-                inline_service(RequestContext::class),
-            ]),
+            service('babdev_websocket_server.router'),
             service(MessageHandlerResolver::class),
         ])
         ->tag('babdev.websocket_server.server_middleware', ['priority' => 0])
