@@ -66,9 +66,6 @@ class Router extends BaseRouter implements WarmableInterface, ServiceSubscriberI
         $this->defaultLocale = $defaultLocale;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getRouteCollection(): RouteCollection
     {
         if (null === $this->collection) {
@@ -91,8 +88,6 @@ class Router extends BaseRouter implements WarmableInterface, ServiceSubscriberI
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return string[] A list of classes to preload on PHP 7.4+
      *
      * @phpstan-return class-string[]
@@ -188,14 +183,14 @@ class Router extends BaseRouter implements WarmableInterface, ServiceSubscriberI
 
             $resolved = ($this->paramFetcher)($match[1]);
 
-            if (is_scalar($resolved)) {
+            if (\is_scalar($resolved)) {
                 $this->collectedParameters[$match[1]] = $resolved;
 
                 if (\is_string($resolved)) {
                     $resolved = $this->resolve($resolved);
                 }
 
-                if (is_scalar($resolved)) {
+                if (\is_scalar($resolved)) {
                     return false === $resolved ? '0' : (string) $resolved;
                 }
             }
@@ -206,9 +201,6 @@ class Router extends BaseRouter implements WarmableInterface, ServiceSubscriberI
         return str_replace('%%', '%', $escapedValue);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedServices(): array
     {
         return [

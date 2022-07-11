@@ -23,13 +23,14 @@ use BabDev\WebSocket\Server\WAMP\TopicRegistry;
 use BabDev\WebSocket\Server\WebSocket\Middleware\EstablishWebSocketConnection;
 use BabDev\WebSocketBundle\CacheWarmer\RouterCacheWarmer;
 use BabDev\WebSocketBundle\Command\RunWebSocketServerCommand;
-use BabDev\WebSocketBundle\Routing\AnnotatedMessageHandlerLoader;
 use BabDev\WebSocketBundle\Routing\Loader\AttributeLoader;
 use BabDev\WebSocketBundle\Routing\Router;
 use BabDev\WebSocketBundle\Server\ServiceBasedMiddlewareStackBuilder;
 use BabDev\WebSocketBundle\Server\DefaultServerFactory;
+use BabDev\WebSocketBundle\Server\DefaultSocketServerFactory;
 use BabDev\WebSocketBundle\Server\MiddlewareStackBuilder;
 use BabDev\WebSocketBundle\Server\ServerFactory;
+use BabDev\WebSocketBundle\Server\SocketServerFactory;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Ratchet\RFC6455\Handshake\RequestVerifier;
 use Ratchet\RFC6455\Handshake\ServerNegotiator;
@@ -57,6 +58,7 @@ return static function (ContainerConfigurator $container): void {
     $services->set('babdev_websocket_server.command.run_websocket_server', RunWebSocketServerCommand::class)
         ->args(
             [
+                service(SocketServerFactory::class),
                 service(ServerFactory::class),
                 service('babdev_websocket_server.event_loop'),
                 abstract_arg('server URI'),
@@ -82,17 +84,6 @@ return static function (ContainerConfigurator $container): void {
         ])
     ;
     $services->alias(MiddlewareStackBuilder::class, 'babdev_websocket_server.server.service_based_middleware_stack_builder');
-
-    $services->set('babdev_websocket_server.factory.default', DefaultServerFactory::class)
-        ->args(
-            [
-                service(MiddlewareStackBuilder::class),
-                service('babdev_websocket_server.event_loop'),
-                abstract_arg('server context'),
-            ]
-        )
-    ;
-    $services->alias(ServerFactory::class, 'babdev_websocket_server.factory.default');
 
     $services->set('babdev_websocket_server.message_handler_resolver.psr_container', PsrContainerMessageHandlerResolver::class)
         ->args(
@@ -223,6 +214,16 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set('babdev_websocket_server.routing.resolver', LoaderResolver::class);
 
+    $services->set('babdev_websocket_server.server.factory.default', DefaultServerFactory::class)
+        ->args(
+            [
+                service(MiddlewareStackBuilder::class),
+                service('babdev_websocket_server.event_loop'),
+            ]
+        )
+    ;
+    $services->alias(ServerFactory::class, 'babdev_websocket_server.server.factory.default');
+
     $services->set('babdev_websocket_server.server.server_middleware.dispatch_to_message_handler', DispatchMessageToHandler::class)
         ->args([
             service('babdev_websocket_server.router'),
@@ -311,4 +312,14 @@ return static function (ContainerConfigurator $container): void {
             null, // metadata bag
         ])
     ;
+
+    $services->set('babdev_websocket_server.socket_server.factory.default', DefaultSocketServerFactory::class)
+        ->args(
+            [
+                abstract_arg('server context'),
+                service('babdev_websocket_server.event_loop'),
+            ]
+        )
+    ;
+    $services->alias(SocketServerFactory::class, 'babdev_websocket_server.socket_server.factory.default');
 };

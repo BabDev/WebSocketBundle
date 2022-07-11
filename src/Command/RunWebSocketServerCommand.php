@@ -3,6 +3,7 @@
 namespace BabDev\WebSocketBundle\Command;
 
 use BabDev\WebSocketBundle\Server\ServerFactory;
+use BabDev\WebSocketBundle\Server\SocketServerFactory;
 use React\EventLoop\LoopInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -17,6 +18,7 @@ final class RunWebSocketServerCommand extends Command
     private SymfonyStyle $style;
 
     public function __construct(
+        private readonly SocketServerFactory $socketServerFactory,
         private readonly ServerFactory $serverFactory,
         private readonly LoopInterface $loop,
         private readonly string $uri,
@@ -46,7 +48,7 @@ final class RunWebSocketServerCommand extends Command
             $this->loop->addSignal(\SIGTERM, $this->shutdownServer(...));
         }
 
-        $this->serverFactory->build($uri)->run();
+        $this->serverFactory->build($this->socketServerFactory->build($uri))->run();
 
         return 0;
     }

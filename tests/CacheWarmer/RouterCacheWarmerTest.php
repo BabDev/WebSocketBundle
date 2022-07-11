@@ -20,7 +20,7 @@ final class RouterCacheWarmerTest extends TestCase
         /** @var MockObject&testRouterInterfaceWithWarmableInterface $router */
         $router = $this->createMock(testRouterInterfaceWithWarmableInterface::class);
 
-        $router->expects($this->once())
+        $router->expects(self::once())
             ->method('warmUp')
             ->with($cachePath)
             ->willReturn(
@@ -36,7 +36,7 @@ final class RouterCacheWarmerTest extends TestCase
             ->with('babdev_websocket_server.router')
             ->willReturn($router);
 
-        $this->assertSame(
+        self::assertSame(
             [
                 UrlGenerator::class,
                 UrlMatcher::class,

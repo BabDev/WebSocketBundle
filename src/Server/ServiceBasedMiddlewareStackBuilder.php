@@ -8,7 +8,7 @@ use BabDev\WebSocketBundle\Exception\MiddlewareNotConfigured;
 
 /**
  * The service based middleware stack builder provides the middleware stack created by the
- * {@see BuildMiddlewareStackCompilerPass}
+ * {@see BuildMiddlewareStackCompilerPass}.
  */
 final class ServiceBasedMiddlewareStackBuilder implements MiddlewareStackBuilder
 {

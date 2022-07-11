@@ -35,7 +35,12 @@ final class RouterTest extends TestCase
                 ],
                 [
                     '_locale' => 'en|es',
-                ], [], '', [], [], '"%foo%" == "bar"'
+                ],
+                [],
+                '',
+                [],
+                [],
+                '"%foo%" == "bar"'
             )
         );
 
@@ -48,9 +53,9 @@ final class RouterTest extends TestCase
 
         $router = new Router($container, 'foo', [], null, $parameters);
 
-        $this->assertSame('/en', $router->generate('foo', ['_locale' => 'en']));
-        $this->assertSame('/', $router->generate('foo', ['_locale' => 'es']));
-        $this->assertSame('"bar" == "bar"', $router->getRouteCollection()->get('foo')->getCondition());
+        self::assertSame('/en', $router->generate('foo', ['_locale' => 'en']));
+        self::assertSame('/', $router->generate('foo', ['_locale' => 'es']));
+        self::assertSame('"bar" == "bar"', $router->getRouteCollection()->get('foo')->getCondition());
     }
 
     public function testCanGenerateRoutesWhenTheRouteHasServiceParametersFromASymfonyContainer(): void
@@ -66,7 +71,12 @@ final class RouterTest extends TestCase
                 ],
                 [
                     '_locale' => 'en|es',
-                ], [], '', [], [], '"%foo%" == "bar"'
+                ],
+                [],
+                '',
+                [],
+                [],
+                '"%foo%" == "bar"'
             )
         );
 
@@ -79,9 +89,9 @@ final class RouterTest extends TestCase
 
         $router = new Router($container, 'foo', [], null, $parameters);
 
-        $this->assertSame('/en', $router->generate('foo', ['_locale' => 'en']));
-        $this->assertSame('/', $router->generate('foo', ['_locale' => 'es']));
-        $this->assertSame('"bar" == "bar"', $router->getRouteCollection()->get('foo')->getCondition());
+        self::assertSame('/en', $router->generate('foo', ['_locale' => 'en']));
+        self::assertSame('/', $router->generate('foo', ['_locale' => 'es']));
+        self::assertSame('"bar" == "bar"', $router->getRouteCollection()->get('foo')->getCondition());
     }
 
     public function testResolvesRequirementsPlaceholdersFromAParameterBag(): void
@@ -110,7 +120,7 @@ final class RouterTest extends TestCase
 
         $route = $router->getRouteCollection()->get('foo');
 
-        $this->assertEquals(
+        self::assertEquals(
             [
                 'foo' => 'before_foo',
                 'bar' => 'bar_after',
@@ -146,7 +156,7 @@ final class RouterTest extends TestCase
 
         $route = $router->getRouteCollection()->get('foo');
 
-        $this->assertEquals(
+        self::assertEquals(
             [
                 'foo' => 'before_foo',
                 'bar' => 'bar_after',
@@ -186,7 +196,7 @@ final class RouterTest extends TestCase
             ->getRouteCollection()->get('foo');
     }
 
-    private function createParameterBag(array $params = []): MockObject&ContainerInterface
+    private function createParameterBag(array $params = []): MockObject & ContainerInterface
     {
         /** @var MockObject&ContainerInterface $bag */
         $bag = $this->createMock(ContainerInterface::class);
@@ -196,7 +206,7 @@ final class RouterTest extends TestCase
         return $bag;
     }
 
-    private function createPsr11Container(RouteCollection $routes): MockObject&ContainerInterface
+    private function createPsr11Container(RouteCollection $routes): MockObject & ContainerInterface
     {
         /** @var MockObject&LoaderInterface $loader */
         $loader = $this->createMock(LoaderInterface::class);
@@ -207,7 +217,7 @@ final class RouterTest extends TestCase
         /** @var MockObject&ContainerInterface $container */
         $container = $this->createMock(ContainerInterface::class);
 
-        $container->expects($this->once())
+        $container->expects(self::once())
             ->method('get')
             ->willReturn($loader);
 
@@ -225,7 +235,7 @@ final class RouterTest extends TestCase
         /** @var MockObject&Container $container */
         $container = $this->getMockBuilder(Container::class)->onlyMethods(['get'])->getMock();
 
-        $container->expects($this->once())
+        $container->expects(self::once())
             ->method('get')
             ->willReturn($loader)
         ;

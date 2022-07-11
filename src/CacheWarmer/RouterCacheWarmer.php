@@ -19,9 +19,6 @@ final class RouterCacheWarmer implements CacheWarmerInterface, ServiceSubscriber
     ) {
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function warmUp(string $cacheDir): array
     {
         $router = $this->container->get('babdev_websocket_server.router');
@@ -33,17 +30,11 @@ final class RouterCacheWarmer implements CacheWarmerInterface, ServiceSubscriber
         throw new \LogicException(sprintf('The router "%s" cannot be warmed up because it does not implement "%s".', get_debug_type($router), WarmableInterface::class));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isOptional(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedServices(): array
     {
         return [

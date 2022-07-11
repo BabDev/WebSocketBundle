@@ -11,6 +11,7 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
     public function testContainerIsLoadedWithValidConfiguration(): void
     {
         $uri = 'tcp://127.0.0.1:8080';
+        $context = [];
         $origins = ['example.com', 'example.net'];
         $blockedIps = ['192.168.1.1', '10.0.0.0/16'];
         $routerResource = '%kernel.project_dir%/config/websocket_router.php';
@@ -18,7 +19,7 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
         $this->load([
             'server' => [
                 'uri' => $uri,
-                'context' => [],
+                'context' => $context,
                 'allowed_origins' => $origins,
                 'blocked_ip_addresses' => $blockedIps,
                 'router' => [
@@ -29,8 +30,14 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
 
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(
             'babdev_websocket_server.command.run_websocket_server',
-            2,
+            3,
             $uri,
+        );
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.socket_server.factory.default',
+            0,
+            $context,
         );
 
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(

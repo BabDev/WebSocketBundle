@@ -27,11 +27,11 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
         });
 
         $container->getDefinition('babdev_websocket_server.command.run_websocket_server')
-            ->replaceArgument(2, $mergedConfig['server']['uri'])
+            ->replaceArgument(3, $mergedConfig['server']['uri'])
         ;
 
-        $container->getDefinition('babdev_websocket_server.factory.default')
-            ->replaceArgument(2, $mergedConfig['server']['context'])
+        $container->getDefinition('babdev_websocket_server.socket_server.factory.default')
+            ->replaceArgument(0, $mergedConfig['server']['context'])
         ;
 
         $container->getDefinition('babdev_websocket_server.router')

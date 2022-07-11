@@ -8,6 +8,7 @@ use BabDev\WebSocketBundle\Server\MiddlewareStackBuilder;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use React\EventLoop\LoopInterface;
+use React\Socket\ServerInterface;
 
 final class DefaultServerFactoryTest extends TestCase
 {
@@ -22,8 +23,11 @@ final class DefaultServerFactoryTest extends TestCase
 
     public function testCreatesAServer(): void
     {
-        $factory = new DefaultServerFactory($this->middlewareStackBuilder, $this->loop, []);
+        /** @var MockObject&ServerInterface $socketServer */
+        $socketServer = $this->createMock(ServerInterface::class);
 
-        self::assertInstanceOf(ReactPhpServer::class, $factory->build('tcp://127.0.0.1:8080'));
+        $factory = new DefaultServerFactory($this->middlewareStackBuilder, $this->loop);
+
+        self::assertInstanceOf(ReactPhpServer::class, $factory->build($socketServer));
     }
 }

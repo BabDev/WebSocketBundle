@@ -104,7 +104,7 @@ final class AttributeLoader extends AnnotationClassLoader
     }
 
     /**
-     * Build the default route name for a message handler
+     * Build the default route name for a message handler.
      */
     protected function getDefaultRouteName(\ReflectionClass $class, ?\ReflectionMethod $method = null): string
     {
