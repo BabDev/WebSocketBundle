@@ -58,6 +58,7 @@ return static function (ContainerConfigurator $container): void {
     $services->set('babdev_websocket_server.command.run_websocket_server', RunWebSocketServerCommand::class)
         ->args(
             [
+                service('event_dispatcher')->nullOnInvalid(),
                 service(SocketServerFactory::class),
                 service(ServerFactory::class),
                 service('babdev_websocket_server.event_loop'),

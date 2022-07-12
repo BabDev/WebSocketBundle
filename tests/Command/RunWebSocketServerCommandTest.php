@@ -4,6 +4,7 @@ namespace BabDev\WebSocketBundle\Tests\Command;
 
 use BabDev\WebSocket\Server\Server;
 use BabDev\WebSocketBundle\Command\RunWebSocketServerCommand;
+use BabDev\WebSocketBundle\Event\BeforeRunServer;
 use BabDev\WebSocketBundle\Server\ServerFactory;
 use BabDev\WebSocketBundle\Server\SocketServerFactory;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -11,12 +12,20 @@ use PHPUnit\Framework\TestCase;
 use React\EventLoop\LoopInterface;
 use React\Socket\ServerInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class RunWebSocketServerCommandTest extends TestCase
 {
     public function testCommandLaunchesWebSocketServerWithUriFromConfiguration(): void
     {
         $uri = 'tcp://127.0.0.1:8080';
+
+        /** @var MockObject&EventDispatcherInterface $eventDispatcher */
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::once())
+            ->method('dispatch')
+            ->with($this->isInstanceOf(BeforeRunServer::class))
+            ->willReturnArgument(0);
 
         /** @var MockObject&ServerInterface $socketServer */
         $socketServer = $this->createMock(ServerInterface::class);
@@ -26,7 +35,7 @@ final class RunWebSocketServerCommandTest extends TestCase
         $server->expects(self::once())
             ->method('run');
 
-        /** @var MockObject&ServerFactory $socketServerFactory */
+        /** @var MockObject&SocketServerFactory $socketServerFactory */
         $socketServerFactory = $this->createMock(SocketServerFactory::class);
         $socketServerFactory->expects(self::once())
             ->method('build')
@@ -40,7 +49,7 @@ final class RunWebSocketServerCommandTest extends TestCase
             ->with($socketServer)
             ->willReturn($server);
 
-        $command = new RunWebSocketServerCommand($socketServerFactory, $serverFactory, $this->createMock(LoopInterface::class), $uri);
+        $command = new RunWebSocketServerCommand($eventDispatcher, $socketServerFactory, $serverFactory, $this->createMock(LoopInterface::class), $uri);
 
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);
@@ -50,6 +59,13 @@ final class RunWebSocketServerCommandTest extends TestCase
     {
         $uri = 'tcp://127.0.0.1:8081';
 
+        /** @var MockObject&EventDispatcherInterface $eventDispatcher */
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects(self::once())
+            ->method('dispatch')
+            ->with($this->isInstanceOf(BeforeRunServer::class))
+            ->willReturnArgument(0);
+
         /** @var MockObject&ServerInterface $socketServer */
         $socketServer = $this->createMock(ServerInterface::class);
 
@@ -58,7 +74,7 @@ final class RunWebSocketServerCommandTest extends TestCase
         $server->expects(self::once())
             ->method('run');
 
-        /** @var MockObject&ServerFactory $socketServerFactory */
+        /** @var MockObject&SocketServerFactory $socketServerFactory */
         $socketServerFactory = $this->createMock(SocketServerFactory::class);
         $socketServerFactory->expects(self::once())
             ->method('build')
@@ -72,7 +88,7 @@ final class RunWebSocketServerCommandTest extends TestCase
             ->with($socketServer)
             ->willReturn($server);
 
-        $command = new RunWebSocketServerCommand($socketServerFactory, $serverFactory, $this->createMock(LoopInterface::class), 'tcp://127.0.0.1:8080');
+        $command = new RunWebSocketServerCommand($eventDispatcher, $socketServerFactory, $serverFactory, $this->createMock(LoopInterface::class), 'tcp://127.0.0.1:8080');
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(['uri' => $uri]);
