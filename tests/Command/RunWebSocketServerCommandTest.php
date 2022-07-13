@@ -24,7 +24,7 @@ final class RunWebSocketServerCommandTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::once())
             ->method('dispatch')
-            ->with($this->isInstanceOf(BeforeRunServer::class))
+            ->with(self::isInstanceOf(BeforeRunServer::class))
             ->willReturnArgument(0);
 
         /** @var MockObject&ServerInterface $socketServer */
@@ -63,7 +63,7 @@ final class RunWebSocketServerCommandTest extends TestCase
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
         $eventDispatcher->expects(self::once())
             ->method('dispatch')
-            ->with($this->isInstanceOf(BeforeRunServer::class))
+            ->with(self::isInstanceOf(BeforeRunServer::class))
             ->willReturnArgument(0);
 
         /** @var MockObject&ServerInterface $socketServer */

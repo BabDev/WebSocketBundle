@@ -21,6 +21,15 @@ use BabDev\WebSocket\Server\WAMP\Middleware\ParseWAMPMessage;
 use BabDev\WebSocket\Server\WAMP\Middleware\UpdateTopicSubscriptions;
 use BabDev\WebSocket\Server\WAMP\TopicRegistry;
 use BabDev\WebSocket\Server\WebSocket\Middleware\EstablishWebSocketConnection;
+use BabDev\WebSocketBundle\Authentication\Authenticator;
+use BabDev\WebSocketBundle\Authentication\ConnectionRepository;
+use BabDev\WebSocketBundle\Authentication\DefaultAuthenticator;
+use BabDev\WebSocketBundle\Authentication\Provider\SessionAuthenticationProvider;
+use BabDev\WebSocketBundle\Authentication\Storage\Driver\InMemoryStorageDriver;
+use BabDev\WebSocketBundle\Authentication\Storage\Driver\PsrCacheStorageDriver;
+use BabDev\WebSocketBundle\Authentication\Storage\DriverBackedTokenStorage;
+use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
+use BabDev\WebSocketBundle\Authentication\StorageBackedConnectionRepository;
 use BabDev\WebSocketBundle\CacheWarmer\RouterCacheWarmer;
 use BabDev\WebSocketBundle\Command\RunWebSocketServerCommand;
 use BabDev\WebSocketBundle\Routing\Loader\AttributeLoader;
@@ -55,16 +64,64 @@ use Symfony\Component\Routing\RequestContext;
 return static function (ContainerConfigurator $container): void {
     $services = $container->services();
 
+    $services->set('babdev_websocket_server.authentication.authenticator', DefaultAuthenticator::class)
+        ->args([
+            abstract_arg('authentication providers'),
+            service(TokenStorage::class),
+        ])
+        ->call('setLogger', [
+            service('logger'),
+        ])
+        ->tag('monolog.logger', ['channel' => 'websocket'])
+    ;
+    $services->alias(Authenticator::class, 'babdev_websocket_server.authentication.authenticator');
+
+    $services->set('babdev_websocket_server.authentication.connection_repository.storage', StorageBackedConnectionRepository::class)
+        ->args([
+            service(TokenStorage::class),
+            service(Authenticator::class),
+        ])
+    ;
+    $services->alias(ConnectionRepository::class, 'babdev_websocket_server.authentication.connection_repository.storage');
+
+    $services->set('babdev_websocket_server.authentication.provider.session', SessionAuthenticationProvider::class)
+        ->args([
+            service(TokenStorage::class),
+            abstract_arg('firewalls'),
+        ])
+        ->call('setLogger', [
+            service('logger'),
+        ])
+        ->tag('monolog.logger', ['channel' => 'websocket'])
+    ;
+
+    $services->set('babdev_websocket_server.authentication.storage.driver.in_memory', InMemoryStorageDriver::class);
+
+    $services->set('babdev_websocket_server.authentication.storage.driver.psr_cache', PsrCacheStorageDriver::class)
+        ->args([
+            abstract_arg('cache pool'),
+        ])
+    ;
+
+    $services->set('babdev_websocket_server.authentication.token_storage.driver', DriverBackedTokenStorage::class)
+        ->args([
+            service('babdev_websocket_server.authentication.storage.driver'),
+        ])
+        ->call('setLogger', [
+            service('logger'),
+        ])
+        ->tag('monolog.logger', ['channel' => 'websocket'])
+    ;
+    $services->alias(TokenStorage::class, 'babdev_websocket_server.authentication.token_storage.driver');
+
     $services->set('babdev_websocket_server.command.run_websocket_server', RunWebSocketServerCommand::class)
-        ->args(
-            [
-                service('event_dispatcher')->nullOnInvalid(),
-                service(SocketServerFactory::class),
-                service(ServerFactory::class),
-                service('babdev_websocket_server.event_loop'),
-                abstract_arg('server URI'),
-            ]
-        )
+        ->args([
+            service('event_dispatcher')->nullOnInvalid(),
+            service(SocketServerFactory::class),
+            service(ServerFactory::class),
+            service(LoopInterface::class),
+            abstract_arg('server URI'),
+        ])
         ->tag('console.command')
     ;
 
@@ -87,11 +144,9 @@ return static function (ContainerConfigurator $container): void {
     $services->alias(MiddlewareStackBuilder::class, 'babdev_websocket_server.server.service_based_middleware_stack_builder');
 
     $services->set('babdev_websocket_server.message_handler_resolver.psr_container', PsrContainerMessageHandlerResolver::class)
-        ->args(
-            [
-                tagged_locator('babdev_websocket_server.message_handler'),
-            ]
-        )
+        ->args([
+            tagged_locator('babdev_websocket_server.message_handler'),
+        ])
     ;
     $services->alias(MessageHandlerResolver::class, 'babdev_websocket_server.message_handler_resolver.psr_container');
 
@@ -216,12 +271,10 @@ return static function (ContainerConfigurator $container): void {
     $services->set('babdev_websocket_server.routing.resolver', LoaderResolver::class);
 
     $services->set('babdev_websocket_server.server.factory.default', DefaultServerFactory::class)
-        ->args(
-            [
-                service(MiddlewareStackBuilder::class),
-                service('babdev_websocket_server.event_loop'),
-            ]
-        )
+        ->args([
+            service(MiddlewareStackBuilder::class),
+            service(LoopInterface::class),
+        ])
     ;
     $services->alias(ServerFactory::class, 'babdev_websocket_server.server.factory.default');
 
@@ -315,12 +368,10 @@ return static function (ContainerConfigurator $container): void {
     ;
 
     $services->set('babdev_websocket_server.socket_server.factory.default', DefaultSocketServerFactory::class)
-        ->args(
-            [
-                abstract_arg('server context'),
-                service('babdev_websocket_server.event_loop'),
-            ]
-        )
+        ->args([
+            abstract_arg('server context'),
+            service(LoopInterface::class),
+        ])
     ;
     $services->alias(SocketServerFactory::class, 'babdev_websocket_server.socket_server.factory.default');
 };

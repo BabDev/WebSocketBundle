@@ -2,6 +2,7 @@
 
 namespace BabDev\WebSocketBundle\DependencyInjection;
 
+use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\AuthenticationProviderFactory;
 use React\Socket\SocketServer;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -11,15 +12,83 @@ use Symfony\Component\HttpFoundation\Session\Storage\SessionStorageFactoryInterf
 
 final class Configuration implements ConfigurationInterface
 {
+    public const AUTHENTICATION_STORAGE_TYPE_IN_MEMORY = 'in_memory';
+    public const AUTHENTICATION_STORAGE_TYPE_PSR_CACHE = 'psr_cache';
+    public const AUTHENTICATION_STORAGE_TYPE_SERVICE = 'service';
+
+    /**
+     * @param AuthenticationProviderFactory[] $authenticationProviderFactories
+     */
+    public function __construct(private readonly array $authenticationProviderFactories)
+    {
+    }
+
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('babdev_websocket');
 
         $rootNode = $treeBuilder->getRootNode();
 
+        $this->addAuthenticationSection($rootNode);
         $this->addServerSection($rootNode);
 
         return $treeBuilder;
+    }
+
+    private function addAuthenticationSection(ArrayNodeDefinition $rootNode): void
+    {
+        $authenticationNode = $rootNode->children()
+            ->arrayNode('authentication')
+            ->addDefaultsIfNotSet();
+
+        $this->addAuthenticationProvidersSection($authenticationNode);
+
+        $authenticationNode->children()
+                ->arrayNode('storage')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->enumNode('type')
+                            ->isRequired()
+                            ->defaultValue(self::AUTHENTICATION_STORAGE_TYPE_IN_MEMORY)
+                            ->info('The type of storage for the websocket server authentication tokens.')
+                            ->values([self::AUTHENTICATION_STORAGE_TYPE_IN_MEMORY, self::AUTHENTICATION_STORAGE_TYPE_PSR_CACHE, self::AUTHENTICATION_STORAGE_TYPE_SERVICE])
+                        ->end()
+                        ->scalarNode('pool')
+                            ->defaultNull()
+                            ->info('The cache pool to use when using the PSR cache storage.')
+                        ->end()
+                        ->scalarNode('id')
+                            ->defaultNull()
+                            ->info('The service ID to use when using the service storage.')
+                        ->end()
+                    ->end()
+                    ->validate()
+                        ->ifTrue(static fn (array $config): bool => ('' === $config['pool'] || null === $config['pool']) && self::AUTHENTICATION_STORAGE_TYPE_PSR_CACHE === $config['type'])
+                        ->thenInvalid('A cache pool must be set when using the PSR cache storage')
+                    ->end()
+                    ->validate()
+                        ->ifTrue(static fn (array $config): bool => ('' === $config['id'] || null === $config['id']) && self::AUTHENTICATION_STORAGE_TYPE_SERVICE === $config['type'])
+                        ->thenInvalid('A service ID must be set when using the service storage')
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
+    }
+
+    private function addAuthenticationProvidersSection(ArrayNodeDefinition $authenticationNode): void
+    {
+        $providerNodeBuilder = $authenticationNode
+            ->fixXmlConfig('provider')
+            ->children()
+                ->arrayNode('providers')
+        ;
+
+        foreach ($this->authenticationProviderFactories as $factory) {
+            $name = str_replace('-', '_', $factory->getKey());
+            $factoryNode = $providerNodeBuilder->children()->arrayNode($name)->canBeUnset();
+
+            $factory->addConfiguration($factoryNode);
+        }
     }
 
     private function addServerSection(ArrayNodeDefinition $rootNode): void
