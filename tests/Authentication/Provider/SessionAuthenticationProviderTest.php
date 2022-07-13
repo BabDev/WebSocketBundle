@@ -81,8 +81,7 @@ final class SessionAuthenticationProviderTest extends TestCase
 
         /** @var MockObject&AttributeStore $attributeStore */
         $attributeStore = $this->createMock(AttributeStore::class);
-        $attributeStore->expects(self::once())
-            ->method('get')
+        $attributeStore->method('get')
             ->withConsecutive(
                 ['session'],
                 ['resource_id'],
@@ -129,8 +128,7 @@ final class SessionAuthenticationProviderTest extends TestCase
 
         /** @var MockObject&AttributeStore $attributeStore */
         $attributeStore = $this->createMock(AttributeStore::class);
-        $attributeStore->expects(self::once())
-            ->method('get')
+        $attributeStore->method('get')
             ->withConsecutive(
                 ['session'],
                 ['resource_id'],

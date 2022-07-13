@@ -34,6 +34,7 @@ use BabDev\WebSocketBundle\CacheWarmer\RouterCacheWarmer;
 use BabDev\WebSocketBundle\Command\RunWebSocketServerCommand;
 use BabDev\WebSocketBundle\Routing\Loader\AttributeLoader;
 use BabDev\WebSocketBundle\Routing\Router;
+use BabDev\WebSocketBundle\Server\Middleware\AuthenticateUser;
 use BabDev\WebSocketBundle\Server\ServiceBasedMiddlewareStackBuilder;
 use BabDev\WebSocketBundle\Server\DefaultServerFactory;
 use BabDev\WebSocketBundle\Server\DefaultSocketServerFactory;
@@ -303,13 +304,22 @@ return static function (ContainerConfigurator $container): void {
         ->tag('babdev.websocket_server.server_middleware', ['priority' => -20])
     ;
 
+    $services->set('babdev_websocket_server.server.server_middleware.authenticate_user', AuthenticateUser::class)
+        ->args([
+            abstract_arg('decorated middleware'),
+            service(Authenticator::class),
+            service(TokenStorage::class),
+        ])
+        ->tag('babdev.websocket_server.server_middleware', ['priority' => -30])
+    ;
+
     $services->set('babdev_websocket_server.server.server_middleware.initialize_session', InitializeSession::class)
         ->args([
             abstract_arg('decorated middleware'),
             abstract_arg('session factory'),
             service(OptionsHandler::class),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -30])
+        ->tag('babdev.websocket_server.server_middleware', ['priority' => -40])
     ;
 
     $services->set('babdev_websocket_server.server.server_middleware.establish_websocket_connection', EstablishWebSocketConnection::class)
@@ -317,14 +327,14 @@ return static function (ContainerConfigurator $container): void {
             abstract_arg('decorated middleware'),
             service('babdev_websocket_server.rfc6455.server_negotiator'),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -40])
+        ->tag('babdev.websocket_server.server_middleware', ['priority' => -50])
     ;
 
     $services->set('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins', RestrictToAllowedOrigins::class)
         ->args([
             abstract_arg('decorated middleware'),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -50])
+        ->tag('babdev.websocket_server.server_middleware', ['priority' => -60])
     ;
 
     $services->set('babdev_websocket_server.server.server_middleware.parse_http_request', ParseHttpRequest::class)
@@ -332,14 +342,14 @@ return static function (ContainerConfigurator $container): void {
             abstract_arg('decorated middleware'),
             service(RequestParser::class),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -60])
+        ->tag('babdev.websocket_server.server_middleware', ['priority' => -70])
     ;
 
     $services->set('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address', RejectBlockedIpAddress::class)
         ->args([
             abstract_arg('decorated middleware'),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -70])
+        ->tag('babdev.websocket_server.server_middleware', ['priority' => -80])
     ;
 
     $services->set('babdev_websocket_server.server.options_handler', IniOptionsHandler::class);
