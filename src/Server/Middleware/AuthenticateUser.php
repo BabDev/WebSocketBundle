@@ -53,8 +53,7 @@ final class AuthenticateUser implements ServerMiddleware, LoggerAwareInterface
         $storageId = $this->tokenStorage->generateStorageId($connection);
 
         $loggerContext = [
-            'connection_id' => $connection->getAttributeStore()->get('resource_id'),
-            'session_id' => $connection->getAttributeStore()->get('wamp.session_id'),
+            'resource_id' => $connection->getAttributeStore()->get('resource_id'),
             'storage_id' => $storageId,
         ];
 

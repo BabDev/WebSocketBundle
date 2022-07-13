@@ -85,7 +85,6 @@ final class SessionAuthenticationProviderTest extends TestCase
             ->withConsecutive(
                 ['session'],
                 ['resource_id'],
-                ['wamp.session_id'],
             )
             ->willReturnOnConsecutiveCalls(
                 $session,
@@ -132,12 +131,10 @@ final class SessionAuthenticationProviderTest extends TestCase
             ->withConsecutive(
                 ['session'],
                 ['resource_id'],
-                ['wamp.session_id'],
             )
             ->willReturnOnConsecutiveCalls(
                 $session,
                 'resource',
-                'test',
             );
 
         /** @var MockObject&Connection $connection */

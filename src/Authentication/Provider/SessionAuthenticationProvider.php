@@ -51,8 +51,7 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
                 method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername()
             ),
             [
-                'connection_id' => $connection->getAttributeStore()->get('resource_id'),
-                'session_id' => $connection->getAttributeStore()->get('wamp.session_id'),
+                'resource_id' => $connection->getAttributeStore()->get('resource_id'),
                 'storage_id' => $storageId,
             ]
         );

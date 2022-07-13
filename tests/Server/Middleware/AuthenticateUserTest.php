@@ -75,14 +75,8 @@ final class AuthenticateUserTest extends TestCase
         /** @var MockObject&AttributeStore $attributeStore */
         $attributeStore = $this->createMock(AttributeStore::class);
         $attributeStore->method('get')
-            ->withConsecutive(
-                ['resource_id'],
-                ['wamp.session_id'],
-            )
-            ->willReturnOnConsecutiveCalls(
-                'resource',
-                'test',
-            );
+            ->with('resource_id')
+            ->willReturn('resource');
 
         /** @var MockObject&Connection $connection */
         $connection = $this->createMock(Connection::class);

@@ -32,6 +32,9 @@ use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use BabDev\WebSocketBundle\Authentication\StorageBackedConnectionRepository;
 use BabDev\WebSocketBundle\CacheWarmer\RouterCacheWarmer;
 use BabDev\WebSocketBundle\Command\RunWebSocketServerCommand;
+use BabDev\WebSocketBundle\EventListener\PeriodicManagerSubscriber;
+use BabDev\WebSocketBundle\PeriodicManager\ArrayPeriodicManagerRegistry;
+use BabDev\WebSocketBundle\PeriodicManager\PeriodicManagerRegistry;
 use BabDev\WebSocketBundle\Routing\Loader\AttributeLoader;
 use BabDev\WebSocketBundle\Routing\Router;
 use BabDev\WebSocketBundle\Server\Middleware\AuthenticateUser;
@@ -131,6 +134,13 @@ return static function (ContainerConfigurator $container): void {
     ;
     $services->alias(LoopInterface::class, 'babdev_websocket_server.event_loop');
 
+    $services->set('babdev_websocket_server.event_subscriber.periodic_manager', PeriodicManagerSubscriber::class)
+        ->args([
+            service(PeriodicManagerRegistry::class),
+        ])
+        ->tag('kernel.event_subscriber')
+    ;
+
     $services->set('babdev_websocket_server.rfc6455.server_negotiator', ServerNegotiator::class)
         ->args([
             inline_service(RequestVerifier::class),
@@ -150,6 +160,13 @@ return static function (ContainerConfigurator $container): void {
         ])
     ;
     $services->alias(MessageHandlerResolver::class, 'babdev_websocket_server.message_handler_resolver.psr_container');
+
+    $services->set('babdev_websocket_server.periodic_manager.registry', ArrayPeriodicManagerRegistry::class)
+        ->args([
+            tagged_iterator('babdev_websocket_server.periodic_manager'),
+        ])
+    ;
+    $services->alias(PeriodicManagerRegistry::class, 'babdev_websocket_server.periodic_manager.registry');
 
     $services->set('babdev_websocket_server.router', Router::class)
         ->args([

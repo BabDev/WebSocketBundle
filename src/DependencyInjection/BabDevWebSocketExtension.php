@@ -5,6 +5,7 @@ namespace BabDev\WebSocketBundle\DependencyInjection;
 use BabDev\WebSocketBundle\Attribute\AsMessageHandler;
 use BabDev\WebSocketBundle\Authentication\Storage\Driver\StorageDriver;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\AuthenticationProviderFactory;
+use BabDev\WebSocketBundle\PeriodicManager\PeriodicManager;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
 use Symfony\Component\DependencyInjection\ChildDefinition;
@@ -43,6 +44,8 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
         $container->registerAttributeForAutoconfiguration(AsMessageHandler::class, static function (ChildDefinition $definition, AsMessageHandler $attribute): void {
             $definition->addTag('babdev_websocket_server.message_handler');
         });
+
+        $container->registerForAutoconfiguration(PeriodicManager::class)->addTag('babdev_websocket_server.periodic_manager');
 
         $this->registerAuthenticationConfiguration($mergedConfig, $container);
         $this->registerServerConfiguration($mergedConfig, $container);
