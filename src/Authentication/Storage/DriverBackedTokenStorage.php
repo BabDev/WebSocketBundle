@@ -20,7 +20,7 @@ final class DriverBackedTokenStorage implements TokenStorage, LoggerAwareInterfa
 
     public function generateStorageId(Connection $connection): string
     {
-        return $connection->getAttributeStore()->get('resource_id', '');
+        return (string) $connection->getAttributeStore()->get('resource_id', '');
     }
 
     /**
