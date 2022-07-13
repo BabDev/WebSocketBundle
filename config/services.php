@@ -304,13 +304,21 @@ return static function (ContainerConfigurator $container): void {
         ->tag('babdev.websocket_server.server_middleware', ['priority' => -20])
     ;
 
+    $services->set('babdev_websocket_server.server.server_middleware.establish_websocket_connection', EstablishWebSocketConnection::class)
+        ->args([
+            abstract_arg('decorated middleware'),
+            service('babdev_websocket_server.rfc6455.server_negotiator'),
+        ])
+        ->tag('babdev.websocket_server.server_middleware', ['priority' => -30])
+    ;
+
     $services->set('babdev_websocket_server.server.server_middleware.authenticate_user', AuthenticateUser::class)
         ->args([
             abstract_arg('decorated middleware'),
             service(Authenticator::class),
             service(TokenStorage::class),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -30])
+        ->tag('babdev.websocket_server.server_middleware', ['priority' => -40])
     ;
 
     $services->set('babdev_websocket_server.server.server_middleware.initialize_session', InitializeSession::class)
@@ -318,14 +326,6 @@ return static function (ContainerConfigurator $container): void {
             abstract_arg('decorated middleware'),
             abstract_arg('session factory'),
             service(OptionsHandler::class),
-        ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -40])
-    ;
-
-    $services->set('babdev_websocket_server.server.server_middleware.establish_websocket_connection', EstablishWebSocketConnection::class)
-        ->args([
-            abstract_arg('decorated middleware'),
-            service('babdev_websocket_server.rfc6455.server_negotiator'),
         ])
         ->tag('babdev.websocket_server.server_middleware', ['priority' => -50])
     ;
