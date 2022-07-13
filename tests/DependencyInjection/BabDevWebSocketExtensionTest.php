@@ -35,7 +35,7 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
 
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(
             'babdev_websocket_server.command.run_websocket_server',
-            3,
+            4,
             $uri,
         );
 

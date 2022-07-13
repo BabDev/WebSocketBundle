@@ -96,7 +96,7 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
     private function registerServerConfiguration(array $mergedConfig, ContainerBuilder $container): void
     {
         $container->getDefinition('babdev_websocket_server.command.run_websocket_server')
-            ->replaceArgument(3, $mergedConfig['server']['uri'])
+            ->replaceArgument(4, $mergedConfig['server']['uri'])
         ;
 
         $container->getDefinition('babdev_websocket_server.socket_server.factory.default')
