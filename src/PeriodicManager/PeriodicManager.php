@@ -2,12 +2,16 @@
 
 namespace BabDev\WebSocketBundle\PeriodicManager;
 
+use BabDev\WebSocketBundle\Exception\MissingLoop;
 use React\EventLoop\LoopInterface;
 
 interface PeriodicManager
 {
     public function getName(): string;
 
+    /**
+     * @throws MissingLoop if called before setting the event loop
+     */
     public function register(): void;
 
     public function cancelTimers(): void;
