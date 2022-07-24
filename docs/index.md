@@ -1,0 +1,7 @@
+- [Introduction](/open-source/packages/websocketbundle/docs/1.x/intro)
+- [Installation & Setup](/open-source/packages/websocketbundle/docs/1.x/installation)
+- [Authentication](/open-source/packages/websocketbundle/docs/1.x/authentication)
+- [Default Configuration](/open-source/packages/websocketbundle/docs/1.x/default-configuration)
+- [Events](/open-source/packages/websocketbundle/docs/1.x/events)
+- [Periodic Manager](/open-source/packages/websocketbundle/docs/1.x/periodic-manager)
+- [Securing Connections](/open-source/packages/websocketbundle/docs/1.x/securing-connections)
