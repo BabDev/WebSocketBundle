@@ -9,12 +9,6 @@
         "websocket server"
     ],
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../websocket-server"
-        }
-    ],
     "require": {
         "php": "8.1.*",
         "ext-pcntl": "*",
