@@ -31,6 +31,11 @@ babdev_websocket:
 
     # A list of IP addresses which are not allowed to connect to the websocket server, each entry can be either a single address or a CIDR range.
     blocked_ip_addresses: []
+    keepalive:
+      enabled:              false
+
+      # The interval, in seconds, which connections are pinged.
+      interval:             30 # Required
     router:
 
       # The main routing resource to import when loading the websocket server route definitions.

@@ -6,6 +6,7 @@ use BabDev\WebSocketBundle\Attribute\AsMessageHandler;
 use BabDev\WebSocketBundle\Authentication\Storage\Driver\StorageDriver;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\AuthenticationProviderFactory;
 use BabDev\WebSocketBundle\PeriodicManager\PeriodicManager;
+use React\EventLoop\LoopInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
 use Symfony\Component\DependencyInjection\ChildDefinition;
@@ -128,6 +129,11 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
             }
         } else {
             $container->removeDefinition('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address');
+        }
+
+        if (true === $mergedConfig['server']['keepalive']['enabled']) {
+            $container->getDefinition('babdev_websocket_server.server.server_middleware.establish_websocket_connection')
+                ->addMethodCall('enableKeepAlive', [new Reference(LoopInterface::class), $mergedConfig['server']['keepalive']['interval']]);
         }
 
         $this->configureWebSocketSession($mergedConfig['server']['session'], $container);

@@ -7,6 +7,9 @@ use BabDev\WebSocketBundle\DependencyInjection\BabDevWebSocketExtension;
 use BabDev\WebSocketBundle\DependencyInjection\Configuration;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\SessionAuthenticationProviderFactory;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
+use Matthias\SymfonyDependencyInjectionTest\PhpUnit\DefinitionHasMethodCallConstraint;
+use PHPUnit\Framework\Constraint\LogicalNot;
+use React\EventLoop\LoopInterface;
 use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Reference;
@@ -67,11 +70,34 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             );
         }
 
+        $this->assertThat($this->container->findDefinition('babdev_websocket_server.server.server_middleware.establish_websocket_connection'), new LogicalNot(new DefinitionHasMethodCallConstraint('enableKeepAlive')));
         $this->assertContainerBuilderHasAlias('babdev_websocket_server.authentication.storage.driver', 'babdev_websocket_server.authentication.storage.driver.in_memory');
         $this->assertContainerBuilderHasAlias(StorageDriver::class, 'babdev_websocket_server.authentication.storage.driver.in_memory');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.server_middleware.initialize_session');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.factory');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.storage.factory.read_only_native');
+    }
+
+    public function testContainerIsLoadedWithKeepaliveEnabled(): void
+    {
+        $this->load([
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'keepalive' => [
+                    'enabled' => true,
+                    'interval' => 15,
+                ],
+                'router' => [
+                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
+                ],
+            ],
+        ]);
+
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
+            'babdev_websocket_server.server.server_middleware.establish_websocket_connection',
+            'enableKeepAlive',
+            [new Reference(LoopInterface::class), 15],
+        );
     }
 
     public function testContainerIsLoadedWithSessionAuthenticationProviderConfigured(): void
