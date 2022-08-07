@@ -3,5 +3,6 @@
 - [Authentication](/open-source/packages/websocketbundle/docs/1.x/authentication)
 - [Default Configuration](/open-source/packages/websocketbundle/docs/1.x/default-configuration)
 - [Events](/open-source/packages/websocketbundle/docs/1.x/events)
+- [Managing Middleware](/open-source/packages/websocketbundle/docs/1.x/managing-middleware)
 - [Periodic Manager](/open-source/packages/websocketbundle/docs/1.x/periodic-manager)
 - [Securing Connections](/open-source/packages/websocketbundle/docs/1.x/securing-connections)
