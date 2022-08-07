@@ -31,10 +31,14 @@ namespace App\WebSocket\PeriodicManager;
 
 use BabDev\WebSocketBundle\Exception\MissingLoop;
 use BabDev\WebSocketBundle\PeriodicManager\PeriodicManager;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use React\EventLoop\LoopInterface;
 
-final class EchoPeriodicManager implements PeriodicManager
+final class EchoPeriodicManager implements PeriodicManager, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     private ?LoopInterface $loop = null;
 
     public function getName(): string
@@ -71,7 +75,7 @@ final class EchoPeriodicManager implements PeriodicManager
             );
         } catch (\Throwable $exception) {
             $this->logger->error(
-                'Uncaught Throwable in the pace calculator loop.',
+                'Uncaught Throwable in the echo manager.',
                 [
                     'exception' => $exception,
                 ],
