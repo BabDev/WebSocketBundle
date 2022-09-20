@@ -20,7 +20,7 @@ Below is the list of middleware provided by this bundle and the library and thei
 
 New middleware should be added with a priority lower than 0 as the `BabDev\WebSocket\Server\WAMP\Middleware\DispatchMessageToHandler` middleware should be the last middleware in the stack.
 
-Middleware must have the decorated middleware as the first parameter in the constructor, this is required for the compiler pass which builds the middleware stack to correctly set the arguments.
+Middleware must have the decorated middleware as the first parameter in the constructor, and cannot use a named parameter in the service definition (i.e. `$middleware: !abstract decorated middleware` for YAML); this is required for the compiler pass which builds the middleware stack to correctly set the arguments.
 
 Because priorities must be specified, this bundle does not provide autoconfiguration of the `BabDev\WebSocket\Server\ServerMiddleware` interface to the `babdev.websocket_server.server_middleware` tag, so services will have to be manually tagged. This can be done with either explicit configuration in your container configuration files, or if you are using autowiring, the `#[Autoconfigure]` attribute on your middleware class.
 
@@ -29,7 +29,7 @@ Because priorities must be specified, this bundle does not provide autoconfigura
 services:
     App\WebSocket\Middleware\EarlyMiddleware:
         arguments:
-            $middleware: !abstract decorated middleware
+            - !abstract decorated middleware
         tags:
             - { name: babdev.websocket_server.server_middleware, priority: -75 }
 ```
