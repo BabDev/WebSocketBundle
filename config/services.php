@@ -38,7 +38,6 @@ use BabDev\WebSocketBundle\EventListener\PeriodicManagerSubscriber;
 use BabDev\WebSocketBundle\PeriodicManager\ArrayPeriodicManagerRegistry;
 use BabDev\WebSocketBundle\PeriodicManager\PeriodicManagerRegistry;
 use BabDev\WebSocketBundle\Routing\Loader\AttributeLoader;
-use BabDev\WebSocketBundle\Routing\Router;
 use BabDev\WebSocketBundle\Server\Middleware\AuthenticateUser;
 use BabDev\WebSocketBundle\Server\ServiceBasedMiddlewareStackBuilder;
 use BabDev\WebSocketBundle\Server\DefaultServerFactory;
@@ -52,6 +51,7 @@ use Ratchet\RFC6455\Handshake\ServerNegotiator;
 use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use Symfony\Bundle\FrameworkBundle\Command\RouterDebugCommand;
+use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\Routing\Generator\CompiledUrlGenerator;
@@ -207,7 +207,7 @@ return static function (ContainerConfigurator $container): void {
             service('config_cache_factory'),
         ])
         ->tag('monolog.logger', ['channel' => 'websocket_router'])
-        ->tag('container.service_subscriber', ['id' => 'babdev_websocket_server.routing.loader'])
+        ->tag('container.service_subscriber', ['key' => 'routing.loader', 'id' => 'babdev_websocket_server.routing.loader'])
     ;
 
     $services->set('babdev_websocket_server.router.cache_warmer', RouterCacheWarmer::class)
