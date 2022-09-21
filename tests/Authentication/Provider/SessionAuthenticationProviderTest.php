@@ -18,7 +18,7 @@ final class SessionAuthenticationProviderTest extends TestCase
 {
     private const FIREWALLS = ['main'];
 
-    private readonly MockObject & TokenStorage $tokenStorage;
+    private readonly MockObject&TokenStorage $tokenStorage;
 
     private readonly SessionAuthenticationProvider $provider;
 

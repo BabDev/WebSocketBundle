@@ -14,7 +14,7 @@ use React\Socket\ServerInterface;
 
 final class PeriodicManagerSubscriberTest extends TestCase
 {
-    private readonly MockObject & PeriodicManagerRegistry $registry;
+    private readonly MockObject&PeriodicManagerRegistry $registry;
 
     private readonly PeriodicManagerSubscriber $subscriber;
 

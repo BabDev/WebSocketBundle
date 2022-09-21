@@ -12,8 +12,8 @@ use React\Socket\ServerInterface;
 
 final class DefaultServerFactoryTest extends TestCase
 {
-    private readonly MockObject & MiddlewareStackBuilder $middlewareStackBuilder;
-    private readonly MockObject & LoopInterface $loop;
+    private readonly MockObject&MiddlewareStackBuilder $middlewareStackBuilder;
+    private readonly MockObject&LoopInterface $loop;
 
     protected function setUp(): void
     {

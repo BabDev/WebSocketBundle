@@ -18,9 +18,9 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 final class StorageBackedConnectionRepositoryTest extends TestCase
 {
-    private readonly MockObject & TokenStorage $tokenStorage;
+    private readonly MockObject&TokenStorage $tokenStorage;
 
-    private readonly MockObject & Authenticator $authenticator;
+    private readonly MockObject&Authenticator $authenticator;
 
     private readonly StorageBackedConnectionRepository $repository;
 

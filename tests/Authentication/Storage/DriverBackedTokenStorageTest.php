@@ -14,7 +14,7 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 final class DriverBackedTokenStorageTest extends TestCase
 {
-    private readonly MockObject & StorageDriver $driver;
+    private readonly MockObject&StorageDriver $driver;
 
     private readonly DriverBackedTokenStorage $storage;
 

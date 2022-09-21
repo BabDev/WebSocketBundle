@@ -14,11 +14,11 @@ use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
 
 final class AuthenticateUserTest extends TestCase
 {
-    private MockObject & ServerMiddleware $decoratedMiddleware;
+    private MockObject&ServerMiddleware $decoratedMiddleware;
 
-    private MockObject & Authenticator $authenticator;
+    private MockObject&Authenticator $authenticator;
 
-    private MockObject & TokenStorage $tokenStorage;
+    private MockObject&TokenStorage $tokenStorage;
 
     private AuthenticateUser $middleware;
 
