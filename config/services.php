@@ -51,6 +51,7 @@ use Ratchet\RFC6455\Handshake\RequestVerifier;
 use Ratchet\RFC6455\Handshake\ServerNegotiator;
 use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
+use Symfony\Bundle\FrameworkBundle\Command\RouterDebugCommand;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\Routing\Generator\CompiledUrlGenerator;
@@ -119,6 +120,14 @@ return static function (ContainerConfigurator $container): void {
         ->tag('monolog.logger', ['channel' => 'websocket'])
     ;
     $services->alias(TokenStorage::class, 'babdev_websocket_server.authentication.token_storage.driver');
+
+    $services->set('babdev_websocket_server.command.router_debug', RouterDebugCommand::class)
+        ->args([
+            service('babdev_websocket_server.router'),
+            service('debug.file_link_formatter')->nullOnInvalid(),
+        ])
+        ->tag('console.command', ['command' => 'babdev:websocket-server:debug:router', 'description' => "Display current routes for an application's websocket server."])
+    ;
 
     $services->set('babdev_websocket_server.command.run_websocket_server', RunWebSocketServerCommand::class)
         ->args([
