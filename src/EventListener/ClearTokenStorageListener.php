@@ -3,7 +3,7 @@
 namespace BabDev\WebSocketBundle\EventListener;
 
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
-use BabDev\WebSocketBundle\Event\AfterServerClosed;
+use BabDev\WebSocketBundle\Event\AfterLoopStopped;
 
 /**
  * @internal
@@ -14,7 +14,7 @@ final class ClearTokenStorageListener
     {
     }
 
-    public function __invoke(AfterServerClosed $event): void
+    public function __invoke(AfterLoopStopped $event): void
     {
         $this->tokenStorage->removeAllTokens();
     }

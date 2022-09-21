@@ -32,7 +32,7 @@ use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use BabDev\WebSocketBundle\Authentication\StorageBackedConnectionRepository;
 use BabDev\WebSocketBundle\CacheWarmer\RouterCacheWarmer;
 use BabDev\WebSocketBundle\Command\RunWebSocketServerCommand;
-use BabDev\WebSocketBundle\Event\AfterServerClosed;
+use BabDev\WebSocketBundle\Event\AfterLoopStopped;
 use BabDev\WebSocketBundle\EventListener\ClearTokenStorageListener;
 use BabDev\WebSocketBundle\EventListener\PeriodicManagerSubscriber;
 use BabDev\WebSocketBundle\PeriodicManager\ArrayPeriodicManagerRegistry;
@@ -149,7 +149,7 @@ return static function (ContainerConfigurator $container): void {
         ->args([
             service(PeriodicManagerRegistry::class),
         ])
-        ->tag('kernel.event_listener', ['event' => AfterServerClosed::class])
+        ->tag('kernel.event_listener', ['event' => AfterLoopStopped::class])
     ;
 
     $services->set('babdev_websocket_server.event_subscriber.periodic_manager', PeriodicManagerSubscriber::class)
