@@ -27,7 +27,7 @@ final class PingDBALConnectionsCompilerPass implements CompilerPassInterface
                 throw new InvalidArgumentException(sprintf('The "%s" service does not exist in the container, please review the "server.periodic.dbal.connections" configuration for the BabDevWebSocketBundle to ensure all connections are set in your DoctrineBundle configuration.', $id));
             }
 
-            $container->getDefinition($id)
+            $container->findDefinition($id)
                 ->addTag('babdev_websocket_server.ping.dbal.connection');
         }
 
