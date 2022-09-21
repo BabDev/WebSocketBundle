@@ -31,6 +31,11 @@ parameters:
 			path: src/Authentication/StorageBackedConnectionRepository.php
 
 		-
+			message: "#^Argument of an invalid type array\\|bool\\|float\\|int\\|string\\|null supplied for foreach, only iterables are supported\\.$#"
+			count: 1
+			path: src/DependencyInjection/Compiler/PingDBALConnectionsCompilerPass.php
+
+		-
 			message: "#^Call to an undefined method Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeDefinition\\:\\:children\\(\\)\\.$#"
 			count: 1
 			path: src/DependencyInjection/Factory/Authentication/SessionAuthenticationProviderFactory.php
