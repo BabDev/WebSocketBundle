@@ -36,6 +36,14 @@ babdev_websocket:
 
       # The interval, in seconds, which connections are pinged.
       interval:             30 # Required
+    periodic:
+      dbal:
+
+        # A list of "Doctrine\DBAL\Connection" services to ping.
+        connections:          []
+
+        # The interval, in seconds, which connections are pinged.
+        interval:             60 # Required
     router:
 
       # The main routing resource to import when loading the websocket server route definitions.

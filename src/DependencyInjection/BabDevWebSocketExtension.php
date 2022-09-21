@@ -6,11 +6,13 @@ use BabDev\WebSocketBundle\Attribute\AsMessageHandler;
 use BabDev\WebSocketBundle\Authentication\Storage\Driver\StorageDriver;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\AuthenticationProviderFactory;
 use BabDev\WebSocketBundle\PeriodicManager\PeriodicManager;
+use Doctrine\DBAL\Connection;
 use React\EventLoop\LoopInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Exception\LogicException;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\ConfigurableExtension;
@@ -131,9 +133,23 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
             $container->removeDefinition('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address');
         }
 
-        if (true === $mergedConfig['server']['keepalive']['enabled']) {
+        if ($this->isConfigEnabled($container, $mergedConfig['server']['keepalive'])) {
             $container->getDefinition('babdev_websocket_server.server.server_middleware.establish_websocket_connection')
                 ->addMethodCall('enableKeepAlive', [new Reference(LoopInterface::class), $mergedConfig['server']['keepalive']['interval']]);
+        }
+
+        // When we have a list of connections to ping, save it to a temporary container parameter for use in our compiler pass
+        if ([] !== $mergedConfig['server']['periodic']['dbal']['connections']) {
+            if (!ContainerBuilder::willBeAvailable('doctrine/dbal', Connection::class, ['doctrine/doctrine-bundle', 'babdev/money-bundle'])) {
+                throw new LogicException('To configure the connections to ping, you need the Doctrine DBAL and DoctrineBundle installed. Try running "composer require doctrine/dbal doctrine/doctrine-bundle".');
+            }
+
+            $container->getDefinition('babdev_websocket_server.periodic_manager.ping_doctrine_dbal_connections')
+                ->replaceArgument(1, $mergedConfig['server']['periodic']['dbal']['interval']);
+
+            $container->setParameter('babdev_websocket_server.ping_dbal_connections', $mergedConfig['server']['periodic']['dbal']['connections']);
+        } else {
+            $container->removeDefinition('babdev_websocket_server.periodic_manager.ping_doctrine_dbal_connections');
         }
 
         $this->configureWebSocketSession($mergedConfig['server']['session'], $container);

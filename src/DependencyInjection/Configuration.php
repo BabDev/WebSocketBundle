@@ -3,6 +3,7 @@
 namespace BabDev\WebSocketBundle\DependencyInjection;
 
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\AuthenticationProviderFactory;
+use Doctrine\DBAL\Connection;
 use React\Socket\SocketServer;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -122,6 +123,25 @@ final class Configuration implements ConfigurationInterface
                                 ->isRequired()
                                 ->defaultValue(30)
                                 ->info('The interval, in seconds, which connections are pinged.')
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('periodic')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->arrayNode('dbal')
+                                ->addDefaultsIfNotSet()
+                                ->children()
+                                    ->arrayNode('connections')
+                                        ->info(sprintf('A list of "%s" services to ping.', Connection::class))
+                                        ->scalarPrototype()->end()
+                                    ->end()
+                                    ->integerNode('interval')
+                                        ->isRequired()
+                                        ->defaultValue(60)
+                                        ->info('The interval, in seconds, which connections are pinged.')
+                                    ->end()
+                                ->end()
                             ->end()
                         ->end()
                     ->end()

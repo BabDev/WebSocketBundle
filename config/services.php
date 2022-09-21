@@ -37,6 +37,7 @@ use BabDev\WebSocketBundle\EventListener\ClearTokenStorageListener;
 use BabDev\WebSocketBundle\EventListener\PeriodicManagerSubscriber;
 use BabDev\WebSocketBundle\PeriodicManager\ArrayPeriodicManagerRegistry;
 use BabDev\WebSocketBundle\PeriodicManager\PeriodicManagerRegistry;
+use BabDev\WebSocketBundle\PeriodicManager\PingDoctrineDBALConnectionsPeriodicManager;
 use BabDev\WebSocketBundle\Routing\Loader\AttributeLoader;
 use BabDev\WebSocketBundle\Server\Middleware\AuthenticateUser;
 use BabDev\WebSocketBundle\Server\ServiceBasedMiddlewareStackBuilder;
@@ -178,6 +179,14 @@ return static function (ContainerConfigurator $container): void {
         ])
     ;
     $services->alias(MessageHandlerResolver::class, 'babdev_websocket_server.message_handler_resolver.psr_container');
+
+    $services->set('babdev_websocket_server.periodic_manager.ping_doctrine_dbal_connections', PingDoctrineDBALConnectionsPeriodicManager::class)
+        ->args([
+            tagged_iterator('babdev_websocket_server.ping.dbal.connection'),
+            abstract_arg('ping interval'),
+        ])
+        ->tag('babdev_websocket_server.periodic_manager')
+    ;
 
     $services->set('babdev_websocket_server.periodic_manager.registry', ArrayPeriodicManagerRegistry::class)
         ->args([

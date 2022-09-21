@@ -25,6 +25,9 @@
         "symfony/security-core": "^5.4 || ^6.0"
     },
     "require-dev": {
+        "doctrine/dbal": "^3.4",
+        "doctrine/doctrine-bundle": "^2.7",
+        "fig/log-test": "dev-main",
         "matthiasnoback/symfony-config-test": "^4.3",
         "matthiasnoback/symfony-dependency-injection-test": "^4.3",
         "phpstan/extension-installer": "^1.1",
@@ -42,6 +45,8 @@
         "symfony/phpunit-bridge": "^5.4 || ^6.0"
     },
     "conflict": {
+        "doctrine/dbal": "<3.4, >=4.0",
+        "doctrine/doctrine-bundle": "<2.7, >=3.0",
         "psr/cache": ">=4.0",
         "psr/container": ">=3.0",
         "psr/log": ">=4.0",

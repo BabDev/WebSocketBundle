@@ -7,6 +7,7 @@ use BabDev\WebSocketBundle\DependencyInjection\BabDevWebSocketExtension;
 use BabDev\WebSocketBundle\DependencyInjection\Configuration;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\SessionAuthenticationProviderFactory;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
+use Matthias\SymfonyDependencyInjectionTest\PhpUnit\ContainerHasParameterConstraint;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\DefinitionHasMethodCallConstraint;
 use PHPUnit\Framework\Constraint\LogicalNot;
 use React\EventLoop\LoopInterface;
@@ -70,12 +71,14 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             );
         }
 
-        $this->assertThat($this->container->findDefinition('babdev_websocket_server.server.server_middleware.establish_websocket_connection'), new LogicalNot(new DefinitionHasMethodCallConstraint('enableKeepAlive')));
+        self::assertThat($this->container->findDefinition('babdev_websocket_server.server.server_middleware.establish_websocket_connection'), new LogicalNot(new DefinitionHasMethodCallConstraint('enableKeepAlive')));
         $this->assertContainerBuilderHasAlias('babdev_websocket_server.authentication.storage.driver', 'babdev_websocket_server.authentication.storage.driver.in_memory');
         $this->assertContainerBuilderHasAlias(StorageDriver::class, 'babdev_websocket_server.authentication.storage.driver.in_memory');
+        $this->assertContainerBuilderNotHasService('babdev_websocket_server.periodic_manager.ping_doctrine_dbal_connections');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.server_middleware.initialize_session');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.factory');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.storage.factory.read_only_native');
+        self::assertThat($this->container, new LogicalNot(new ContainerHasParameterConstraint('babdev_websocket_server.ping_dbal_connections', null, false)));
     }
 
     public function testContainerIsLoadedWithKeepaliveEnabled(): void
@@ -98,6 +101,34 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             'enableKeepAlive',
             [new Reference(LoopInterface::class), 15],
         );
+    }
+
+    public function testContainerIsLoadedWithDatabaseConnectionsToPing(): void
+    {
+        $this->load([
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'periodic' => [
+                    'dbal' => [
+                        'connections' => [
+                            'database_connection',
+                        ],
+                        'interval' => 15,
+                    ],
+                ],
+                'router' => [
+                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
+                ],
+            ],
+        ]);
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.periodic_manager.ping_doctrine_dbal_connections',
+            1,
+            15,
+        );
+
+        $this->assertContainerBuilderHasParameter('babdev_websocket_server.ping_dbal_connections', ['database_connection']);
     }
 
     public function testContainerIsLoadedWithSessionAuthenticationProviderConfigured(): void
