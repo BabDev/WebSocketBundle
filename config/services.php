@@ -148,7 +148,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set('babdev_websocket_server.event_listener.clear_token_storage', ClearTokenStorageListener::class)
         ->args([
-            service(PeriodicManagerRegistry::class),
+            service(TokenStorage::class),
         ])
         ->tag('kernel.event_listener', ['event' => AfterLoopStopped::class])
     ;
