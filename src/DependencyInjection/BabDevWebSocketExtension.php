@@ -16,6 +16,7 @@ use Symfony\Component\DependencyInjection\Exception\LogicException;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\ConfigurableExtension;
+use Symfony\Component\Routing\Loader\Psr4DirectoryLoader;
 
 final class BabDevWebSocketExtension extends ConfigurableExtension
 {
@@ -49,6 +50,10 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
         });
 
         $container->registerForAutoconfiguration(PeriodicManager::class)->addTag('babdev_websocket_server.periodic_manager');
+
+        if (!class_exists(Psr4DirectoryLoader::class)) {
+            $container->removeDefinition('babdev_websocket_server.routing.loader.psr4');
+        }
 
         $this->registerAuthenticationConfiguration($mergedConfig, $container);
         $this->registerServerConfiguration($mergedConfig, $container);

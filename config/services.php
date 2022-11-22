@@ -63,6 +63,7 @@ use Symfony\Component\Routing\Loader\ContainerLoader;
 use Symfony\Component\Routing\Loader\DirectoryLoader;
 use Symfony\Component\Routing\Loader\GlobFileLoader;
 use Symfony\Component\Routing\Loader\PhpFileLoader;
+use Symfony\Component\Routing\Loader\Psr4DirectoryLoader;
 use Symfony\Component\Routing\Loader\XmlFileLoader;
 use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Routing\Matcher\CompiledUrlMatcher;
@@ -295,6 +296,13 @@ return static function (ContainerConfigurator $container): void {
             param('kernel.environment'),
         ])
         ->tag('babdev_websocket_server.routing.loader')
+    ;
+
+    $services->set('babdev_websocket_server.routing.loader.psr4', Psr4DirectoryLoader::class)
+        ->args([
+            service('file_locator'),
+        ])
+        ->tag('babdev_websocket_server.routing.loader', ['priority' => -10])
     ;
 
     $services->set('babdev_websocket_server.routing.loader.xml', XmlFileLoader::class)
