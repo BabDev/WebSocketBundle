@@ -20,6 +20,9 @@ babdev_websocket:
       id:                   null
   server:
 
+    # An identifier for the websocket server, disclosed in the response to the WELCOME message from a WAMP client.
+    identity:             BabDev-Websocket-Server/0.1
+
     # The default URI to listen for connections on.
     uri:                  ~ # Required
 

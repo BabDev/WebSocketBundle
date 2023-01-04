@@ -19,6 +19,7 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
 {
     public function testContainerIsLoadedWithValidConfiguration(): void
     {
+        $identity = 'BabDev-Websocket-Bundle/1.0';
         $uri = 'tcp://127.0.0.1:8080';
         $context = [];
         $origins = ['example.com', 'example.net'];
@@ -27,6 +28,7 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
 
         $this->load([
             'server' => [
+                'identity' => $identity,
                 'uri' => $uri,
                 'context' => $context,
                 'allowed_origins' => $origins,
@@ -53,6 +55,12 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             'babdev_websocket_server.router',
             1,
             $routerResource,
+        );
+
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
+            'babdev_websocket_server.server.server_middleware.parse_wamp_message',
+            'setServerIdentity',
+            [$identity],
         );
 
         foreach ($origins as $origin) {

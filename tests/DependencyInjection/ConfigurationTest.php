@@ -2,6 +2,7 @@
 
 namespace BabDev\WebSocketBundle\Tests\DependencyInjection;
 
+use BabDev\WebSocket\Server\Server;
 use BabDev\WebSocketBundle\DependencyInjection\Configuration;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\SessionAuthenticationProviderFactory;
 use Matthias\SymfonyConfigTest\PhpUnit\ConfigurationTestCaseTrait;
@@ -27,13 +28,27 @@ final class ConfigurationTest extends TestCase
         $this->assertProcessedConfigurationEquals(
             [
                 [
-                    'server' => ['uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
+                    'server' => ['identity' => Server::VERSION, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 ],
             ],
             [
-                'server' => ['uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
+                'server' => ['identity' => Server::VERSION, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 'authentication' => ['storage' => ['type' => Configuration::AUTHENTICATION_STORAGE_TYPE_IN_MEMORY, 'pool' => null, 'id' => null]],
             ],
+        );
+    }
+
+    public function testConfigurationIsValidWithEmptyStringAsIdentity(): void
+    {
+        $this->assertConfigurationIsValid([['server' => ['identity' => '', 'uri' => 'tcp://127.0.0.1:8080']]]);
+    }
+
+    public function testConfigurationIsInvalidWithNonStringIdentity(): void
+    {
+        $this->assertPartialConfigurationIsInvalid(
+            [['server' => ['identity' => null]]],
+            'server.identity',
+            'Invalid configuration for path "babdev_websocket.server.identity": The server identity must be a string',
         );
     }
 

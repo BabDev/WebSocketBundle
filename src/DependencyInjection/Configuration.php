@@ -2,6 +2,7 @@
 
 namespace BabDev\WebSocketBundle\DependencyInjection;
 
+use BabDev\WebSocket\Server\Server;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\AuthenticationProviderFactory;
 use Doctrine\DBAL\Connection;
 use React\Socket\SocketServer;
@@ -98,6 +99,14 @@ final class Configuration implements ConfigurationInterface
             ->arrayNode('server')
                 ->addDefaultsIfNotSet()
                 ->children()
+                    ->scalarNode('identity')
+                        ->info('An identifier for the websocket server, disclosed in the response to the WELCOME message from a WAMP client.')
+                        ->defaultValue(Server::VERSION)
+                        ->validate()
+                            ->ifTrue(static fn (mixed $identity): bool => !is_string($identity))
+                            ->thenInvalid('The server identity must be a string')
+                        ->end()
+                    ->end()
                     ->scalarNode('uri')
                         ->isRequired()
                         ->cannotBeEmpty()

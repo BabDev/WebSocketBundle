@@ -118,6 +118,10 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
             ->replaceArgument(1, $mergedConfig['server']['router']['resource'])
         ;
 
+        $container->getDefinition('babdev_websocket_server.server.server_middleware.parse_wamp_message')
+            ->addMethodCall('setServerIdentity', [$mergedConfig['server']['identity']])
+        ;
+
         if ([] !== $mergedConfig['server']['allowed_origins']) {
             $definition = $container->getDefinition('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins');
 
