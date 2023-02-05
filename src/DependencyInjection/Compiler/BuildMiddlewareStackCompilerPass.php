@@ -23,14 +23,13 @@ final class BuildMiddlewareStackCompilerPass implements CompilerPassInterface
 
     public function process(ContainerBuilder $container): void
     {
-        /** @var Reference|null $previousMiddleware */
         $previousMiddleware = null;
 
         /** @var Reference|null $outerMiddleware */
         $outerMiddleware = null;
 
         foreach ($this->findAndSortTaggedServices('babdev.websocket_server.server_middleware', $container) as $middleware) {
-            if (null === $previousMiddleware) {
+            if (!$previousMiddleware instanceof Reference) {
                 $previousMiddleware = $middleware;
 
                 continue;

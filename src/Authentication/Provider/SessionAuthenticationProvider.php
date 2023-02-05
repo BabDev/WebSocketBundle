@@ -66,14 +66,13 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
 
         foreach ($this->firewalls as $firewall) {
             if (false !== $serializedToken = $session->get('_security_'.$firewall, false)) {
-                /** @var TokenInterface $token */
                 $token = unserialize($serializedToken);
 
                 break;
             }
         }
 
-        if (null === $token) {
+        if (!$token instanceof TokenInterface) {
             $token = new NullToken();
         }
 

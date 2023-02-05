@@ -18,7 +18,7 @@ final class RoutingResolverCompilerPass implements CompilerPassInterface
 
     public function process(ContainerBuilder $container): void
     {
-        if (false === $container->hasDefinition('babdev_websocket_server.routing.resolver')) {
+        if (!$container->hasDefinition('babdev_websocket_server.routing.resolver')) {
             return;
         }
 

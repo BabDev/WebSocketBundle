@@ -65,7 +65,7 @@ final class RunWebSocketServerCommand extends Command
 
         $server->run();
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

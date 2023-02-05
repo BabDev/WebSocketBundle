@@ -41,7 +41,7 @@ final class AttributeLoader extends AnnotationClassLoader
         /** @var \ReflectionAttribute<AsMessageHandler>|null $attribute */
         $attribute = $class->getAttributes(AsMessageHandler::class, \ReflectionAttribute::IS_INSTANCEOF)[0] ?? null;
 
-        if (null === $attribute) {
+        if (!$attribute instanceof \ReflectionAttribute) {
             return $collection;
         }
 

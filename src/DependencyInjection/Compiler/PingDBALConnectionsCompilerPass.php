@@ -16,7 +16,7 @@ final class PingDBALConnectionsCompilerPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
-        if (false === $container->hasDefinition('babdev_websocket_server.periodic_manager.ping_doctrine_dbal_connections') || false === $container->hasParameter('babdev_websocket_server.ping_dbal_connections')) {
+        if (!$container->hasDefinition('babdev_websocket_server.periodic_manager.ping_doctrine_dbal_connections') || !$container->hasParameter('babdev_websocket_server.ping_dbal_connections')) {
             $container->getParameterBag()->remove('babdev_websocket_server.ping_dbal_connections');
 
             return;
