@@ -370,7 +370,11 @@ return static function (ContainerConfigurator $container): void {
             service(Authenticator::class),
             service(TokenStorage::class),
         ])
+        ->call('setLogger', [
+            service('logger'),
+        ])
         ->tag('babdev.websocket_server.server_middleware', ['priority' => -40])
+        ->tag('monolog.logger', ['channel' => 'websocket'])
     ;
 
     $services->set('babdev_websocket_server.server.server_middleware.initialize_session', InitializeSession::class)
