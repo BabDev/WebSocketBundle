@@ -76,6 +76,16 @@ parameters:
 			path: src/Server/Middleware/AuthenticateUser.php
 
 		-
+			message: "#^Trying to mock an undefined method getUsername\\(\\) on class Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\AbstractToken\\.$#"
+			count: 1
+			path: tests/Authentication/Storage/DriverBackedTokenStorageTest.php
+
+		-
+			message: "#^Trying to mock an undefined method getUsername\\(\\) on class Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\AbstractToken\\.$#"
+			count: 3
+			path: tests/Authentication/StorageBackedConnectionRepositoryTest.php
+
+		-
 			message: "#^Cannot cast mixed to string\\.$#"
 			count: 1
 			path: tests/DependencyInjection/Factory/Authentication/SessionAuthenticationProviderFactoryTest.php
