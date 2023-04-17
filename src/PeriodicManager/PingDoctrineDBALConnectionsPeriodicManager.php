@@ -46,19 +46,9 @@ final class PingDoctrineDBALConnectionsPeriodicManager implements PeriodicManage
                 $this->pingConnections(...),
             );
         } catch (MissingLoop $exception) {
-            $this->logger?->error(
-                $exception->getMessage(),
-                [
-                    'exception' => $exception,
-                ],
-            );
+            $this->logger?->error($exception->getMessage(), ['exception' => $exception]);
         } catch (\Throwable $exception) {
-            $this->logger?->error(
-                'Uncaught Throwable in the ping doctrine/dbal connections loop.',
-                [
-                    'exception' => $exception,
-                ],
-            );
+            $this->logger?->error('Uncaught Throwable in the ping doctrine/dbal connections loop.', ['exception' => $exception]);
         }
     }
 
@@ -103,14 +93,9 @@ final class PingDoctrineDBALConnectionsPeriodicManager implements PeriodicManage
 
                 $endTime = microtime(true);
 
-                $this->logger?->info(sprintf('Successfully pinged database server (~%s ms)', round(($endTime - $startTime) * 100000, 2)));
+                $this->logger?->info('Successfully pinged database server (~{time} ms)', ['time' => round(($endTime - $startTime) * 100000, 2)]);
             } catch (DBALException $e) {
-                $this->logger?->emergency(
-                    'Could not ping database server',
-                    [
-                        'exception' => $e,
-                    ]
-                );
+                $this->logger?->emergency('Could not ping database server', ['exception' => $e]);
 
                 throw $e;
             }

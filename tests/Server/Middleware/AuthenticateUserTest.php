@@ -10,7 +10,7 @@ use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use BabDev\WebSocketBundle\Server\Middleware\AuthenticateUser;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 final class AuthenticateUserTest extends TestCase
 {
@@ -87,12 +87,6 @@ final class AuthenticateUserTest extends TestCase
             ->method('onClose')
             ->with($connection);
 
-        /** @var MockObject&AbstractToken $token */
-        $token = $this->createMock(AbstractToken::class);
-        $token->expects(self::once())
-            ->method(method_exists(AbstractToken::class, 'getUserIdentifier') ? 'getUserIdentifier' : 'getUsername')
-            ->willReturn('username');
-
         $this->tokenStorage->expects(self::once())
             ->method('generateStorageId')
             ->with($connection)
@@ -106,7 +100,7 @@ final class AuthenticateUserTest extends TestCase
         $this->tokenStorage->expects(self::once())
             ->method('getToken')
             ->with('resource')
-            ->willReturn($token);
+            ->willReturn($this->createMock(TokenInterface::class));
 
         $this->tokenStorage->expects(self::once())
             ->method('removeToken')

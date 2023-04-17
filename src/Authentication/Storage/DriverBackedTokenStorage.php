@@ -29,10 +29,11 @@ final class DriverBackedTokenStorage implements TokenStorage, LoggerAwareInterfa
     public function addToken(string $id, TokenInterface $token): void
     {
         $this->logger?->debug(
-            sprintf('Adding token for connection ID %s to storage.', $id),
+            'Adding token for connection ID {connection} to storage.',
             [
+                'connection' => $id,
                 'token' => $token,
-                'username' => method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername(),
+                'username' => (method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername()) ?? 'Unknown User',
             ],
         );
 
@@ -51,7 +52,7 @@ final class DriverBackedTokenStorage implements TokenStorage, LoggerAwareInterfa
      */
     public function getToken(string $id): TokenInterface
     {
-        $this->logger?->debug(sprintf('Retrieving token for connection ID %s from storage.', $id));
+        $this->logger?->debug('Retrieving token for connection ID {connection} from storage.', ['connection' => $id]);
 
         return $this->driver->get($id);
     }
@@ -69,7 +70,7 @@ final class DriverBackedTokenStorage implements TokenStorage, LoggerAwareInterfa
      */
     public function removeToken(string $id): bool
     {
-        $this->logger?->debug(sprintf('Removing token for connection ID %s from storage.', $id));
+        $this->logger?->debug('Removing token for connection ID {connection} from storage.', ['connection' => $id]);
 
         return $this->driver->delete($id);
     }

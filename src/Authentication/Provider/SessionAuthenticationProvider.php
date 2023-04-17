@@ -46,14 +46,12 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
         $this->tokenStorage->addToken($storageId, $token);
 
         $this->logger?->info(
-            sprintf(
-                '%s connected',
-                method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername()
-            ),
+            '{user} connected',
             [
                 'resource_id' => $connection->getAttributeStore()->get('resource_id'),
                 'storage_id' => $storageId,
-            ]
+                'user' => (method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername()) ?? 'Unknown User',
+            ],
         );
 
         return $token;

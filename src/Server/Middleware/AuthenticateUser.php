@@ -63,13 +63,11 @@ final class AuthenticateUser implements ServerMiddleware, LoggerAwareInterface
 
                 $this->tokenStorage->removeToken($storageId);
 
-                $userIdentifier = method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername();
-
                 $this->logger?->info(
-                    sprintf('%s disconnected', $userIdentifier),
+                    '{user} disconnected',
                     array_merge(
                         $loggerContext,
-                        ['user_identifier' => $userIdentifier]
+                        ['user' => (method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername()) ?? 'Unknown User']
                     )
                 );
             }

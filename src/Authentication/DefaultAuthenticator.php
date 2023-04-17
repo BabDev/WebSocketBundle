@@ -28,7 +28,7 @@ final class DefaultAuthenticator implements Authenticator, LoggerAwareInterface
     {
         foreach ($this->providers as $provider) {
             if (!$provider->supports($connection)) {
-                $this->logger?->debug(sprintf('Skipping the "%s" authentication provider as it did not support the connection.', $provider::class));
+                $this->logger?->debug('Skipping the "{provider}" authentication provider as it did not support the connection.', ['provider' => $provider::class]);
 
                 continue;
             }
@@ -40,14 +40,12 @@ final class DefaultAuthenticator implements Authenticator, LoggerAwareInterface
             $this->tokenStorage->addToken($id, $token);
 
             $this->logger?->info(
-                sprintf(
-                    'User "%s" authenticated to websocket server',
-                    method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername()
-                ),
+                'User "{user}" authenticated to websocket server',
                 [
                     'resource_id' => $connection->getAttributeStore()->get('resource_id'),
                     'storage_id' => $id,
-                ]
+                    'user' => (method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername()) ?? 'Unknown User',
+                ],
             );
 
             break;
