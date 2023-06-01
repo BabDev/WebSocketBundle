@@ -37,7 +37,7 @@ final class PingDoctrineDBALConnectionsPeriodicManager implements PeriodicManage
         try {
             $this->logger?->info('Registering ping doctrine/dbal connections manager.');
 
-            if (null === $this->loop) {
+            if (!$this->loop instanceof LoopInterface) {
                 throw new MissingLoop(sprintf('The event loop has not been registered in %s', self::class));
             }
 
@@ -67,7 +67,7 @@ final class PingDoctrineDBALConnectionsPeriodicManager implements PeriodicManage
      */
     public function reset(): void
     {
-        if (null === $this->timer) {
+        if (!$this->timer instanceof TimerInterface) {
             return;
         }
 

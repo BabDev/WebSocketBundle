@@ -103,7 +103,7 @@ final class Configuration implements ConfigurationInterface
                         ->info('An identifier for the websocket server, disclosed in the response to the WELCOME message from a WAMP client.')
                         ->defaultValue(Server::VERSION)
                         ->validate()
-                            ->ifTrue(static fn (mixed $identity): bool => !is_string($identity))
+                            ->ifTrue(static fn (mixed $identity): bool => !\is_string($identity))
                             ->thenInvalid('The server identity must be a string')
                         ->end()
                     ->end()

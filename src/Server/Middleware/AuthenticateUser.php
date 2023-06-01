@@ -65,27 +65,18 @@ final class AuthenticateUser implements ServerMiddleware, LoggerAwareInterface
 
                 $this->logger?->info(
                     '{user} disconnected',
-                    array_merge(
-                        $loggerContext,
-                        ['user' => (method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername()) ?? 'Unknown User']
-                    )
+                    [...$loggerContext, 'user' => (method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername()) ?? 'Unknown User']
                 );
             }
         } catch (TokenNotFound $e) {
             $this->logger?->info(
                 'User timed out',
-                array_merge(
-                    $loggerContext,
-                    ['exception' => $e]
-                )
+                [...$loggerContext, 'exception' => $e]
             );
         } catch (StorageError $e) {
             $this->logger?->info(
                 'Error processing user in storage',
-                array_merge(
-                    $loggerContext,
-                    ['exception' => $e]
-                )
+                [...$loggerContext, 'exception' => $e]
             );
         }
     }

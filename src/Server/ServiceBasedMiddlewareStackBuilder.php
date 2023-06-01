@@ -22,7 +22,7 @@ final class ServiceBasedMiddlewareStackBuilder implements MiddlewareStackBuilder
      */
     public function build(): ServerMiddleware
     {
-        if (null === $this->middleware) {
+        if (!$this->middleware instanceof ServerMiddleware) {
             throw new MiddlewareNotConfigured(sprintf('The middleware stack is not configured. Ensure your %s instances have the "babdev.websocket_server.server_middleware" service tag or implement your own middleware stack builder.', ServerMiddleware::class));
         }
 
