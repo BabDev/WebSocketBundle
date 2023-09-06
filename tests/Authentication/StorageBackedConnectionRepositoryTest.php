@@ -337,4 +337,70 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
             new TokenConnection($authenticatedToken1, $connection1),
         ], $this->repository->findAllWithRoles($topic, ['ROLE_STAFF']));
     }
+
+    public function testReportsWhetherAUserWithTheGivenUsernameHasAConnection(): void
+    {
+        $usernameMethod = method_exists(AbstractToken::class, 'getUserIdentifier') ? 'getUserIdentifier' : 'getUsername';
+
+        /** @var MockObject&WAMPConnection $connection1 */
+        $connection1 = $this->createMock(WAMPConnection::class);
+
+        /** @var MockObject&WAMPConnection $connection2 */
+        $connection2 = $this->createMock(WAMPConnection::class);
+
+        /** @var MockObject&WAMPConnection $connection3 */
+        $connection3 = $this->createMock(WAMPConnection::class);
+
+        $storageId1 = 42;
+        $storageId2 = 43;
+
+        $username1 = 'user';
+        $username2 = 'guest';
+
+        /** @var MockObject&AbstractToken $token1 */
+        $token1 = $this->createMock(AbstractToken::class);
+        $token1->expects(self::once())
+            ->method($usernameMethod)
+            ->willReturn($username1);
+
+        /** @var MockObject&AbstractToken $token2 */
+        $token2 = $this->createMock(AbstractToken::class);
+        $token2->expects(self::once())
+            ->method($usernameMethod)
+            ->willReturn($username2);
+
+        /** @var MockObject&AbstractToken $token3 */
+        $token3 = $this->createMock(AbstractToken::class);
+        $token3->expects(self::never())
+            ->method($usernameMethod);
+
+        $this->tokenStorage->expects(self::exactly(2))
+            ->method('generateStorageId')
+            ->withConsecutive(
+                [$connection1],
+                [$connection2]
+            )
+            ->willReturnOnConsecutiveCalls(
+                (string) $storageId1,
+                (string) $storageId2
+            );
+
+        $this->tokenStorage->expects(self::exactly(2))
+            ->method('getToken')
+            ->withConsecutive(
+                [$storageId1],
+                [$storageId2]
+            )
+            ->willReturnOnConsecutiveCalls(
+                $token1,
+                $token2
+            );
+
+        $topic = new Topic('testing/123');
+        $topic->add($connection1);
+        $topic->add($connection2);
+        $topic->add($connection3);
+
+        self::assertTrue($this->repository->hasConnectionForUsername($topic, $username2));
+    }
 }

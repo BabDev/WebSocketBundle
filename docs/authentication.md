@@ -166,3 +166,7 @@ The `findTokenForConnection()` method is used to find the security token for the
 ### Retrieving The User For A Connection
 
 The `getUser()` method is used to retrieve the user for the given connection. This is a shortcut for `$repository->findTokenForConnection($token)->getUser()`.
+
+### Checking For A Connection By Username
+
+The `hasConnectionForUsername()` method is used to determine if there is a connection for the given username and will return true when the first connection matches.

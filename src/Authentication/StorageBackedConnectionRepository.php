@@ -100,4 +100,20 @@ final class StorageBackedConnectionRepository implements ConnectionRepository
     {
         return $this->findTokenForConnection($connection)->getUser();
     }
+
+    public function hasConnectionForUsername(Topic $topic, string $username): bool
+    {
+        /** @var Connection $connection */
+        foreach ($topic as $connection) {
+            $client = $this->findTokenForConnection($connection);
+
+            $clientUsername = method_exists($client, 'getUserIdentifier') ? $client->getUserIdentifier() : $client->getUsername();
+
+            if ($clientUsername === $username) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

@@ -27,4 +27,6 @@ interface ConnectionRepository
     public function findTokenForConnection(Connection $connection): TokenInterface;
 
     public function getUser(Connection $connection): ?UserInterface;
+
+    public function hasConnectionForUsername(Topic $topic, string $username): bool;
 }
