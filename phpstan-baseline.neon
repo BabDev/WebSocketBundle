@@ -27,7 +27,7 @@ parameters:
 
 		-
 			message: "#^Call to an undefined method Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\TokenInterface\\:\\:getUsername\\(\\)\\.$#"
-			count: 1
+			count: 2
 			path: src/Authentication/StorageBackedConnectionRepository.php
 
 		-
@@ -82,7 +82,7 @@ parameters:
 
 		-
 			message: "#^Trying to mock an undefined method getUsername\\(\\) on class Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\AbstractToken\\.$#"
-			count: 3
+			count: 6
 			path: tests/Authentication/StorageBackedConnectionRepositoryTest.php
 
 		-
