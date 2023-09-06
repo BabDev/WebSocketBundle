@@ -156,13 +156,10 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $topic->add($connection2);
         $topic->add($connection3);
 
-        self::assertEquals(
-            [
-                new TokenConnection($token1, $connection1),
-                new TokenConnection($token2, $connection2),
-            ],
-            $this->repository->findAllByUsername($topic, $username1)
-        );
+        self::assertEquals([
+            new TokenConnection($token1, $connection1),
+            new TokenConnection($token2, $connection2),
+        ], $this->repository->findAllByUsername($topic, $username1));
     }
 
     public function testFetchingAllConnectionsByDefaultOnlyReturnsAuthenticatedUsers(): void
@@ -214,12 +211,9 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $topic->add($connection1);
         $topic->add($connection2);
 
-        self::assertEquals(
-            [
-                new TokenConnection($authenticatedToken, $connection1),
-            ],
-            $this->repository->findAll($topic)
-        );
+        self::assertEquals([
+            new TokenConnection($authenticatedToken, $connection1),
+        ], $this->repository->findAll($topic));
     }
 
     public function testFetchingAllConnectionsWithAnonymousFlagReturnsAllConnectedUsers(): void
@@ -269,13 +263,10 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $topic->add($connection1);
         $topic->add($connection2);
 
-        self::assertEquals(
-            [
-                new TokenConnection($authenticatedToken, $connection1),
-                new TokenConnection($guestToken, $connection2),
-            ],
-            $this->repository->findAll($topic, true)
-        );
+        self::assertEquals([
+            new TokenConnection($authenticatedToken, $connection1),
+            new TokenConnection($guestToken, $connection2),
+        ], $this->repository->findAll($topic, true));
     }
 
     public function testFetchingAllUsersWithDefinedRolesOnlyReturnsMatchingUsers(): void
@@ -342,11 +333,8 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $topic->add($connection2);
         $topic->add($connection3);
 
-        self::assertEquals(
-            [
-                new TokenConnection($authenticatedToken1, $connection1),
-            ],
-            $this->repository->findAllWithRoles($topic, ['ROLE_STAFF'])
-        );
+        self::assertEquals([
+            new TokenConnection($authenticatedToken1, $connection1),
+        ], $this->repository->findAllWithRoles($topic, ['ROLE_STAFF']));
     }
 }

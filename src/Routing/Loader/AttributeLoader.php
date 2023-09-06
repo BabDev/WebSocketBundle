@@ -13,7 +13,7 @@ use Symfony\Component\Routing\RouteCollection;
  */
 final class AttributeLoader extends AnnotationClassLoader
 {
-    public function __construct(string $env = null)
+    public function __construct(?string $env = null)
     {
         parent::__construct(null, $env);
     }
@@ -23,7 +23,7 @@ final class AttributeLoader extends AnnotationClassLoader
      *
      * @throws \InvalidArgumentException When the route can't be parsed
      */
-    public function load(mixed $class, string $type = null): RouteCollection
+    public function load(mixed $class, ?string $type = null): RouteCollection
     {
         if (!class_exists($class)) {
             throw new \InvalidArgumentException(sprintf('Class "%s" does not exist.', $class));

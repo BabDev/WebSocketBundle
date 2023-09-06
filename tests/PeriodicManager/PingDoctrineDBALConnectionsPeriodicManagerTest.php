@@ -47,14 +47,7 @@ final class PingDoctrineDBALConnectionsPeriodicManagerTest extends TestCase
     {
         $this->manager->register();
 
-        self::assertTrue(
-            $this->logger->hasErrorThatContains(
-                sprintf(
-                    'The event loop has not been registered in %s',
-                    PingDoctrineDBALConnectionsPeriodicManager::class,
-                ),
-            ),
-        );
+        self::assertTrue($this->logger->hasErrorThatContains(sprintf('The event loop has not been registered in %s', PingDoctrineDBALConnectionsPeriodicManager::class)));
     }
 
     public function testTheManagerIsRegistered(): void

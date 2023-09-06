@@ -36,13 +36,10 @@ final class RouterCacheWarmerTest extends TestCase
             ->with('babdev_websocket_server.router')
             ->willReturn($router);
 
-        self::assertSame(
-            [
-                UrlGenerator::class,
-                UrlMatcher::class,
-            ],
-            (new RouterCacheWarmer($container, $cachePath))->warmUp('/tmp')
-        );
+        self::assertSame([
+            UrlGenerator::class,
+            UrlMatcher::class,
+        ], (new RouterCacheWarmer($container, $cachePath))->warmUp('/tmp'));
     }
 
     public function testWarmUpWithoutWarmableInterface(): void

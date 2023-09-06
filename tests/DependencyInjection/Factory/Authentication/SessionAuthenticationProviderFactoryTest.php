@@ -36,19 +36,12 @@ final class SessionAuthenticationProviderFactoryTest extends TestCase
             ],
         );
 
-        self::assertTrue(
-            $this->container->hasDefinition('babdev_websocket_server.authentication.provider.session.default'),
-            'The authentication provider service should be registered to the container.'
-        );
+        self::assertTrue($this->container->hasDefinition('babdev_websocket_server.authentication.provider.session.default'), 'The authentication provider service should be registered to the container.');
 
         /** @var ChildDefinition $definition */
         $definition = $this->container->getDefinition('babdev_websocket_server.authentication.provider.session.default');
 
-        self::assertSame(
-            'security.firewalls',
-            (string) $definition->getArgument(1),
-            'The firewalls argument should be mapped to the "security.firewalls" parameter.'
-        );
+        self::assertSame('security.firewalls', (string) $definition->getArgument(1), 'The firewalls argument should be mapped to the "security.firewalls" parameter.');
     }
 
     public function testAuthenticationProviderServiceIsCreatedWithAnArrayOfFirewalls(): void
@@ -63,19 +56,12 @@ final class SessionAuthenticationProviderFactoryTest extends TestCase
             ],
         );
 
-        self::assertTrue(
-            $this->container->hasDefinition('babdev_websocket_server.authentication.provider.session.default'),
-            'The authentication provider service should be registered to the container.'
-        );
+        self::assertTrue($this->container->hasDefinition('babdev_websocket_server.authentication.provider.session.default'), 'The authentication provider service should be registered to the container.');
 
         /** @var ChildDefinition $definition */
         $definition = $this->container->getDefinition('babdev_websocket_server.authentication.provider.session.default');
 
-        self::assertSame(
-            ['dev', 'main'],
-            $definition->getArgument(1),
-            'The firewalls argument should be the configured firewalls.'
-        );
+        self::assertSame(['dev', 'main'], $definition->getArgument(1), 'The firewalls argument should be the configured firewalls.');
     }
 
     public function testAuthenticationProviderServiceIsCreatedWithAStringFirewall(): void
@@ -87,18 +73,11 @@ final class SessionAuthenticationProviderFactoryTest extends TestCase
             ],
         );
 
-        self::assertTrue(
-            $this->container->hasDefinition('babdev_websocket_server.authentication.provider.session.default'),
-            'The authentication provider service should be registered to the container.'
-        );
+        self::assertTrue($this->container->hasDefinition('babdev_websocket_server.authentication.provider.session.default'), 'The authentication provider service should be registered to the container.');
 
         /** @var ChildDefinition $definition */
         $definition = $this->container->getDefinition('babdev_websocket_server.authentication.provider.session.default');
 
-        self::assertSame(
-            ['main'],
-            $definition->getArgument(1),
-            'A string firewall should be converted to an array.'
-        );
+        self::assertSame(['main'], $definition->getArgument(1), 'A string firewall should be converted to an array.');
     }
 }
