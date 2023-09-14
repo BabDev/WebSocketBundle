@@ -8,16 +8,6 @@ babdev_websocket:
 
         # The firewalls from which the session token can be used; can be an array, a string, or null to allow all firewalls.
         firewalls:            null
-    storage:
-
-      # The type of storage for the websocket server authentication tokens.
-      type:                 in_memory # One of "in_memory"; "psr_cache"; "service", Required
-
-      # The cache pool to use when using the PSR cache storage.
-      pool:                 null
-
-      # The service ID to use when using the service storage.
-      id:                   null
   server:
 
     # An identifier for the websocket server, disclosed in the response to the WELCOME message from a WAMP client.

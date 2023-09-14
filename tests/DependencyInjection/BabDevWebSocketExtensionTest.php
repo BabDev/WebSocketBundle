@@ -4,7 +4,6 @@ namespace BabDev\WebSocketBundle\Tests\DependencyInjection;
 
 use BabDev\WebSocketBundle\Authentication\Storage\Driver\StorageDriver;
 use BabDev\WebSocketBundle\DependencyInjection\BabDevWebSocketExtension;
-use BabDev\WebSocketBundle\DependencyInjection\Configuration;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\SessionAuthenticationProviderFactory;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\ContainerHasParameterConstraint;
@@ -80,7 +79,6 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
         }
 
         self::assertThat($this->container->findDefinition('babdev_websocket_server.server.server_middleware.establish_websocket_connection'), new LogicalNot(new DefinitionHasMethodCallConstraint('enableKeepAlive')));
-        $this->assertContainerBuilderHasAlias('babdev_websocket_server.authentication.storage.driver', 'babdev_websocket_server.authentication.storage.driver.in_memory');
         $this->assertContainerBuilderHasAlias(StorageDriver::class, 'babdev_websocket_server.authentication.storage.driver.in_memory');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.periodic_manager.ping_doctrine_dbal_connections');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.server_middleware.initialize_session');
@@ -162,54 +160,6 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             0,
             new IteratorArgument([new Reference('babdev_websocket_server.authentication.provider.session.default')])
         );
-    }
-
-    public function testContainerIsLoadedWithPsrCacheAuthenticationStorageConfigured(): void
-    {
-        $this->load([
-            'authentication' => [
-                'storage' => [
-                    'type' => Configuration::AUTHENTICATION_STORAGE_TYPE_PSR_CACHE,
-                    'pool' => 'cache.websocket',
-                ],
-            ],
-            'server' => [
-                'uri' => 'tcp://127.0.0.1:8080',
-                'router' => [
-                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
-                ],
-            ],
-        ]);
-
-        $this->assertContainerBuilderHasAlias('babdev_websocket_server.authentication.storage.driver', 'babdev_websocket_server.authentication.storage.driver.psr_cache');
-        $this->assertContainerBuilderHasAlias(StorageDriver::class, 'babdev_websocket_server.authentication.storage.driver.psr_cache');
-
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
-            'babdev_websocket_server.authentication.storage.driver.psr_cache',
-            0,
-            new Reference('cache.websocket')
-        );
-    }
-
-    public function testContainerIsLoadedWithServiceAuthenticationStorageConfigured(): void
-    {
-        $this->load([
-            'authentication' => [
-                'storage' => [
-                    'type' => Configuration::AUTHENTICATION_STORAGE_TYPE_SERVICE,
-                    'id' => 'app.authentication.storage.driver.custom',
-                ],
-            ],
-            'server' => [
-                'uri' => 'tcp://127.0.0.1:8080',
-                'router' => [
-                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
-                ],
-            ],
-        ]);
-
-        $this->assertContainerBuilderHasAlias('babdev_websocket_server.authentication.storage.driver', 'app.authentication.storage.driver.custom');
-        $this->assertContainerBuilderHasAlias(StorageDriver::class, 'app.authentication.storage.driver.custom');
     }
 
     public function testContainerIsLoadedWithConfiguredSessionFactory(): void

@@ -26,7 +26,7 @@ use BabDev\WebSocketBundle\Authentication\ConnectionRepository;
 use BabDev\WebSocketBundle\Authentication\DefaultAuthenticator;
 use BabDev\WebSocketBundle\Authentication\Provider\SessionAuthenticationProvider;
 use BabDev\WebSocketBundle\Authentication\Storage\Driver\InMemoryStorageDriver;
-use BabDev\WebSocketBundle\Authentication\Storage\Driver\PsrCacheStorageDriver;
+use BabDev\WebSocketBundle\Authentication\Storage\Driver\StorageDriver;
 use BabDev\WebSocketBundle\Authentication\Storage\DriverBackedTokenStorage;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use BabDev\WebSocketBundle\Authentication\StorageBackedConnectionRepository;
@@ -105,16 +105,11 @@ return static function (ContainerConfigurator $container): void {
     ;
 
     $services->set('babdev_websocket_server.authentication.storage.driver.in_memory', InMemoryStorageDriver::class);
-
-    $services->set('babdev_websocket_server.authentication.storage.driver.psr_cache', PsrCacheStorageDriver::class)
-        ->args([
-            abstract_arg('cache pool'),
-        ])
-    ;
+    $services->alias(StorageDriver::class, 'babdev_websocket_server.authentication.storage.driver.in_memory');
 
     $services->set('babdev_websocket_server.authentication.token_storage.driver', DriverBackedTokenStorage::class)
         ->args([
-            service('babdev_websocket_server.authentication.storage.driver'),
+            service(StorageDriver::class),
         ])
         ->call('setLogger', [
             service('logger'),

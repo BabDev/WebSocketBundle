@@ -102,42 +102,7 @@ class Kernel extends BaseKernel
 
 After authentication is complete, the token is stored in a `BabDev\WebSocketBundle\Authentication\Storage\TokenStorage` instance. The default implementation uses a `BabDev\WebSocketBundle\Authentication\Storage\Driver\StorageDriver` as an abstraction layer for where authentication tokens are stored.
 
-By default, the bundle uses an in-memory storage driver. The storage driver can be configured with the `storage` section of the authentication configuration.
-
-### In-Memory Storage
-
-The below example represents the default configuration for the in-memory storage driver.
-
-```yaml
-babdev_websocket:
-    authentication:
-        storage:
-            type: in_memory
-```
-
-### Cache Storage
-
-A cache pool can be used as a storage driver by setting the storage type to `psr_cache` and specifying the cache pool that should be used.
-
-```yaml
-babdev_websocket:
-    authentication:
-        storage:
-            type: psr_cache
-            pool: 'cache.websocket'
-```
-
-### Service Storage
-
-You can create your own implementation of the storage driver interface and use that service by setting the storage type to `service` and specifying the container service ID to use.
-
-```yaml
-babdev_websocket:
-    authentication:
-        storage:
-            type: storage
-            id: 'app.websocket.storage.driver'
-```
+By default, the bundle provides and uses an in-memory storage driver. You can provide your own driver implementation by creating a class implementing the driver interface and updating the service container to point the '`BabDev\WebSocketBundle\Authentication\Storage\Driver\StorageDriver`' alias to your implementation.
 
 ## Fetching Tokens
 

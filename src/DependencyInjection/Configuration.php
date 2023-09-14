@@ -14,10 +14,6 @@ use Symfony\Component\HttpFoundation\Session\Storage\SessionStorageFactoryInterf
 
 final class Configuration implements ConfigurationInterface
 {
-    public const AUTHENTICATION_STORAGE_TYPE_IN_MEMORY = 'in_memory';
-    public const AUTHENTICATION_STORAGE_TYPE_PSR_CACHE = 'psr_cache';
-    public const AUTHENTICATION_STORAGE_TYPE_SERVICE = 'service';
-
     /**
      * @param list<AuthenticationProviderFactory> $authenticationProviderFactories
      */
@@ -42,37 +38,6 @@ final class Configuration implements ConfigurationInterface
             ->addDefaultsIfNotSet();
 
         $this->addAuthenticationProvidersSection($authenticationNode);
-
-        $authenticationNode->children()
-                ->arrayNode('storage')
-                    ->addDefaultsIfNotSet()
-                    ->children()
-                        ->enumNode('type')
-                            ->isRequired()
-                            ->defaultValue(self::AUTHENTICATION_STORAGE_TYPE_IN_MEMORY)
-                            ->info('The type of storage for the websocket server authentication tokens.')
-                            ->values([self::AUTHENTICATION_STORAGE_TYPE_IN_MEMORY, self::AUTHENTICATION_STORAGE_TYPE_PSR_CACHE, self::AUTHENTICATION_STORAGE_TYPE_SERVICE])
-                        ->end()
-                        ->scalarNode('pool')
-                            ->defaultNull()
-                            ->info('The cache pool to use when using the PSR cache storage.')
-                        ->end()
-                        ->scalarNode('id')
-                            ->defaultNull()
-                            ->info('The service ID to use when using the service storage.')
-                        ->end()
-                    ->end()
-                    ->validate()
-                        ->ifTrue(static fn (array $config): bool => ('' === $config['pool'] || null === $config['pool']) && self::AUTHENTICATION_STORAGE_TYPE_PSR_CACHE === $config['type'])
-                        ->thenInvalid('A cache pool must be set when using the PSR cache storage')
-                    ->end()
-                    ->validate()
-                        ->ifTrue(static fn (array $config): bool => ('' === $config['id'] || null === $config['id']) && self::AUTHENTICATION_STORAGE_TYPE_SERVICE === $config['type'])
-                        ->thenInvalid('A service ID must be set when using the service storage')
-                    ->end()
-                ->end()
-            ->end()
-        ->end();
     }
 
     private function addAuthenticationProvidersSection(ArrayNodeDefinition $authenticationNode): void

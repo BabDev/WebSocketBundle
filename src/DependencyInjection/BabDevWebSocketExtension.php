@@ -3,7 +3,6 @@
 namespace BabDev\WebSocketBundle\DependencyInjection;
 
 use BabDev\WebSocketBundle\Attribute\AsMessageHandler;
-use BabDev\WebSocketBundle\Authentication\Storage\Driver\StorageDriver;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\AuthenticationProviderFactory;
 use BabDev\WebSocketBundle\PeriodicManager\PeriodicManager;
 use Doctrine\DBAL\Connection;
@@ -77,31 +76,6 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
 
         $container->getDefinition('babdev_websocket_server.authentication.authenticator')
             ->replaceArgument(0, new IteratorArgument($authenticators));
-
-        $storageId = null;
-
-        switch ($mergedConfig['authentication']['storage']['type']) {
-            case Configuration::AUTHENTICATION_STORAGE_TYPE_IN_MEMORY:
-                $storageId = 'babdev_websocket_server.authentication.storage.driver.in_memory';
-
-                break;
-
-            case Configuration::AUTHENTICATION_STORAGE_TYPE_PSR_CACHE:
-                $storageId = 'babdev_websocket_server.authentication.storage.driver.psr_cache';
-
-                $container->getDefinition($storageId)
-                    ->replaceArgument(0, new Reference($mergedConfig['authentication']['storage']['pool']));
-
-                break;
-
-            case Configuration::AUTHENTICATION_STORAGE_TYPE_SERVICE:
-                $storageId = $mergedConfig['authentication']['storage']['id'];
-
-                break;
-        }
-
-        $container->setAlias('babdev_websocket_server.authentication.storage.driver', $storageId);
-        $container->setAlias(StorageDriver::class, $storageId);
     }
 
     private function registerServerConfiguration(array $mergedConfig, ContainerBuilder $container): void
