@@ -19,11 +19,9 @@ final class Configuration implements ConfigurationInterface
     public const AUTHENTICATION_STORAGE_TYPE_SERVICE = 'service';
 
     /**
-     * @param AuthenticationProviderFactory[] $authenticationProviderFactories
+     * @param list<AuthenticationProviderFactory> $authenticationProviderFactories
      */
-    public function __construct(private readonly array $authenticationProviderFactories)
-    {
-    }
+    public function __construct(private readonly array $authenticationProviderFactories) {}
 
     public function getConfigTreeBuilder(): TreeBuilder
     {

@@ -16,8 +16,7 @@ final class RouterCacheWarmer implements CacheWarmerInterface, ServiceSubscriber
     public function __construct(
         private readonly ContainerInterface $container,
         private readonly string $routerCacheDir,
-    ) {
-    }
+    ) {}
 
     public function warmUp(string $cacheDir): array
     {

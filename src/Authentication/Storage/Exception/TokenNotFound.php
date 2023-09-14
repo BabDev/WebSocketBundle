@@ -7,6 +7,4 @@ use BabDev\WebSocket\Server\WebSocketException;
 /**
  * Exception thrown when a token cannot be found in storage.
  */
-class TokenNotFound extends \InvalidArgumentException implements WebSocketException
-{
-}
+class TokenNotFound extends \InvalidArgumentException implements WebSocketException {}

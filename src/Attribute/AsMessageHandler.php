@@ -16,6 +16,4 @@ use Symfony\Component\Routing\Annotation\Route;
  * from Symfony's Routing component to allow using its annotation/attribute loaders.
  */
 #[\Attribute(\Attribute::TARGET_CLASS)]
-final class AsMessageHandler extends Route
-{
-}
+final class AsMessageHandler extends Route {}

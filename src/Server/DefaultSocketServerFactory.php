@@ -11,8 +11,7 @@ final class DefaultSocketServerFactory implements SocketServerFactory
     public function __construct(
         private readonly array $context,
         private readonly LoopInterface $loop,
-    ) {
-    }
+    ) {}
 
     public function build(string $uri): ServerInterface
     {

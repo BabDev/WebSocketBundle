@@ -22,8 +22,7 @@ final class AuthenticateUser implements ServerMiddleware, LoggerAwareInterface
         private readonly ServerMiddleware $middleware,
         private readonly Authenticator $authenticator,
         private readonly TokenStorage $tokenStorage,
-    ) {
-    }
+    ) {}
 
     /**
      * Handles a new connection to the server.

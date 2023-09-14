@@ -13,13 +13,12 @@ final class DefaultAuthenticator implements Authenticator, LoggerAwareInterface
     use LoggerAwareTrait;
 
     /**
-     * @param AuthenticationProvider[] $providers
+     * @param iterable<AuthenticationProvider> $providers
      */
     public function __construct(
         private readonly iterable $providers,
         private readonly TokenStorage $tokenStorage
-    ) {
-    }
+    ) {}
 
     /**
      * Attempts to authenticate the current connection.

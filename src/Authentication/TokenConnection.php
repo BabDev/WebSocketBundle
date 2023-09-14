@@ -10,6 +10,5 @@ final class TokenConnection
     public function __construct(
         public readonly TokenInterface $token,
         public readonly Connection $connection,
-    ) {
-    }
+    ) {}
 }

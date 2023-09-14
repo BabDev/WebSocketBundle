@@ -7,6 +7,4 @@ use BabDev\WebSocket\Server\WebSocketException;
 /**
  * General exception for token storage errors.
  */
-class StorageError extends \RuntimeException implements WebSocketException
-{
-}
+class StorageError extends \RuntimeException implements WebSocketException {}

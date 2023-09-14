@@ -4,6 +4,4 @@ namespace BabDev\WebSocketBundle\PeriodicManager\Exception;
 
 use BabDev\WebSocket\Server\WebSocketException;
 
-class ManagerAlreadyRegistered extends \RuntimeException implements WebSocketException
-{
-}
+class ManagerAlreadyRegistered extends \RuntimeException implements WebSocketException {}

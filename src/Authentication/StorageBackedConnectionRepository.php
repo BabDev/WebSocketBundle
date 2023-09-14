@@ -14,11 +14,10 @@ final class StorageBackedConnectionRepository implements ConnectionRepository
     public function __construct(
         private readonly TokenStorage $tokenStorage,
         private readonly Authenticator $authenticator,
-    ) {
-    }
+    ) {}
 
     /**
-     * @return TokenConnection[]
+     * @return list<TokenConnection>
      */
     public function findAll(Topic $topic, bool $anonymous = false): array
     {
@@ -39,7 +38,7 @@ final class StorageBackedConnectionRepository implements ConnectionRepository
     }
 
     /**
-     * @return TokenConnection[]
+     * @return list<TokenConnection>
      */
     public function findAllByUsername(Topic $topic, string $username): array
     {
@@ -60,7 +59,7 @@ final class StorageBackedConnectionRepository implements ConnectionRepository
     }
 
     /**
-     * @return TokenConnection[]
+     * @return list<TokenConnection>
      */
     public function findAllWithRoles(Topic $topic, array $roles): array
     {

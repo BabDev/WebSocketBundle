@@ -11,6 +11,5 @@ final class BeforeRunServer extends Event
     public function __construct(
         public readonly ServerInterface $socketServer,
         public readonly LoopInterface $loop,
-    ) {
-    }
+    ) {}
 }

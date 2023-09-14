@@ -14,9 +14,7 @@ final class DriverBackedTokenStorage implements TokenStorage, LoggerAwareInterfa
 {
     use LoggerAwareTrait;
 
-    public function __construct(private readonly StorageDriver $driver)
-    {
-    }
+    public function __construct(private readonly StorageDriver $driver) {}
 
     public function generateStorageId(Connection $connection): string
     {

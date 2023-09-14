@@ -21,7 +21,7 @@ use Symfony\Component\Routing\Loader\Psr4DirectoryLoader;
 final class BabDevWebSocketExtension extends ConfigurableExtension
 {
     /**
-     * @var AuthenticationProviderFactory[]
+     * @var list<AuthenticationProviderFactory>
      */
     private array $authenticationProviderFactories = [];
 

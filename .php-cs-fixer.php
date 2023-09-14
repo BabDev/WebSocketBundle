@@ -14,6 +14,7 @@ return (new PhpCsFixer\Config())
         'no_superfluous_phpdoc_tags' => ['remove_inheritdoc' => true],
         'nullable_type_declaration_for_default_null_value' => ['use_nullable_type_declaration' => true],
         'php_unit_test_case_static_method_calls' => ['call_type' => 'self'],
+        'single_line_empty_body' => true,
     ])
     ->setRiskyAllowed(true)
     ->setFinder(

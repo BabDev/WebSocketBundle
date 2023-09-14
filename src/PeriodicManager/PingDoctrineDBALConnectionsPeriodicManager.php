@@ -22,9 +22,7 @@ final class PingDoctrineDBALConnectionsPeriodicManager implements PeriodicManage
     /**
      * @param iterable<Connection> $connections
      */
-    public function __construct(private readonly iterable $connections = [], private readonly int $interval = 60)
-    {
-    }
+    public function __construct(private readonly iterable $connections = [], private readonly int $interval = 60) {}
 
     public function getName(): string
     {

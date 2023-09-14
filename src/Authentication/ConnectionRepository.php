@@ -10,17 +10,17 @@ use Symfony\Component\Security\Core\User\UserInterface;
 interface ConnectionRepository
 {
     /**
-     * @return TokenConnection[]
+     * @return list<TokenConnection>
      */
     public function findAll(Topic $topic, bool $anonymous = false): array;
 
     /**
-     * @return TokenConnection[]
+     * @return list<TokenConnection>
      */
     public function findAllByUsername(Topic $topic, string $username): array;
 
     /**
-     * @return TokenConnection[]
+     * @return list<TokenConnection>
      */
     public function findAllWithRoles(Topic $topic, array $roles): array;
 

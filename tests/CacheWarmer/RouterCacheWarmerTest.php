@@ -59,10 +59,6 @@ final class RouterCacheWarmerTest extends TestCase
     }
 }
 
-interface testRouterInterfaceWithWarmableInterface extends RouterInterface, WarmableInterface
-{
-}
+interface testRouterInterfaceWithWarmableInterface extends RouterInterface, WarmableInterface {}
 
-interface testRouterInterfaceWithoutWarmableInterface extends RouterInterface
-{
-}
+interface testRouterInterfaceWithoutWarmableInterface extends RouterInterface {}

@@ -22,13 +22,12 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
     use LoggerAwareTrait;
 
     /**
-     * @param string[] $firewalls
+     * @param list<string> $firewalls
      */
     public function __construct(
         private readonly TokenStorage $tokenStorage,
         private readonly array $firewalls,
-    ) {
-    }
+    ) {}
 
     public function supports(Connection $connection): bool
     {

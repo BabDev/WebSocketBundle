@@ -10,9 +10,7 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 final class PsrCacheStorageDriver implements StorageDriver
 {
-    public function __construct(private readonly CacheItemPoolInterface $cache)
-    {
-    }
+    public function __construct(private readonly CacheItemPoolInterface $cache) {}
 
     public function clear(): void
     {

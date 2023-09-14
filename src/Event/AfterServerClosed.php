@@ -11,6 +11,5 @@ final class AfterServerClosed extends Event
     public function __construct(
         public readonly ServerInterface $socketServer,
         public readonly LoopInterface $loop,
-    ) {
-    }
+    ) {}
 }

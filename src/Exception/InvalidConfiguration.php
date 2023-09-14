@@ -4,6 +4,4 @@ namespace BabDev\WebSocketBundle\Exception;
 
 use BabDev\WebSocket\Server\WebSocketException;
 
-class InvalidConfiguration extends \LogicException implements WebSocketException
-{
-}
+class InvalidConfiguration extends \LogicException implements WebSocketException {}

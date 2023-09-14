@@ -12,10 +12,7 @@ use BabDev\WebSocketBundle\Exception\MiddlewareNotConfigured;
  */
 final class ServiceBasedMiddlewareStackBuilder implements MiddlewareStackBuilder
 {
-    public function __construct(
-        private readonly ?ServerMiddleware $middleware = null,
-    ) {
-    }
+    public function __construct(private readonly ?ServerMiddleware $middleware = null) {}
 
     /**
      * @throws MiddlewareNotConfigured if the middleware stack is not properly configured

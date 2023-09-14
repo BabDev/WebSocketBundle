@@ -12,8 +12,7 @@ final class DefaultServerFactory implements ServerFactory
     public function __construct(
         private readonly MiddlewareStackBuilder $middlewareStackBuilder,
         private readonly LoopInterface $loop,
-    ) {
-    }
+    ) {}
 
     public function build(ServerInterface $socket): Server
     {

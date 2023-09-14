@@ -4,6 +4,4 @@ namespace BabDev\WebSocketBundle\Exception;
 
 use BabDev\WebSocket\Server\WebSocketException;
 
-class MissingLoop extends \RuntimeException implements WebSocketException
-{
-}
+class MissingLoop extends \RuntimeException implements WebSocketException {}
