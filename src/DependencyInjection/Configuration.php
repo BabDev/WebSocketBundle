@@ -12,12 +12,12 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\HttpFoundation\Session\SessionFactoryInterface;
 use Symfony\Component\HttpFoundation\Session\Storage\SessionStorageFactoryInterface;
 
-final class Configuration implements ConfigurationInterface
+final readonly class Configuration implements ConfigurationInterface
 {
     /**
      * @param list<AuthenticationProviderFactory> $authenticationProviderFactories
      */
-    public function __construct(private readonly array $authenticationProviderFactories) {}
+    public function __construct(private array $authenticationProviderFactories) {}
 
     public function getConfigTreeBuilder(): TreeBuilder
     {

@@ -7,11 +7,11 @@ use BabDev\WebSocket\Server\Server;
 use React\EventLoop\LoopInterface;
 use React\Socket\ServerInterface;
 
-final class DefaultServerFactory implements ServerFactory
+final readonly class DefaultServerFactory implements ServerFactory
 {
     public function __construct(
-        private readonly MiddlewareStackBuilder $middlewareStackBuilder,
-        private readonly LoopInterface $loop,
+        private MiddlewareStackBuilder $middlewareStackBuilder,
+        private LoopInterface $loop,
     ) {}
 
     public function build(ServerInterface $socket): Server

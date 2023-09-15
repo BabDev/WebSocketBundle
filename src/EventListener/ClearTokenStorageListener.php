@@ -8,9 +8,9 @@ use BabDev\WebSocketBundle\Event\AfterLoopStopped;
 /**
  * @internal
  */
-final class ClearTokenStorageListener
+final readonly class ClearTokenStorageListener
 {
-    public function __construct(private readonly TokenStorage $tokenStorage) {}
+    public function __construct(private TokenStorage $tokenStorage) {}
 
     public function __invoke(AfterLoopStopped $event): void
     {

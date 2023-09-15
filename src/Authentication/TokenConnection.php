@@ -5,10 +5,10 @@ namespace BabDev\WebSocketBundle\Authentication;
 use BabDev\WebSocket\Server\Connection;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
-final class TokenConnection
+final readonly class TokenConnection
 {
     public function __construct(
-        public readonly TokenInterface $token,
-        public readonly Connection $connection,
+        public TokenInterface $token,
+        public Connection $connection,
     ) {}
 }

@@ -10,9 +10,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * @internal
  */
-final class PeriodicManagerSubscriber implements EventSubscriberInterface
+final readonly class PeriodicManagerSubscriber implements EventSubscriberInterface
 {
-    public function __construct(private readonly PeriodicManagerRegistry $registry) {}
+    public function __construct(private PeriodicManagerRegistry $registry) {}
 
     public static function getSubscribedEvents(): array
     {

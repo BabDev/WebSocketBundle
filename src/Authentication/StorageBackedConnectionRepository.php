@@ -9,11 +9,11 @@ use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-final class StorageBackedConnectionRepository implements ConnectionRepository
+final readonly class StorageBackedConnectionRepository implements ConnectionRepository
 {
     public function __construct(
-        private readonly TokenStorage $tokenStorage,
-        private readonly Authenticator $authenticator,
+        private TokenStorage $tokenStorage,
+        private Authenticator $authenticator,
     ) {}
 
     /**

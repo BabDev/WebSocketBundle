@@ -11,11 +11,11 @@ use Symfony\Contracts\Service\ServiceSubscriberInterface;
 /**
  * Generates the websocket router matcher and generator classes.
  */
-final class RouterCacheWarmer implements CacheWarmerInterface, ServiceSubscriberInterface
+final readonly class RouterCacheWarmer implements CacheWarmerInterface, ServiceSubscriberInterface
 {
     public function __construct(
-        private readonly ContainerInterface $container,
-        private readonly string $routerCacheDir,
+        private ContainerInterface $container,
+        private string $routerCacheDir,
     ) {}
 
     public function warmUp(string $cacheDir): array

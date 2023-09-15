@@ -10,9 +10,9 @@ use BabDev\WebSocketBundle\Exception\MiddlewareNotConfigured;
  * The service based middleware stack builder provides the middleware stack created by the
  * {@see BuildMiddlewareStackCompilerPass}.
  */
-final class ServiceBasedMiddlewareStackBuilder implements MiddlewareStackBuilder
+final readonly class ServiceBasedMiddlewareStackBuilder implements MiddlewareStackBuilder
 {
-    public function __construct(private readonly ?ServerMiddleware $middleware = null) {}
+    public function __construct(private ?ServerMiddleware $middleware = null) {}
 
     /**
      * @throws MiddlewareNotConfigured if the middleware stack is not properly configured
