@@ -64,7 +64,7 @@ final class AuthenticateUser implements ServerMiddleware, LoggerAwareInterface
 
                 $this->logger?->info(
                     '{user} disconnected',
-                    [...$loggerContext, 'user' => (method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername()) ?? 'Unknown User']
+                    [...$loggerContext, 'user' => $token->getUserIdentifier() ?: 'Unknown User'],
                 );
             }
         } catch (TokenNotFound $e) {

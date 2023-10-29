@@ -48,9 +48,7 @@ final readonly class StorageBackedConnectionRepository implements ConnectionRepo
         foreach ($topic as $connection) {
             $client = $this->findTokenForConnection($connection);
 
-            $clientUsername = method_exists($client, 'getUserIdentifier') ? $client->getUserIdentifier() : $client->getUsername();
-
-            if ($clientUsername === $username) {
+            if ($client->getUserIdentifier() === $username) {
                 $result[] = new TokenConnection($client, $connection);
             }
         }
@@ -106,9 +104,7 @@ final readonly class StorageBackedConnectionRepository implements ConnectionRepo
         foreach ($topic as $connection) {
             $client = $this->findTokenForConnection($connection);
 
-            $clientUsername = method_exists($client, 'getUserIdentifier') ? $client->getUserIdentifier() : $client->getUsername();
-
-            if ($clientUsername === $username) {
+            if ($client->getUserIdentifier() === $username) {
                 return true;
             }
         }

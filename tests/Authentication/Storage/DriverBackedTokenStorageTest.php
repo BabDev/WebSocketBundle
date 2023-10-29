@@ -9,7 +9,6 @@ use BabDev\WebSocketBundle\Authentication\Storage\DriverBackedTokenStorage;
 use BabDev\WebSocketBundle\Authentication\Storage\Exception\StorageError;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 final class DriverBackedTokenStorageTest extends TestCase
@@ -63,10 +62,10 @@ final class DriverBackedTokenStorageTest extends TestCase
         $this->expectException(StorageError::class);
         $this->expectExceptionMessage('Unable to add client "user" to storage');
 
-        /** @var MockObject&AbstractToken $token */
-        $token = $this->createMock(AbstractToken::class);
+        /** @var MockObject&TokenInterface $token */
+        $token = $this->createMock(TokenInterface::class);
         $token->expects(self::once())
-            ->method(method_exists(AbstractToken::class, 'getUserIdentifier') ? 'getUserIdentifier' : 'getUsername')
+            ->method('getUserIdentifier')
             ->willReturn('user');
 
         $this->driver->expects(self::once())

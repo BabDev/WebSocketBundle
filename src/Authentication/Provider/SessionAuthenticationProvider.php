@@ -49,7 +49,7 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
             [
                 'resource_id' => $connection->getAttributeStore()->get('resource_id'),
                 'storage_id' => $storageId,
-                'user' => (method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername()) ?? 'Unknown User',
+                'user' => $token->getUserIdentifier() ?: 'Unknown User',
             ],
         );
 

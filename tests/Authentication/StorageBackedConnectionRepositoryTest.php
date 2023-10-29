@@ -12,7 +12,6 @@ use BabDev\WebSocketBundle\Authentication\StorageBackedConnectionRepository;
 use BabDev\WebSocketBundle\Authentication\TokenConnection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -89,8 +88,6 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
 
     public function testAllConnectionsForAUserCanBeFoundByUsername(): void
     {
-        $usernameMethod = method_exists(AbstractToken::class, 'getUserIdentifier') ? 'getUserIdentifier' : 'getUsername';
-
         /** @var MockObject&WAMPConnection $connection1 */
         $connection1 = $this->createMock(WAMPConnection::class);
 
@@ -107,22 +104,22 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $username1 = 'user';
         $username2 = 'guest';
 
-        /** @var MockObject&AbstractToken $token1 */
-        $token1 = $this->createMock(AbstractToken::class);
+        /** @var MockObject&TokenInterface $token1 */
+        $token1 = $this->createMock(TokenInterface::class);
         $token1->expects(self::once())
-            ->method($usernameMethod)
+            ->method('getUserIdentifier')
             ->willReturn($username1);
 
-        /** @var MockObject&AbstractToken $token2 */
-        $token2 = $this->createMock(AbstractToken::class);
+        /** @var MockObject&TokenInterface $token2 */
+        $token2 = $this->createMock(TokenInterface::class);
         $token2->expects(self::once())
-            ->method($usernameMethod)
+            ->method('getUserIdentifier')
             ->willReturn($username1);
 
-        /** @var MockObject&AbstractToken $token3 */
-        $token3 = $this->createMock(AbstractToken::class);
+        /** @var MockObject&TokenInterface $token3 */
+        $token3 = $this->createMock(TokenInterface::class);
         $token3->expects(self::once())
-            ->method($usernameMethod)
+            ->method('getUserIdentifier')
             ->willReturn($username2);
 
         $this->tokenStorage->expects(self::exactly(3))
@@ -340,8 +337,6 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
 
     public function testReportsWhetherAUserWithTheGivenUsernameHasAConnection(): void
     {
-        $usernameMethod = method_exists(AbstractToken::class, 'getUserIdentifier') ? 'getUserIdentifier' : 'getUsername';
-
         /** @var MockObject&WAMPConnection $connection1 */
         $connection1 = $this->createMock(WAMPConnection::class);
 
@@ -357,22 +352,22 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $username1 = 'user';
         $username2 = 'guest';
 
-        /** @var MockObject&AbstractToken $token1 */
-        $token1 = $this->createMock(AbstractToken::class);
+        /** @var MockObject&TokenInterface $token1 */
+        $token1 = $this->createMock(TokenInterface::class);
         $token1->expects(self::once())
-            ->method($usernameMethod)
+            ->method('getUserIdentifier')
             ->willReturn($username1);
 
-        /** @var MockObject&AbstractToken $token2 */
-        $token2 = $this->createMock(AbstractToken::class);
+        /** @var MockObject&TokenInterface $token2 */
+        $token2 = $this->createMock(TokenInterface::class);
         $token2->expects(self::once())
-            ->method($usernameMethod)
+            ->method('getUserIdentifier')
             ->willReturn($username2);
 
-        /** @var MockObject&AbstractToken $token3 */
-        $token3 = $this->createMock(AbstractToken::class);
+        /** @var MockObject&TokenInterface $token3 */
+        $token3 = $this->createMock(TokenInterface::class);
         $token3->expects(self::never())
-            ->method($usernameMethod);
+            ->method('getUserIdentifier');
 
         $this->tokenStorage->expects(self::exactly(2))
             ->method('generateStorageId')

@@ -35,6 +35,6 @@ return static function (RectorConfig $rectorConfig): void {
         SetList::CODE_QUALITY,
         PHPUnitLevelSetList::UP_TO_PHPUNIT_90,
         PHPUnitSetList::PHPUNIT_CODE_QUALITY,
-        SymfonyLevelSetList::UP_TO_SYMFONY_54
+        SymfonyLevelSetList::UP_TO_SYMFONY_63,
     ]);
 };

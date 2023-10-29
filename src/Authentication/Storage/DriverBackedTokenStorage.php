@@ -31,16 +31,14 @@ final class DriverBackedTokenStorage implements TokenStorage, LoggerAwareInterfa
             [
                 'connection' => $id,
                 'token' => $token,
-                'username' => (method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername()) ?? 'Unknown User',
+                'username' => $token->getUserIdentifier() ?: 'Unknown User',
             ],
         );
 
         $result = $this->driver->store($id, $token);
 
         if (false === $result) {
-            $username = method_exists($token, 'getUserIdentifier') ? $token->getUserIdentifier() : $token->getUsername();
-
-            throw new StorageError(sprintf('Unable to add client "%s" to storage', $username));
+            throw new StorageError(sprintf('Unable to add client "%s" to storage', $token->getUserIdentifier()));
         }
     }
 
