@@ -9,13 +9,13 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: ['8.2']
-        symfony: ['6.3.*']
+        php: ['8.2', '8.3']
+        symfony: ['6.3.*', '6.4.*']
         composer-flags: ['--prefer-stable']
         can-fail: [false]
         include:
           - php: '8.2'
-            symfony: '5.4.*'
+            symfony: '6.3.*'
             composer-flags: '--prefer-stable --prefer-lowest'
             can-fail: false
 

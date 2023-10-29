@@ -5,17 +5,35 @@ namespace BabDev\WebSocketBundle\Routing\Loader;
 use BabDev\WebSocketBundle\Attribute\AsMessageHandler;
 use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\Routing\Loader\AnnotationClassLoader;
+use Symfony\Component\Routing\Loader\AttributeClassLoader;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
+
+if (class_exists(AttributeClassLoader::class)) {
+    /**
+     * @internal Conditional compatibility class for Symfony 6.4 and later
+     */
+    abstract class CompatClassLoader extends AttributeClassLoader {}
+} else {
+    /**
+     * @internal Conditional compatibility class for Symfony 6.3 and earlier
+     */
+    abstract class CompatClassLoader extends AnnotationClassLoader {
+        public function __construct(?string $env = null)
+        {
+            parent::__construct(null, $env);
+        }
+    }
+}
 
 /**
  * The attribute loader loads routing information from PHP classes having the {@see AsMessageHandler} attribute.
  */
-final class AttributeLoader extends AnnotationClassLoader
+final class AttributeLoader extends CompatClassLoader
 {
     public function __construct(?string $env = null)
     {
-        parent::__construct(null, $env);
+        parent::__construct($env);
     }
 
     /**
@@ -83,7 +101,6 @@ final class AttributeLoader extends AnnotationClassLoader
 
         foreach ($paths as $locale => $path) {
             $route = $this->createRoute($path, $defaults, $requirements, $options, $host, $schemes, $methods, $condition);
-            $route->setDefault('_controller', $class->getName());
 
             if (0 !== $locale) {
                 $route->setDefault('_locale', $locale);

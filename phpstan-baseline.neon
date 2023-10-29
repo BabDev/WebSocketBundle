@@ -1,24 +1,9 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Call to an undefined method Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\TokenInterface\\:\\:getUsername\\(\\)\\.$#"
-			count: 1
-			path: src/Authentication/DefaultAuthenticator.php
-
-		-
-			message: "#^Call to an undefined method Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\TokenInterface\\:\\:getUsername\\(\\)\\.$#"
-			count: 1
-			path: src/Authentication/Provider/SessionAuthenticationProvider.php
-
-		-
 			message: "#^Parameter \\#1 \\$data of function unserialize expects string, mixed given\\.$#"
 			count: 1
 			path: src/Authentication/Provider/SessionAuthenticationProvider.php
-
-		-
-			message: "#^Call to an undefined method Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\TokenInterface\\:\\:getUsername\\(\\)\\.$#"
-			count: 2
-			path: src/Authentication/Storage/DriverBackedTokenStorage.php
 
 		-
 			message: "#^Cannot cast mixed to string\\.$#"
@@ -26,9 +11,9 @@ parameters:
 			path: src/Authentication/Storage/DriverBackedTokenStorage.php
 
 		-
-			message: "#^Call to an undefined method Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\TokenInterface\\:\\:getUsername\\(\\)\\.$#"
-			count: 2
-			path: src/Authentication/StorageBackedConnectionRepository.php
+			message: "#^Method Symfony\\\\Component\\\\HttpKernel\\\\CacheWarmer\\\\WarmableInterface\\:\\:warmUp\\(\\) invoked with 2 parameters, 1 required\\.$#"
+			count: 1
+			path: src/CacheWarmer/RouterCacheWarmer.php
 
 		-
 			message: "#^Argument of an invalid type array\\|bool\\|float\\|int\\|string\\|null supplied for foreach, only iterables are supported\\.$#"
@@ -39,6 +24,11 @@ parameters:
 			message: "#^Call to an undefined method Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeDefinition\\:\\:children\\(\\)\\.$#"
 			count: 1
 			path: src/DependencyInjection/Factory/Authentication/SessionAuthenticationProviderFactory.php
+
+		-
+			message: "#^Call to an undefined static method Symfony\\\\Component\\\\Routing\\\\Loader\\\\AnnotationClassLoader\\:\\:__construct\\(\\)\\.$#"
+			count: 1
+			path: src/Routing/Loader/AttributeLoader.php
 
 		-
 			message: "#^Method BabDev\\\\WebSocketBundle\\\\Routing\\\\Loader\\\\AttributeLoader\\:\\:configureRoute\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
@@ -69,21 +59,6 @@ parameters:
 			message: "#^Parameter \\#3 \\$subject of function str_replace expects array\\|string, string\\|null given\\.$#"
 			count: 1
 			path: src/Routing/Loader/AttributeLoader.php
-
-		-
-			message: "#^Call to an undefined method Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\TokenInterface\\:\\:getUsername\\(\\)\\.$#"
-			count: 1
-			path: src/Server/Middleware/AuthenticateUser.php
-
-		-
-			message: "#^Trying to mock an undefined method getUsername\\(\\) on class Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\AbstractToken\\.$#"
-			count: 1
-			path: tests/Authentication/Storage/DriverBackedTokenStorageTest.php
-
-		-
-			message: "#^Trying to mock an undefined method getUsername\\(\\) on class Symfony\\\\Component\\\\Security\\\\Core\\\\Authentication\\\\Token\\\\AbstractToken\\.$#"
-			count: 6
-			path: tests/Authentication/StorageBackedConnectionRepositoryTest.php
 
 		-
 			message: "#^Cannot cast mixed to string\\.$#"

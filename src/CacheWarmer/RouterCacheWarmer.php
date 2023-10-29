@@ -18,12 +18,12 @@ final readonly class RouterCacheWarmer implements CacheWarmerInterface, ServiceS
         private string $routerCacheDir,
     ) {}
 
-    public function warmUp(string $cacheDir): array
+    public function warmUp(string $cacheDir, string $buildDir = null): array
     {
         $router = $this->container->get('babdev_websocket_server.router');
 
         if ($router instanceof WarmableInterface) {
-            return (array) $router->warmUp($this->routerCacheDir);
+            return (array) $router->warmUp($this->routerCacheDir, $buildDir);
         }
 
         throw new \LogicException(sprintf('The router "%s" cannot be warmed up because it does not implement "%s".', get_debug_type($router), WarmableInterface::class));
