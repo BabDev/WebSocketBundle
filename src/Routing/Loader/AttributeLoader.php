@@ -101,6 +101,7 @@ final class AttributeLoader extends CompatClassLoader
 
         foreach ($paths as $locale => $path) {
             $route = $this->createRoute($path, $defaults, $requirements, $options, $host, $schemes, $methods, $condition);
+            $route->setDefault('_controller', $class->getName());
 
             if (0 !== $locale) {
                 $route->setDefault('_locale', $locale);
