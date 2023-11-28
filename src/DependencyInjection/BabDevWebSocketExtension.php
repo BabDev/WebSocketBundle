@@ -15,6 +15,8 @@ use Symfony\Component\DependencyInjection\Exception\LogicException;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\ConfigurableExtension;
+use Symfony\Component\Routing\Loader\AttributeDirectoryLoader;
+use Symfony\Component\Routing\Loader\AttributeFileLoader;
 
 final class BabDevWebSocketExtension extends ConfigurableExtension
 {
@@ -51,6 +53,17 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
 
         $this->registerAuthenticationConfiguration($mergedConfig, $container);
         $this->registerServerConfiguration($mergedConfig, $container);
+
+        // When running Symfony 6.4 and later, point the router loaders to the non-deprecated attribute classes
+        if (class_exists(AttributeDirectoryLoader::class)) {
+            $container->getDefinition('babdev_websocket_server.routing.loader.attribute.directory')
+                ->setClass(AttributeDirectoryLoader::class);
+        }
+
+        if (class_exists(AttributeFileLoader::class)) {
+            $container->getDefinition('babdev_websocket_server.routing.loader.attribute.file')
+                ->setClass(AttributeFileLoader::class);
+        }
     }
 
     private function registerAuthenticationConfiguration(array $mergedConfig, ContainerBuilder $container): void
