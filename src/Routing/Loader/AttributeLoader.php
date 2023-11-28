@@ -18,7 +18,8 @@ if (class_exists(AttributeClassLoader::class)) {
     /**
      * @internal Conditional compatibility class for Symfony 6.3 and earlier
      */
-    abstract class CompatClassLoader extends AnnotationClassLoader {
+    abstract class CompatClassLoader extends AnnotationClassLoader
+    {
         public function __construct(?string $env = null)
         {
             parent::__construct(null, $env);
@@ -34,6 +35,8 @@ final class AttributeLoader extends CompatClassLoader
     public function __construct(?string $env = null)
     {
         parent::__construct($env);
+
+        $this->setRouteAnnotationClass(AsMessageHandler::class);
     }
 
     /**
@@ -47,6 +50,7 @@ final class AttributeLoader extends CompatClassLoader
             throw new \InvalidArgumentException(sprintf('Class "%s" does not exist.', $class));
         }
 
+        /** @var \ReflectionClass<AsMessageHandler> $class */
         $class = new \ReflectionClass($class);
 
         if ($class->isAbstract()) {
@@ -116,6 +120,9 @@ final class AttributeLoader extends CompatClassLoader
         return $collection;
     }
 
+    /**
+     * @param \ReflectionClass<AsMessageHandler> $class
+     */
     protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, object $annot): void
     {
         // Method is purposefully unused, but is required by the parent class
@@ -123,6 +130,8 @@ final class AttributeLoader extends CompatClassLoader
 
     /**
      * Build the default route name for a message handler.
+     *
+     * @param \ReflectionClass<AsMessageHandler> $class
      */
     protected function getDefaultRouteName(\ReflectionClass $class, ?\ReflectionMethod $method = null): string
     {

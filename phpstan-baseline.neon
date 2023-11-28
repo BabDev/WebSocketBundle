@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Parameter \\#1 \\$path of class Symfony\\\\Component\\\\Routing\\\\Annotation\\\\Route constructor expects array\\|string\\|null, mixed given\\.$#"
+			count: 1
+			path: src/Attribute/AsMessageHandler.php
+
+		-
 			message: "#^Parameter \\#1 \\$data of function unserialize expects string, mixed given\\.$#"
 			count: 1
 			path: src/Authentication/Provider/SessionAuthenticationProvider.php
@@ -27,16 +32,6 @@ parameters:
 
 		-
 			message: "#^Call to an undefined static method Symfony\\\\Component\\\\Routing\\\\Loader\\\\AnnotationClassLoader\\:\\:__construct\\(\\)\\.$#"
-			count: 1
-			path: src/Routing/Loader/AttributeLoader.php
-
-		-
-			message: "#^Method BabDev\\\\WebSocketBundle\\\\Routing\\\\Loader\\\\AttributeLoader\\:\\:configureRoute\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: src/Routing/Loader/AttributeLoader.php
-
-		-
-			message: "#^Method BabDev\\\\WebSocketBundle\\\\Routing\\\\Loader\\\\AttributeLoader\\:\\:getDefaultRouteName\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
 			count: 1
 			path: src/Routing/Loader/AttributeLoader.php
 

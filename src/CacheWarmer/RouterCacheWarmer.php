@@ -18,7 +18,7 @@ final readonly class RouterCacheWarmer implements CacheWarmerInterface, ServiceS
         private string $routerCacheDir,
     ) {}
 
-    public function warmUp(string $cacheDir, string $buildDir = null): array
+    public function warmUp(string $cacheDir, ?string $buildDir = null): array
     {
         $router = $this->container->get('babdev_websocket_server.router');
 
