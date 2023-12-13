@@ -14,6 +14,8 @@ use BabDev\WebSocket\Server\Session\Middleware\InitializeSession;
 use BabDev\WebSocket\Server\Session\SessionFactory;
 use BabDev\WebSocket\Server\Session\Storage\ReadOnlyNativeSessionStorageFactory;
 use BabDev\WebSocket\Server\WAMP\ArrayTopicRegistry;
+use BabDev\WebSocket\Server\WAMP\DefaultErrorUriResolver;
+use BabDev\WebSocket\Server\WAMP\ErrorUriResolver;
 use BabDev\WebSocket\Server\WAMP\MessageHandler\MessageHandlerResolver;
 use BabDev\WebSocket\Server\WAMP\MessageHandler\PsrContainerMessageHandlerResolver;
 use BabDev\WebSocket\Server\WAMP\Middleware\DispatchMessageToHandler;
@@ -318,6 +320,9 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set('babdev_websocket_server.routing.resolver', LoaderResolver::class);
 
+    $services->set('babdev_websocket_server.server.error_uri_resolver', DefaultErrorUriResolver::class);
+    $services->alias(ErrorUriResolver::class, 'babdev_websocket_server.server.error_uri_resolver');
+
     $services->set('babdev_websocket_server.server.factory.default', DefaultServerFactory::class)
         ->args([
             service(MiddlewareStackBuilder::class),
@@ -331,6 +336,7 @@ return static function (ContainerConfigurator $container): void {
             service('babdev_websocket_server.router'),
             service(MessageHandlerResolver::class),
             service('event_dispatcher')->nullOnInvalid(),
+            service(ErrorUriResolver::class),
         ])
         ->tag('babdev.websocket_server.server_middleware', ['priority' => 0])
     ;
