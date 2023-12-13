@@ -384,6 +384,7 @@ return static function (ContainerConfigurator $container): void {
     $services->set('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins', RestrictToAllowedOrigins::class)
         ->args([
             abstract_arg('decorated middleware'),
+            abstract_arg('allowed origin list'),
         ])
         ->tag('babdev.websocket_server.server_middleware', ['priority' => -60])
     ;
@@ -399,6 +400,7 @@ return static function (ContainerConfigurator $container): void {
     $services->set('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address', RejectBlockedIpAddress::class)
         ->args([
             abstract_arg('decorated middleware'),
+            abstract_arg('blocked address list'),
         ])
         ->tag('babdev.websocket_server.server_middleware', ['priority' => -80])
     ;

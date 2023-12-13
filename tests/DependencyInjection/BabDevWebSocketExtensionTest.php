@@ -70,21 +70,17 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             [$identity],
         );
 
-        foreach ($origins as $origin) {
-            $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
-                'babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins',
-                'allowOrigin',
-                [$origin],
-            );
-        }
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins',
+            1,
+            $origins,
+        );
 
-        foreach ($blockedIps as $blockedIp) {
-            $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
-                'babdev_websocket_server.server.server_middleware.reject_blocked_ip_address',
-                'blockAddress',
-                [$blockedIp],
-            );
-        }
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.server_middleware.reject_blocked_ip_address',
+            1,
+            $blockedIps,
+        );
 
         self::assertThat($this->container->findDefinition('babdev_websocket_server.server.server_middleware.establish_websocket_connection'), new LogicalNot(new DefinitionHasMethodCallConstraint('enableKeepAlive')));
         $this->assertContainerBuilderHasAlias(StorageDriver::class, 'babdev_websocket_server.authentication.storage.driver.in_memory');

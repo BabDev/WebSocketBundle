@@ -101,21 +101,15 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
         ;
 
         if ([] !== $mergedConfig['server']['allowed_origins']) {
-            $definition = $container->getDefinition('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins');
-
-            foreach ($mergedConfig['server']['allowed_origins'] as $origin) {
-                $definition->addMethodCall('allowOrigin', [$origin]);
-            }
+            $container->getDefinition('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins')
+                ->replaceArgument(1, $mergedConfig['server']['allowed_origins']);
         } else {
             $container->removeDefinition('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins');
         }
 
         if ([] !== $mergedConfig['server']['blocked_ip_addresses']) {
-            $definition = $container->getDefinition('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address');
-
-            foreach ($mergedConfig['server']['blocked_ip_addresses'] as $address) {
-                $definition->addMethodCall('blockAddress', [$address]);
-            }
+            $container->getDefinition('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address')
+                ->replaceArgument(1, $mergedConfig['server']['blocked_ip_addresses']);
         } else {
             $container->removeDefinition('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address');
         }
