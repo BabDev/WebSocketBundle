@@ -57,7 +57,25 @@ final class ConfigurationTest extends TestCase
         $this->assertPartialConfigurationIsInvalid(
             [['server' => ['max_http_request_size' => -1]]],
             'server.max_http_request_size',
-            'The value -1 is too small for path "babdev_websocket.server.max_http_request_size". Should be greater than or equal to 0',
+            'The value -1 is too small for path "babdev_websocket.server.max_http_request_size". Should be greater than or equal to 1',
+        );
+    }
+
+    public function testConfigurationIsInvalidWithKeepaliveInterval(): void
+    {
+        $this->assertPartialConfigurationIsInvalid(
+            [['server' => ['keepalive' => ['interval' => -1]]]],
+            'server.keepalive',
+            'The value -1 is too small for path "babdev_websocket.server.keepalive.interval". Should be greater than or equal to 1',
+        );
+    }
+
+    public function testConfigurationIsInvalidWithPeriodicDbalInterval(): void
+    {
+        $this->assertPartialConfigurationIsInvalid(
+            [['server' => ['periodic' => ['dbal' => ['interval' => -1]]]]],
+            'server.periodic.dbal.interval',
+            'The value -1 is too small for path "babdev_websocket.server.periodic.dbal.interval". Should be greater than or equal to 1',
         );
     }
 

@@ -21,6 +21,7 @@ final class PingDoctrineDBALConnectionsPeriodicManager implements PeriodicManage
 
     /**
      * @param iterable<Connection> $connections
+     * @param positive-int         $interval
      */
     public function __construct(private readonly iterable $connections = [], private readonly int $interval = 60) {}
 
