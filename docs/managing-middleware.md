@@ -22,7 +22,28 @@ New middleware should be added with a priority lower than 0 as the `BabDev\WebSo
 
 Middleware must have the decorated middleware as the first parameter in the constructor, and cannot use a named parameter in the service definition (i.e. `$middleware: !abstract decorated middleware` for YAML); this is required for the compiler pass which builds the middleware stack to correctly set the arguments.
 
-Because priorities must be specified, this bundle does not provide autoconfiguration of the `BabDev\WebSocket\Server\ServerMiddleware` interface to the `babdev.websocket_server.server_middleware` tag, so services will have to be manually tagged. This can be done with either explicit configuration in your container configuration files, or if you are using autowiring, the `#[Autoconfigure]` attribute on your middleware class.
+The bundle supports autoconfiguration of `BabDev\WebSocket\Server\ServerMiddleware` classes using the `#[AsServerMiddleware]` attribute on your middleware class.
+
+```php
+<?php declare(strict_types=1);
+
+namespace App\WebSocket\Middleware;
+
+use BabDev\WebSocket\Server\ServerMiddleware;
+use BabDev\WebSocketBundle\Attribute\AsServerMiddleware;
+
+#[AsServerMiddleware(priority: -75)]
+final readonly class EarlyMiddleware implements ServerMiddleware
+{
+    public function __construct(
+        private ServerMiddleware $middleware,
+    ) {}
+
+    /* Class implementation */
+}
+```
+
+If you are not using autoconfiguration, the service should be tagged with the `babdev.websocket_server.server_middleware` service tag and the priority specified.
 
 ```yaml
 # config/services.yaml
@@ -32,24 +53,4 @@ services:
             - !abstract decorated middleware
         tags:
             - { name: babdev.websocket_server.server_middleware, priority: -75 }
-```
-
-```php
-<?php declare(strict_types=1);
-
-namespace App\WebSocket\Middleware;
-
-use BabDev\WebSocket\Server\ServerMiddleware;
-use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
-
-#[Autoconfigure(tags: [['babdev.websocket_server.server_middleware' => ['priority' => -75]]])]
-final class EarlyMiddleware implements ServerMiddleware
-{
-    public function __construct(
-        private readonly ServerMiddleware $middleware,
-    ) {
-    }
-
-    /* Class implementation */
-}
 ```
