@@ -87,6 +87,10 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
             ->replaceArgument(1, $mergedConfig['server']['router']['resource'])
         ;
 
+        $container->getDefinition('babdev_websocket_server.server.request_parser')
+            ->replaceArgument(0, $mergedConfig['server']['max_http_request_size'])
+        ;
+
         $container->getDefinition('babdev_websocket_server.server.server_middleware.parse_wamp_message')
             ->addMethodCall('setServerIdentity', [$mergedConfig['server']['identity']])
         ;

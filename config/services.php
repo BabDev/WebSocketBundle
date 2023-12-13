@@ -406,7 +406,11 @@ return static function (ContainerConfigurator $container): void {
     $services->set('babdev_websocket_server.server.options_handler', IniOptionsHandler::class);
     $services->alias(OptionsHandler::class, 'babdev_websocket_server.server.options_handler');
 
-    $services->set('babdev_websocket_server.server.request_parser', GuzzleRequestParser::class);
+    $services->set('babdev_websocket_server.server.request_parser', GuzzleRequestParser::class)
+        ->args([
+            abstract_arg('max request size'),
+        ])
+    ;
     $services->alias(RequestParser::class, 'babdev_websocket_server.server.request_parser');
 
     $services->set('babdev_websocket_server.server.topic_registry', ArrayTopicRegistry::class);

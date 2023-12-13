@@ -19,6 +19,7 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
     public function testContainerIsLoadedWithValidConfiguration(): void
     {
         $identity = 'BabDev-Websocket-Bundle/1.0';
+        $maxRequestSize = 1024;
         $uri = 'tcp://127.0.0.1:8080';
         $context = [];
         $origins = ['example.com', 'example.net'];
@@ -28,6 +29,7 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
         $this->load([
             'server' => [
                 'identity' => $identity,
+                'max_http_request_size' => $maxRequestSize,
                 'uri' => $uri,
                 'context' => $context,
                 'allowed_origins' => $origins,
@@ -54,6 +56,12 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             'babdev_websocket_server.router',
             1,
             $routerResource,
+        );
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.request_parser',
+            0,
+            $maxRequestSize,
         );
 
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
@@ -265,7 +273,7 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
     }
 
     /**
-     * @return ExtensionInterface[]
+     * @return list<ExtensionInterface>
      */
     protected function getContainerExtensions(): array
     {
