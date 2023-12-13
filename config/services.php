@@ -57,8 +57,8 @@ use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\Routing\Generator\CompiledUrlGenerator;
 use Symfony\Component\Routing\Generator\Dumper\CompiledUrlGeneratorDumper;
-use Symfony\Component\Routing\Loader\AnnotationDirectoryLoader;
-use Symfony\Component\Routing\Loader\AnnotationFileLoader;
+use Symfony\Component\Routing\Loader\AttributeDirectoryLoader;
+use Symfony\Component\Routing\Loader\AttributeFileLoader;
 use Symfony\Component\Routing\Loader\ContainerLoader;
 use Symfony\Component\Routing\Loader\DirectoryLoader;
 use Symfony\Component\Routing\Loader\GlobFileLoader;
@@ -245,7 +245,7 @@ return static function (ContainerConfigurator $container): void {
         ->tag('babdev_websocket_server.routing.loader', ['priority' => -10])
     ;
 
-    $services->set('babdev_websocket_server.routing.loader.attribute.directory', AnnotationDirectoryLoader::class)
+    $services->set('babdev_websocket_server.routing.loader.attribute.directory', AttributeDirectoryLoader::class)
         ->args([
             service('file_locator'),
             service('babdev_websocket_server.routing.loader.attribute'),
@@ -253,7 +253,7 @@ return static function (ContainerConfigurator $container): void {
         ->tag('babdev_websocket_server.routing.loader', ['priority' => -10])
     ;
 
-    $services->set('babdev_websocket_server.routing.loader.attribute.file', AnnotationFileLoader::class)
+    $services->set('babdev_websocket_server.routing.loader.attribute.file', AttributeFileLoader::class)
         ->args([
             service('file_locator'),
             service('babdev_websocket_server.routing.loader.attribute'),
