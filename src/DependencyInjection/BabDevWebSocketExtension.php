@@ -45,11 +45,11 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
         $loader->load('services.php');
 
         $container->registerAttributeForAutoconfiguration(AsMessageHandler::class, static function (ChildDefinition $definition, AsMessageHandler $attribute): void {
-            $definition->addTag('babdev_websocket_server.message_handler');
+            $definition->addTag('babdev.websocket_server.message_handler');
         });
 
         $container->registerAttributeForAutoconfiguration(AsServerMiddleware::class, static function (ChildDefinition $definition, AsServerMiddleware $attribute): void {
-            $definition->addTag('babdev_websocket_server.server_middleware', ['priority' => $attribute->priority]);
+            $definition->addTag('babdev.websocket_server.server_middleware', ['priority' => $attribute->priority]);
         });
 
         $container->registerForAutoconfiguration(PeriodicManager::class)->addTag('babdev_websocket_server.periodic_manager');

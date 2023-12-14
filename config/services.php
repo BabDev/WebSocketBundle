@@ -173,7 +173,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set('babdev_websocket_server.message_handler_resolver.psr_container', PsrContainerMessageHandlerResolver::class)
         ->args([
-            tagged_locator('babdev_websocket_server.message_handler'),
+            tagged_locator('babdev.websocket_server.message_handler'),
         ])
     ;
     $services->alias(MessageHandlerResolver::class, 'babdev_websocket_server.message_handler_resolver.psr_container');
