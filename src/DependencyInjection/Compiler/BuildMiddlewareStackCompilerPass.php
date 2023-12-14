@@ -11,7 +11,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * The build middleware stack compiler pass creates a {@see ServerMiddleware} service by processing services with the
- * "babdev.websocket_server.server_middleware" tag, sorted by priority.
+ * "babdev_websocket_server.server_middleware" tag, sorted by priority.
  *
  * Services using this tag must receive the decorated middleware as the first argument to its class constructor.
  *
@@ -28,7 +28,7 @@ final class BuildMiddlewareStackCompilerPass implements CompilerPassInterface
         /** @var Reference|null $outerMiddleware */
         $outerMiddleware = null;
 
-        foreach ($this->findAndSortTaggedServices('babdev.websocket_server.server_middleware', $container) as $middleware) {
+        foreach ($this->findAndSortTaggedServices('babdev_websocket_server.server_middleware', $container) as $middleware) {
             if (!$previousMiddleware instanceof Reference) {
                 $previousMiddleware = $middleware;
 

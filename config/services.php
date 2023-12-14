@@ -338,7 +338,7 @@ return static function (ContainerConfigurator $container): void {
             service('event_dispatcher')->nullOnInvalid(),
             service(ErrorUriResolver::class),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => 0])
+        ->tag('babdev_websocket_server.server_middleware', ['priority' => 0])
     ;
 
     $services->set('babdev_websocket_server.server.server_middleware.update_topic_subscriptions', UpdateTopicSubscriptions::class)
@@ -346,7 +346,7 @@ return static function (ContainerConfigurator $container): void {
             abstract_arg('decorated middleware'),
             service(TopicRegistry::class),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -10])
+        ->tag('babdev_websocket_server.server_middleware', ['priority' => -10])
     ;
 
     $services->set('babdev_websocket_server.server.server_middleware.parse_wamp_message', ParseWAMPMessage::class)
@@ -354,7 +354,7 @@ return static function (ContainerConfigurator $container): void {
             abstract_arg('decorated middleware'),
             service(TopicRegistry::class),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -20])
+        ->tag('babdev_websocket_server.server_middleware', ['priority' => -20])
     ;
 
     $services->set('babdev_websocket_server.server.server_middleware.establish_websocket_connection', EstablishWebSocketConnection::class)
@@ -362,7 +362,7 @@ return static function (ContainerConfigurator $container): void {
             abstract_arg('decorated middleware'),
             service('babdev_websocket_server.rfc6455.server_negotiator'),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -30])
+        ->tag('babdev_websocket_server.server_middleware', ['priority' => -30])
     ;
 
     $services->set('babdev_websocket_server.server.server_middleware.authenticate_user', AuthenticateUser::class)
@@ -374,7 +374,7 @@ return static function (ContainerConfigurator $container): void {
         ->call('setLogger', [
             service('logger'),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -40])
+        ->tag('babdev_websocket_server.server_middleware', ['priority' => -40])
         ->tag('monolog.logger', ['channel' => 'websocket'])
     ;
 
@@ -384,7 +384,7 @@ return static function (ContainerConfigurator $container): void {
             abstract_arg('session factory'),
             service(OptionsHandler::class),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -50])
+        ->tag('babdev_websocket_server.server_middleware', ['priority' => -50])
     ;
 
     $services->set('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins', RestrictToAllowedOrigins::class)
@@ -392,7 +392,7 @@ return static function (ContainerConfigurator $container): void {
             abstract_arg('decorated middleware'),
             abstract_arg('allowed origin list'),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -60])
+        ->tag('babdev_websocket_server.server_middleware', ['priority' => -60])
     ;
 
     $services->set('babdev_websocket_server.server.server_middleware.parse_http_request', ParseHttpRequest::class)
@@ -400,7 +400,7 @@ return static function (ContainerConfigurator $container): void {
             abstract_arg('decorated middleware'),
             service(RequestParser::class),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -70])
+        ->tag('babdev_websocket_server.server_middleware', ['priority' => -70])
     ;
 
     $services->set('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address', RejectBlockedIpAddress::class)
@@ -408,7 +408,7 @@ return static function (ContainerConfigurator $container): void {
             abstract_arg('decorated middleware'),
             abstract_arg('blocked address list'),
         ])
-        ->tag('babdev.websocket_server.server_middleware', ['priority' => -80])
+        ->tag('babdev_websocket_server.server_middleware', ['priority' => -80])
     ;
 
     $services->set('babdev_websocket_server.server.options_handler', IniOptionsHandler::class);

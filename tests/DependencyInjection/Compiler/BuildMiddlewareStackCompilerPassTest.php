@@ -14,10 +14,10 @@ final class BuildMiddlewareStackCompilerPassTest extends AbstractCompilerPassTes
     {
         $this->container->register('middleware.outer', ServerMiddleware::class)
             ->addArgument(new AbstractArgument('decorated middleware'))
-            ->addTag('babdev.websocket_server.server_middleware', ['priority' => -10]);
+            ->addTag('babdev_websocket_server.server_middleware', ['priority' => -10]);
 
         $this->container->register('middleware.inner', ServerMiddleware::class)
-            ->addTag('babdev.websocket_server.server_middleware', ['priority' => 0]);
+            ->addTag('babdev_websocket_server.server_middleware', ['priority' => 0]);
 
         $this->compile();
 

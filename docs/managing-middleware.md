@@ -1,6 +1,6 @@
 # Managing Middleware
 
-By default, this bundle registers [server middleware](/open-source/packages/websocket-server/docs/1.x/middleware) by finding all services with the `babdev.websocket_server.server_middleware` tag and sorting them by priority.
+By default, this bundle registers [server middleware](/open-source/packages/websocket-server/docs/1.x/middleware) by finding all services with the `babdev_websocket_server.server_middleware` tag and sorting them by priority.
 
 Below is the list of middleware provided by this bundle and the library and their default priorities:
 
@@ -43,7 +43,7 @@ final readonly class EarlyMiddleware implements ServerMiddleware
 }
 ```
 
-If you are not using autoconfiguration, the service should be tagged with the `babdev.websocket_server.server_middleware` service tag and the priority specified.
+If you are not using autoconfiguration, the service should be tagged with the `babdev_websocket_server.server_middleware` service tag and the priority specified.
 
 ```yaml
 # config/services.yaml
@@ -52,5 +52,5 @@ services:
         arguments:
             - !abstract decorated middleware
         tags:
-            - { name: babdev.websocket_server.server_middleware, priority: -75 }
+            - { name: babdev_websocket_server.server_middleware, priority: -75 }
 ```
