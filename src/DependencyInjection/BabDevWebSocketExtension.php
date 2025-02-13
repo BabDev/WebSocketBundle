@@ -29,11 +29,13 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
         $this->authenticationProviderFactories[] = $factory;
     }
 
+    #[\Override]
     public function getConfiguration(array $config, ContainerBuilder $container): Configuration
     {
         return new Configuration($this->authenticationProviderFactories);
     }
 
+    #[\Override]
     public function getAlias(): string
     {
         return 'babdev_websocket';

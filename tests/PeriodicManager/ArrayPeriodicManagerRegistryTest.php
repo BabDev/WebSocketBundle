@@ -25,7 +25,7 @@ final class ArrayPeriodicManagerRegistryTest extends TestCase
 
         $registry->removeManager($manager);
 
-        self::assertCount(0, $registry->getManagers());
+        self::assertEmpty($registry->getManagers());
     }
 
     public function testMultipleManagersWithTheSameNameAreNotAllowed(): void

@@ -16,7 +16,7 @@ use Symfony\Component\Security\Core\User\InMemoryUser;
 
 final class SessionAuthenticationProviderTest extends TestCase
 {
-    private const FIREWALLS = ['main'];
+    private const array FIREWALLS = ['main'];
 
     private readonly MockObject&TokenStorage $tokenStorage;
 

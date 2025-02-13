@@ -24,6 +24,7 @@ final class BabDevWebSocketBundle extends Bundle
         $extension->addAuthenticationProviderFactory(new SessionAuthenticationProviderFactory());
     }
 
+    #[\Override]
     public function getContainerExtension(): ?ExtensionInterface
     {
         if (null === $this->extension) {
@@ -33,6 +34,7 @@ final class BabDevWebSocketBundle extends Bundle
         return $this->extension ?: null;
     }
 
+    #[\Override]
     public function getPath(): string
     {
         return \dirname(__DIR__);

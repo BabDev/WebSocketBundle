@@ -29,6 +29,7 @@ final class AttributeLoader extends AttributeClassLoader
      *
      * @throws \InvalidArgumentException When the route can't be parsed
      */
+    #[\Override]
     public function load(mixed $class, ?string $type = null): RouteCollection
     {
         if (!class_exists($class)) {
@@ -118,6 +119,7 @@ final class AttributeLoader extends AttributeClassLoader
      *
      * @param \ReflectionClass<AsMessageHandler> $class
      */
+    #[\Override]
     protected function getDefaultRouteName(\ReflectionClass $class, ?\ReflectionMethod $method = null): string
     {
         $name = str_replace('\\', '_', $class->name);

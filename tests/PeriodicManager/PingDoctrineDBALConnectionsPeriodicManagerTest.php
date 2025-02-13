@@ -18,8 +18,6 @@ final class PingDoctrineDBALConnectionsPeriodicManagerTest extends TestCase
      */
     private readonly array $connections;
 
-    private readonly TestLogger $logger;
-
     private readonly PingDoctrineDBALConnectionsPeriodicManager $manager;
 
     protected function setUp(): void
@@ -30,10 +28,8 @@ final class PingDoctrineDBALConnectionsPeriodicManagerTest extends TestCase
             $this->createMock(Connection::class),
         ];
 
-        $this->logger = new TestLogger();
-
         $this->manager = new PingDoctrineDBALConnectionsPeriodicManager($this->connections);
-        $this->manager->setLogger($this->logger);
+        $this->manager->setLogger(new TestLogger());
     }
 
     protected function tearDown(): void
