@@ -16,7 +16,7 @@ interface AuthenticationProvider
     /**
      * Attempts to authenticate the current connection.
      *
-     * Implementations can assume this method will only be executed when supports() is true.
+     * Implementations can assume this method will only be executed when {@see supports()} returns true.
      *
      * @throws AuthenticationException if there was an error while trying to authenticate the user
      */

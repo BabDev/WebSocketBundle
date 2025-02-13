@@ -3,9 +3,6 @@
 use Rector\Config\RectorConfig;
 use Rector\Php81\Rector\Array_\FirstClassCallableRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
-use Rector\PHPUnit\Set\PHPUnitSetList;
-use Rector\Set\ValueObject\LevelSetList;
-use Rector\Set\ValueObject\SetList;
 use Rector\Symfony\Set\SymfonySetList;
 
 return RectorConfig::configure()
@@ -36,10 +33,9 @@ return RectorConfig::configure()
         __DIR__.'/vendor/phpstan/phpstan-symfony/extension.neon',
         __DIR__.'/phpstan.neon',
     ])
+    ->withPhpSets()
+    ->withPreparedSets(codeQuality: true, phpunitCodeQuality: true)
     ->withSets([
-        LevelSetList::UP_TO_PHP_82,
-        SetList::CODE_QUALITY,
-        PHPUnitSetList::PHPUNIT_CODE_QUALITY,
         SymfonySetList::SYMFONY_64,
     ])
     ->withPreparedSets(codeQuality: true);

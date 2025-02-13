@@ -23,7 +23,6 @@ final readonly class StorageBackedConnectionRepository implements ConnectionRepo
     {
         $result = [];
 
-        /** @var Connection $connection */
         foreach ($topic as $connection) {
             $client = $this->findTokenForConnection($connection);
 
@@ -44,7 +43,6 @@ final readonly class StorageBackedConnectionRepository implements ConnectionRepo
     {
         $result = [];
 
-        /** @var Connection $connection */
         foreach ($topic as $connection) {
             $client = $this->findTokenForConnection($connection);
 
@@ -63,7 +61,6 @@ final readonly class StorageBackedConnectionRepository implements ConnectionRepo
     {
         $result = [];
 
-        /** @var Connection $connection */
         foreach ($topic as $connection) {
             $client = $this->findTokenForConnection($connection);
 
@@ -100,7 +97,6 @@ final readonly class StorageBackedConnectionRepository implements ConnectionRepo
 
     public function hasConnectionForUsername(Topic $topic, string $username): bool
     {
-        /** @var Connection $connection */
         foreach ($topic as $connection) {
             $client = $this->findTokenForConnection($connection);
 
