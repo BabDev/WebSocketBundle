@@ -51,25 +51,14 @@ babdev_websocket:
                 firewalls: ['main'] # This can be an array to specify multiple firewalls or a string when specifying a single firewall 
 ```
 
-### Provider Priority
-
-When providers are registered to the authenticator service, they are then used in a "first in, first out" order, meaning the order they are triggered will be the same order they are configured in. Assuming your application has multiple authenticators and you want a custom authenticator to be attempted before the session authenticator, you would use the below configuration to do so:
-
-```yaml
-babdev_websocket:
-    authentication:
-        providers:
-            custom: ~
-            session: ~
-```
-
 ### Registering New Authenticators
 
 In addition to creating a class implementing `BabDev\WebSocketBundle\Authentication\Provider\AuthenticationProvider`, you must also register the authenticator with a `BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\AuthenticationProviderFactory` to the bundle's container extension. Similar to factories used by Symfony's `SecurityBundle`, this factory is used to allow you to configure the authenticator for your application and build the authentication provider service. 
 
-A factory is required to have two methods:
+A factory is required to have these methods:
 
 - `getKey()` - A unique name to identify the provider in the application configuration, this name is used as the key in the `providers` list
+- `getPriority()` - Defines the priority at which the authentication provider is called
 - `addConfiguration()` - Defines the configuration nodes (if any are required) for the authenticator
 - `createAuthenticationProvider()` - Registers the authentication provider service to the dependency injection container and returns the provider's service ID
 

@@ -13,26 +13,43 @@ use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\ConfigurableExtension;
 
-final class BabDevWebSocketExtension extends ConfigurableExtension
+final class BabDevWebSocketExtension extends ConfigurableExtension implements PrependExtensionInterface
 {
     /**
-     * @var list<AuthenticationProviderFactory>
+     * @var list<array{int, AuthenticationProviderFactory}>
      */
     private array $authenticationProviderFactories = [];
 
+    /**
+     * @var AuthenticationProviderFactory[]
+     */
+    private array $sortedAuthenticationProviderFactories = [];
+
+    #[\Override]
+    public function prepend(ContainerBuilder $container): void
+    {
+        foreach ($this->getSortedAuthenticationProviderFactories() as $factory) {
+            if ($factory instanceof PrependExtensionInterface) {
+                $factory->prepend($container);
+            }
+        }
+    }
+
     public function addAuthenticationProviderFactory(AuthenticationProviderFactory $factory): void
     {
-        $this->authenticationProviderFactories[] = $factory;
+        $this->authenticationProviderFactories[] = [$factory->getPriority(), $factory];
+        $this->sortedAuthenticationProviderFactories = [];
     }
 
     #[\Override]
     public function getConfiguration(array $config, ContainerBuilder $container): Configuration
     {
-        return new Configuration($this->authenticationProviderFactories);
+        return new Configuration($this->getSortedAuthenticationProviderFactories());
     }
 
     #[\Override]
@@ -65,7 +82,7 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
         $authenticators = [];
 
         if (isset($mergedConfig['authentication']['providers'])) {
-            foreach ($this->authenticationProviderFactories as $factory) {
+            foreach ($this->getSortedAuthenticationProviderFactories() as $factory) {
                 $key = str_replace('-', '_', $factory->getKey());
 
                 if (!isset($mergedConfig['authentication']['providers'][$key])) {
@@ -185,5 +202,24 @@ final class BabDevWebSocketExtension extends ConfigurableExtension
         $container->removeDefinition('babdev_websocket_server.server.server_middleware.initialize_session');
         $container->removeDefinition('babdev_websocket_server.server.session.factory');
         $container->removeDefinition('babdev_websocket_server.server.session.storage.factory.read_only_native');
+    }
+
+    /**
+     * @return AuthenticationProviderFactory[]
+     */
+    private function getSortedAuthenticationProviderFactories(): array
+    {
+        if (!$this->sortedAuthenticationProviderFactories) {
+            $authenticationProviderFactories = [];
+            foreach ($this->authenticationProviderFactories as $i => $factory) {
+                $authenticationProviderFactories[] = array_merge($factory, [$i]);
+            }
+
+            usort($authenticationProviderFactories, static fn ($a, $b) => $b[0] <=> $a[0] ?: $a[2] <=> $b[2]);
+
+            $this->sortedAuthenticationProviderFactories = array_column($authenticationProviderFactories, 1);
+        }
+
+        return $this->sortedAuthenticationProviderFactories;
     }
 }
