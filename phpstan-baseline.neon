@@ -103,7 +103,7 @@ parameters:
 			path: src/DependencyInjection/BabDevWebSocketExtension.php
 
 		-
-			message: '#^Cannot access offset string on mixed\.$#'
+			message: '#^Cannot access offset non\-empty\-string on mixed\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 1
 			path: src/DependencyInjection/BabDevWebSocketExtension.php

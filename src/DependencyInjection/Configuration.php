@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Session\Storage\SessionStorageFactoryInterf
 final readonly class Configuration implements ConfigurationInterface
 {
     /**
-     * @param list<AuthenticationProviderFactory> $authenticationProviderFactories
+     * @param AuthenticationProviderFactory[] $authenticationProviderFactories
      */
     public function __construct(private array $authenticationProviderFactories) {}
 
