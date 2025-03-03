@@ -4,6 +4,7 @@ namespace BabDev\WebSocketBundle;
 
 use BabDev\WebSocketBundle\DependencyInjection\BabDevWebSocketExtension;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\BuildMiddlewareStackCompilerPass;
+use BabDev\WebSocketBundle\DependencyInjection\Compiler\ConfigureHttpFactoriesCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\PingDBALConnectionsCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\RoutingResolverCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\SessionAuthenticationProviderFactory;
@@ -16,6 +17,7 @@ final class BabDevWebSocketBundle extends Bundle
     public function build(ContainerBuilder $container): void
     {
         $container->addCompilerPass(new BuildMiddlewareStackCompilerPass());
+        $container->addCompilerPass(new ConfigureHttpFactoriesCompilerPass());
         $container->addCompilerPass(new PingDBALConnectionsCompilerPass());
         $container->addCompilerPass(new RoutingResolverCompilerPass());
 

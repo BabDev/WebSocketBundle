@@ -164,6 +164,7 @@ return static function (ContainerConfigurator $container): void {
     $services->set('babdev_websocket_server.rfc6455.server_negotiator', ServerNegotiator::class)
         ->args([
             inline_service(RequestVerifier::class),
+            abstract_arg('response factory'),
         ])
     ;
 
