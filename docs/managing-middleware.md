@@ -48,9 +48,9 @@ If you are not using autoconfiguration, the service should be tagged with the `b
 ```yaml
 # config/services.yaml
 services:
-    App\WebSocket\Middleware\EarlyMiddleware:
-        arguments:
-            - !abstract decorated middleware
-        tags:
-            - { name: babdev_websocket_server.server_middleware, priority: -75 }
+  App\WebSocket\Middleware\EarlyMiddleware:
+    arguments:
+      - !abstract decorated middleware
+    tags:
+      - { name: babdev_websocket_server.server_middleware, priority: -75 }
 ```

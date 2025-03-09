@@ -4,6 +4,8 @@ The `BabDev\WebSocketBundle\PeriodicManager\PeriodicManager` interface represent
 
 Periodic managers are initialized during the `BabDev\WebSocketBundle\Event\BeforeRunServer` event and the manager is responsible for registering its actions to the event loop.
 
+The bundle will autoconfigure periodic managers with the `babdev_websocket_server.periodic_manager` service tag, which is required to ensure managers are correctly registered.
+
 ## Required Methods
 
 ### `getName()`
