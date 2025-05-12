@@ -19,24 +19,24 @@ To enable the session authenticator, you must add it to the `providers` list in 
 
 ```yaml
 services:
-    session.handler.pdo:
-        class: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
-        arguments:
-            - !service { class: PDO, factory: ['@database_connection', 'getWrappedConnection'] }
-            - { lock_mode: 0 }
+  session.handler.pdo:
+    class: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
+    arguments:
+      - !service { class: PDO, factory: ['@database_connection', 'getWrappedConnection'] }
+      - { lock_mode: 0 }
 
 framework:
-    session:
-        handler_id: 'session.handler.pdo'
+  session:
+    handler_id: 'session.handler.pdo'
 
 babdev_websocket:
-    authentication:
-        providers:
-            session:
-                firewalls: ~
-    server:
-        session:
-            handler_service_id: 'session.handler.pdo'
+  authentication:
+    providers:
+      session:
+        firewalls: ~
+  server:
+    session:
+      handler_service_id: 'session.handler.pdo'
 ```
 
 Configuring the session handler will add the [`InitializeSession` middleware](/open-source/packages/websocket-server/docs/1.x/middleware/initialize-session) to the websocket server which will provide a read-only interface for the session data from your website.
@@ -45,10 +45,10 @@ By default, the session authentication provider will attempt to authenticate to 
 
 ```yaml
 babdev_websocket:
-    authentication:
-        providers:
-            session:
-                firewalls: ['main'] # This can be an array to specify multiple firewalls or a string when specifying a single firewall 
+  authentication:
+    providers:
+      session:
+        firewalls: ['main'] # This can be an array to specify multiple firewalls or a string when specifying a single firewall 
 ```
 
 ### Registering New Authenticators
