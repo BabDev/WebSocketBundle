@@ -10,6 +10,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
+use Symfony\Component\Security\Core\Authentication\Token\OfflineTokenInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\User\InMemoryUser;
@@ -113,7 +114,7 @@ final class SessionAuthenticationProviderTest extends TestCase
     public function testAnAuthenticatedUserFromASharedSessionIsAuthenticated(): void
     {
         $token = new UsernamePasswordToken(
-            new InMemoryUser('user', 'password'),
+            new InMemoryUser('user', 'password', ['ROLE_USER']),
             'main',
             ['ROLE_USER'],
         );
@@ -152,6 +153,13 @@ final class SessionAuthenticationProviderTest extends TestCase
             ->method('addToken')
             ->with($storageIdentifier, self::isInstanceOf(TokenInterface::class));
 
-        self::assertEquals($token, $this->provider->authenticate($connection));
+        $authenticatedToken = $this->provider->authenticate($connection);
+
+        // After https://github.com/symfony/symfony/pull/59558 (introduced in Symfony 7.3), the roleNames property is lazily initialized so we need to trigger that
+        if (interface_exists(OfflineTokenInterface::class)) {
+            $authenticatedToken->getRoleNames();
+        }
+
+        self::assertEquals($token, $authenticatedToken);
     }
 }
