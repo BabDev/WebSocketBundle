@@ -140,7 +140,7 @@ final class BabDevWebSocketExtension extends ConfigurableExtension implements Pr
 
         // When we have a list of connections to ping, save it to a temporary container parameter for use in our compiler pass
         if ([] !== $mergedConfig['server']['periodic']['dbal']['connections']) {
-            if (!ContainerBuilder::willBeAvailable('doctrine/dbal', Connection::class, ['doctrine/doctrine-bundle', 'babdev/money-bundle'])) {
+            if (!ContainerBuilder::willBeAvailable('doctrine/dbal', Connection::class, ['doctrine/doctrine-bundle', 'babdev/websocket-bundle'])) {
                 throw new LogicException('To configure the connections to ping, you need the Doctrine DBAL and DoctrineBundle installed. Try running "composer require doctrine/dbal doctrine/doctrine-bundle".');
             }
 
