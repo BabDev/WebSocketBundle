@@ -5,6 +5,7 @@ namespace BabDev\WebSocketBundle\Tests\DependencyInjection\Compiler;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\ConfigureHttpFactoriesCompilerPass;
 use GuzzleHttp\Psr7\HttpFactory;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractCompilerPassTestCase;
+use PHPUnit\Framework\Attributes\TestDox;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Ratchet\RFC6455\Handshake\RequestVerifier;
 use Ratchet\RFC6455\Handshake\ServerNegotiator;
@@ -15,9 +16,7 @@ use Symfony\Component\DependencyInjection\Reference;
 
 final class ConfigureHttpFactoriesCompilerPassTest extends AbstractCompilerPassTestCase
 {
-    /**
-     * @testdox Uses the PSR-17 factory defined by the application
-     */
+    #[TestDox('Uses the PSR-17 factory defined by the application')]
     public function testUsesThePsr17FactoryDefinedByTheApplication(): void
     {
         $this->container->register('babdev_websocket_server.rfc6455.server_negotiator', ServerNegotiator::class)

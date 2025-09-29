@@ -8,6 +8,7 @@ use BabDev\WebSocket\Server\ServerMiddleware;
 use BabDev\WebSocketBundle\Authentication\Authenticator;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use BabDev\WebSocketBundle\Server\Middleware\AuthenticateUser;
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -31,9 +32,7 @@ final class AuthenticateUserTest extends TestCase
         $this->middleware = new AuthenticateUser($this->decoratedMiddleware, $this->authenticator, $this->tokenStorage);
     }
 
-    /**
-     * @testdox Handles a new connection being opened
-     */
+    #[TestDox('Handles a new connection being opened')]
     public function testOnOpen(): void
     {
         /** @var MockObject&Connection $connection */
@@ -50,9 +49,7 @@ final class AuthenticateUserTest extends TestCase
         $this->middleware->onOpen($connection);
     }
 
-    /**
-     * @testdox Handles incoming data on the connection
-     */
+    #[TestDox('Handles incoming data on the connection')]
     public function testOnMessage(): void
     {
         $data = 'Testing';
@@ -67,9 +64,7 @@ final class AuthenticateUserTest extends TestCase
         $this->middleware->onMessage($connection, $data);
     }
 
-    /**
-     * @testdox Closes the connection
-     */
+    #[TestDox('Closes the connection')]
     public function testOnClose(): void
     {
         /** @var MockObject&AttributeStore $attributeStore */
@@ -110,9 +105,7 @@ final class AuthenticateUserTest extends TestCase
         $this->middleware->onClose($connection);
     }
 
-    /**
-     * @testdox Handles an error
-     */
+    #[TestDox('Handles an error')]
     public function testOnError(): void
     {
         /** @var MockObject&Connection $connection */
