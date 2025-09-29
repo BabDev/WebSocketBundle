@@ -10,7 +10,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "8.3.* || 8.4.*",
+        "php": "8.3.* || 8.4.* || 8.5.*",
         "ext-pcntl": "*",
         "babdev/websocket-server": "0.1.*",
         "symfony/config": "^6.4 || ^7.3",

@@ -18,6 +18,10 @@ jobs:
             symfony: '6.4.*'
             composer-flags: '--prefer-stable --prefer-lowest'
             can-fail: false
+          - php: '8.5'
+            symfony: '7.4.*@dev'
+            composer-flags: '--prefer-stable'
+            can-fail: true
 
     name: "PHP ${{ matrix.php }} - Symfony ${{ matrix.symfony }}${{ matrix.composer-flags != '' && format(' - Composer {0}', matrix.composer-flags) || '' }}"
 

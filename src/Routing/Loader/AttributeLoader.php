@@ -13,15 +13,33 @@ use Symfony\Component\Routing\RouteCollection;
  */
 final class AttributeLoader extends AttributeClassLoader
 {
+    /**
+     * @var class-string
+     */
+    private string $routeAttributeClass;
+
     public function __construct(?string $env = null)
     {
+        $this->routeAttributeClass = AsMessageHandler::class;
+
         parent::__construct($env);
 
+        /** @phpstan-ignore function.alreadyNarrowedType */
         if (method_exists($this, 'setRouteAttributeClass')) {
             $this->setRouteAttributeClass(AsMessageHandler::class);
         } else {
             $this->setRouteAnnotationClass(AsMessageHandler::class);
         }
+    }
+
+    /**
+     * @param class-string $class
+     */
+    public function setRouteAttributeClass(string $class): void
+    {
+        $this->routeAttributeClass = $class;
+
+        parent::setRouteAttributeClass($class);
     }
 
     /**
@@ -47,7 +65,7 @@ final class AttributeLoader extends AttributeClassLoader
         $collection->addResource(new FileResource($class->getFileName()));
 
         /** @var \ReflectionAttribute<AsMessageHandler>|null $attribute */
-        $attribute = $class->getAttributes($this->routeAnnotationClass, \ReflectionAttribute::IS_INSTANCEOF)[0] ?? null;
+        $attribute = $class->getAttributes($this->routeAttributeClass, \ReflectionAttribute::IS_INSTANCEOF)[0] ?? null;
 
         if (!$attribute instanceof \ReflectionAttribute) {
             return $collection;
@@ -109,7 +127,7 @@ final class AttributeLoader extends AttributeClassLoader
     /**
      * @param \ReflectionClass<AsMessageHandler> $class
      */
-    protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, object $annot): void
+    protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, object $attr): void
     {
         // Method is purposefully unused, but is required by the parent class
     }
