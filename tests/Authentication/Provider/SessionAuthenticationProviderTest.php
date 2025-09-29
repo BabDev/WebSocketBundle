@@ -3,7 +3,7 @@
 namespace BabDev\WebSocketBundle\Tests\Authentication\Provider;
 
 use BabDev\WebSocket\Server\Connection;
-use BabDev\WebSocket\Server\Connection\AttributeStore;
+use BabDev\WebSocket\Server\Connection\ArrayAttributeStore;
 use BabDev\WebSocketBundle\Authentication\Provider\SessionAuthenticationProvider;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -34,17 +34,8 @@ final class SessionAuthenticationProviderTest extends TestCase
 
     public function testTheProviderSupportsAConnectionWhenItHasASession(): void
     {
-        /** @var MockObject&AttributeStore $attributeStore */
-        $attributeStore = $this->createMock(AttributeStore::class);
-        $attributeStore->expects(self::once())
-            ->method('has')
-            ->with('session')
-            ->willReturn(true);
-
-        $attributeStore->expects(self::once())
-            ->method('get')
-            ->with('session')
-            ->willReturn($this->createMock(SessionInterface::class));
+        $attributeStore = new ArrayAttributeStore();
+        $attributeStore->set('session', $this->createMock(SessionInterface::class));
 
         /** @var MockObject&Connection $connection */
         $connection = $this->createMock(Connection::class);
@@ -56,12 +47,7 @@ final class SessionAuthenticationProviderTest extends TestCase
 
     public function testTheProviderDoesNotSupportAConnectionWhenItDoesNotHaveASession(): void
     {
-        /** @var MockObject&AttributeStore $attributeStore */
-        $attributeStore = $this->createMock(AttributeStore::class);
-        $attributeStore->expects(self::once())
-            ->method('has')
-            ->with('session')
-            ->willReturn(false);
+        $attributeStore = new ArrayAttributeStore();
 
         /** @var MockObject&Connection $connection */
         $connection = $this->createMock(Connection::class);
@@ -80,18 +66,9 @@ final class SessionAuthenticationProviderTest extends TestCase
             ->with('_security_main')
             ->willReturn(false);
 
-        /** @var MockObject&AttributeStore $attributeStore */
-        $attributeStore = $this->createMock(AttributeStore::class);
-        $attributeStore->method('get')
-            ->withConsecutive(
-                ['session'],
-                ['resource_id'],
-            )
-            ->willReturnOnConsecutiveCalls(
-                $session,
-                'resource',
-                'test',
-            );
+        $attributeStore = new ArrayAttributeStore();
+        $attributeStore->set('session', $session);
+        $attributeStore->set('resource_id', 'resource');
 
         /** @var MockObject&Connection $connection */
         $connection = $this->createMock(Connection::class);
@@ -126,17 +103,9 @@ final class SessionAuthenticationProviderTest extends TestCase
             ->with('_security_main')
             ->willReturn(serialize($token));
 
-        /** @var MockObject&AttributeStore $attributeStore */
-        $attributeStore = $this->createMock(AttributeStore::class);
-        $attributeStore->method('get')
-            ->withConsecutive(
-                ['session'],
-                ['resource_id'],
-            )
-            ->willReturnOnConsecutiveCalls(
-                $session,
-                'resource',
-            );
+        $attributeStore = new ArrayAttributeStore();
+        $attributeStore->set('session', $session);
+        $attributeStore->set('resource_id', 'resource');
 
         /** @var MockObject&Connection $connection */
         $connection = $this->createMock(Connection::class);

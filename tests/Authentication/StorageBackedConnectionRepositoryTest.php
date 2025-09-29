@@ -122,31 +122,37 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
             ->method('getUserIdentifier')
             ->willReturn($username2);
 
-        $this->tokenStorage->expects(self::exactly(3))
-            ->method('generateStorageId')
-            ->withConsecutive(
-                [$connection1],
-                [$connection2],
-                [$connection3]
-            )
-            ->willReturnOnConsecutiveCalls(
-                (string) $storageId1,
-                (string) $storageId2,
-                (string) $storageId3
-            );
+        $generateSeries = [
+            [$connection1, (string) $storageId1],
+            [$connection2, (string) $storageId2],
+            [$connection3, (string) $storageId3],
+        ];
 
-        $this->tokenStorage->expects(self::exactly(3))
+        $this->tokenStorage->expects(self::exactly(\count($generateSeries)))
+            ->method('generateStorageId')
+            ->willReturnCallback(function (Connection $connection) use (&$generateSeries): string {
+                [$expectedConnection, $storageId] = array_shift($generateSeries);
+
+                $this->assertSame($expectedConnection, $connection);
+
+                return $storageId;
+            });
+
+        $tokenSeries = [
+            [(string) $storageId1, $token1],
+            [(string) $storageId2, $token2],
+            [(string) $storageId3, $token3],
+        ];
+
+        $this->tokenStorage->expects(self::exactly(\count($tokenSeries)))
             ->method('getToken')
-            ->withConsecutive(
-                [$storageId1],
-                [$storageId2],
-                [$storageId3]
-            )
-            ->willReturnOnConsecutiveCalls(
-                $token1,
-                $token2,
-                $token3
-            );
+            ->willReturnCallback(function (string $id) use (&$tokenSeries): TokenInterface {
+                [$expectedId, $token] = array_shift($tokenSeries);
+
+                $this->assertSame($expectedId, $id);
+
+                return $token;
+            });
 
         $topic = new Topic('testing/123');
         $topic->add($connection1);
@@ -182,27 +188,35 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
             ->method('getUser')
             ->willReturn(null);
 
-        $this->tokenStorage->expects(self::exactly(2))
-            ->method('generateStorageId')
-            ->withConsecutive(
-                [$connection1],
-                [$connection2]
-            )
-            ->willReturnOnConsecutiveCalls(
-                (string) $storageId1,
-                (string) $storageId2
-            );
+        $generateSeries = [
+            [$connection1, (string) $storageId1],
+            [$connection2, (string) $storageId2],
+        ];
 
-        $this->tokenStorage->expects(self::exactly(2))
+        $this->tokenStorage->expects(self::exactly(\count($generateSeries)))
+            ->method('generateStorageId')
+            ->willReturnCallback(function (Connection $connection) use (&$generateSeries): string {
+                [$expectedConnection, $storageId] = array_shift($generateSeries);
+
+                $this->assertSame($expectedConnection, $connection);
+
+                return $storageId;
+            });
+
+        $tokenSeries = [
+            [(string) $storageId1, $authenticatedToken],
+            [(string) $storageId2, $guestToken],
+        ];
+
+        $this->tokenStorage->expects(self::exactly(\count($tokenSeries)))
             ->method('getToken')
-            ->withConsecutive(
-                [$storageId1],
-                [$storageId2]
-            )
-            ->willReturnOnConsecutiveCalls(
-                $authenticatedToken,
-                $guestToken
-            );
+            ->willReturnCallback(function (string $id) use (&$tokenSeries): TokenInterface {
+                [$expectedId, $token] = array_shift($tokenSeries);
+
+                $this->assertSame($expectedId, $id);
+
+                return $token;
+            });
 
         $topic = new Topic('testing/123');
         $topic->add($connection1);
@@ -234,27 +248,35 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $guestToken->expects(self::never())
             ->method('getUser');
 
-        $this->tokenStorage->expects(self::exactly(2))
-            ->method('generateStorageId')
-            ->withConsecutive(
-                [$connection1],
-                [$connection2]
-            )
-            ->willReturnOnConsecutiveCalls(
-                (string) $storageId1,
-                (string) $storageId2
-            );
+        $generateSeries = [
+            [$connection1, (string) $storageId1],
+            [$connection2, (string) $storageId2],
+        ];
 
-        $this->tokenStorage->expects(self::exactly(2))
+        $this->tokenStorage->expects(self::exactly(\count($generateSeries)))
+            ->method('generateStorageId')
+            ->willReturnCallback(function (Connection $connection) use (&$generateSeries): string {
+                [$expectedConnection, $storageId] = array_shift($generateSeries);
+
+                $this->assertSame($expectedConnection, $connection);
+
+                return $storageId;
+            });
+
+        $tokenSeries = [
+            [(string) $storageId1, $authenticatedToken],
+            [(string) $storageId2, $guestToken],
+        ];
+
+        $this->tokenStorage->expects(self::exactly(\count($tokenSeries)))
             ->method('getToken')
-            ->withConsecutive(
-                [$storageId1],
-                [$storageId2]
-            )
-            ->willReturnOnConsecutiveCalls(
-                $authenticatedToken,
-                $guestToken
-            );
+            ->willReturnCallback(function (string $id) use (&$tokenSeries): TokenInterface {
+                [$expectedId, $token] = array_shift($tokenSeries);
+
+                $this->assertSame($expectedId, $id);
+
+                return $token;
+            });
 
         $topic = new Topic('testing/123');
         $topic->add($connection1);
@@ -299,31 +321,37 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
             ->method('getRoleNames')
             ->willReturn([]);
 
-        $this->tokenStorage->expects(self::exactly(3))
-            ->method('generateStorageId')
-            ->withConsecutive(
-                [$connection1],
-                [$connection2],
-                [$connection3]
-            )
-            ->willReturnOnConsecutiveCalls(
-                (string) $storageId1,
-                (string) $storageId2,
-                (string) $storageId3
-            );
+        $generateSeries = [
+            [$connection1, (string) $storageId1],
+            [$connection2, (string) $storageId2],
+            [$connection3, (string) $storageId3],
+        ];
 
-        $this->tokenStorage->expects(self::exactly(3))
+        $this->tokenStorage->expects(self::exactly(\count($generateSeries)))
+            ->method('generateStorageId')
+            ->willReturnCallback(function (Connection $connection) use (&$generateSeries): string {
+                [$expectedConnection, $storageId] = array_shift($generateSeries);
+
+                $this->assertSame($expectedConnection, $connection);
+
+                return $storageId;
+            });
+
+        $tokenSeries = [
+            [(string) $storageId1, $authenticatedToken1],
+            [(string) $storageId2, $authenticatedToken2],
+            [(string) $storageId3, $guestToken],
+        ];
+
+        $this->tokenStorage->expects(self::exactly(\count($tokenSeries)))
             ->method('getToken')
-            ->withConsecutive(
-                [$storageId1],
-                [$storageId2],
-                [$storageId3]
-            )
-            ->willReturnOnConsecutiveCalls(
-                $authenticatedToken1,
-                $authenticatedToken2,
-                $guestToken
-            );
+            ->willReturnCallback(function (string $id) use (&$tokenSeries): TokenInterface {
+                [$expectedId, $token] = array_shift($tokenSeries);
+
+                $this->assertSame($expectedId, $id);
+
+                return $token;
+            });
 
         $topic = new Topic('testing/123');
         $topic->add($connection1);
@@ -369,27 +397,35 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $token3->expects(self::never())
             ->method('getUserIdentifier');
 
-        $this->tokenStorage->expects(self::exactly(2))
-            ->method('generateStorageId')
-            ->withConsecutive(
-                [$connection1],
-                [$connection2]
-            )
-            ->willReturnOnConsecutiveCalls(
-                (string) $storageId1,
-                (string) $storageId2
-            );
+        $generateSeries = [
+            [$connection1, (string) $storageId1],
+            [$connection2, (string) $storageId2],
+        ];
 
-        $this->tokenStorage->expects(self::exactly(2))
+        $this->tokenStorage->expects(self::exactly(\count($generateSeries)))
+            ->method('generateStorageId')
+            ->willReturnCallback(function (Connection $connection) use (&$generateSeries): string {
+                [$expectedConnection, $storageId] = array_shift($generateSeries);
+
+                $this->assertSame($expectedConnection, $connection);
+
+                return $storageId;
+            });
+
+        $tokenSeries = [
+            [(string) $storageId1, $token1],
+            [(string) $storageId2, $token2],
+        ];
+
+        $this->tokenStorage->expects(self::exactly(\count($tokenSeries)))
             ->method('getToken')
-            ->withConsecutive(
-                [$storageId1],
-                [$storageId2]
-            )
-            ->willReturnOnConsecutiveCalls(
-                $token1,
-                $token2
-            );
+            ->willReturnCallback(function (string $id) use (&$tokenSeries): TokenInterface {
+                [$expectedId, $token] = array_shift($tokenSeries);
+
+                $this->assertSame($expectedId, $id);
+
+                return $token;
+            });
 
         $topic = new Topic('testing/123');
         $topic->add($connection1);
