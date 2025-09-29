@@ -15,4 +15,4 @@ The below table shows the supported PHP and Symfony versions for this bundle.
 
 | Version | Status         | PHP Versions | Symfony Versions |
 |---------|----------------|--------------|------------------|
-| 1.x     | In Development | 8.3-8.4      | 6.4, 7.2         |
+| 1.x     | In Development | 8.3-8.4      | 6.4, 7.3         |
