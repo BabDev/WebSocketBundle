@@ -17,6 +17,7 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\ConfigurableExtension;
+use Symfony\Component\Routing\Loader\XmlFileLoader as RoutingXmlFileLoader;
 
 final class BabDevWebSocketExtension extends ConfigurableExtension implements PrependExtensionInterface
 {
@@ -62,6 +63,10 @@ final class BabDevWebSocketExtension extends ConfigurableExtension implements Pr
     {
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__.'/../../config'));
         $loader->load('services.php');
+
+        if (!class_exists(RoutingXmlFileLoader::class)) {
+            $container->removeDefinition('babdev_websocket_server.routing.loader.xml');
+        }
 
         $container->registerAttributeForAutoconfiguration(AsMessageHandler::class, static function (ChildDefinition $definition, AsMessageHandler $attribute): void {
             $definition->addTag('babdev_websocket_server.message_handler');
