@@ -16,16 +16,14 @@ final class AttributeLoader extends AttributeClassLoader
     /**
      * @var class-string
      */
-    private string $routeAttributeClass;
+    private string $routeAttributeClass = AsMessageHandler::class;
 
     public function __construct(?string $env = null)
     {
-        $this->routeAttributeClass = AsMessageHandler::class;
-
         parent::__construct($env);
 
         /** @phpstan-ignore function.alreadyNarrowedType */
-        if (method_exists($this, 'setRouteAttributeClass')) {
+        if (method_exists(AttributeClassLoader::class, 'setRouteAttributeClass')) {
             $this->setRouteAttributeClass(AsMessageHandler::class);
         } else {
             $this->setRouteAnnotationClass(AsMessageHandler::class);
@@ -35,6 +33,22 @@ final class AttributeLoader extends AttributeClassLoader
     /**
      * @param class-string $class
      */
+    #[\Deprecated(message: 'use setRouteAttributeClass() instead', since: 'babdev/websocket-server 0.1')]
+    #[\Override]
+    public function setRouteAnnotationClass(string $class): void
+    {
+        $this->routeAttributeClass = $class;
+
+        /** @phpstan-ignore function.alreadyNarrowedType */
+        if (method_exists(AttributeClassLoader::class, 'setRouteAnnotationClass')) {
+            parent::setRouteAnnotationClass($class);
+        }
+    }
+
+    /**
+     * @param class-string $class
+     */
+    #[\Override]
     public function setRouteAttributeClass(string $class): void
     {
         $this->routeAttributeClass = $class;
@@ -113,7 +127,7 @@ final class AttributeLoader extends AttributeClassLoader
 
             if (0 !== $locale) {
                 $route->setDefault('_locale', $locale);
-                $route->setRequirement('_locale', preg_quote($locale));
+                $route->setRequirement('_locale', preg_quote((string) $locale));
                 $route->setDefault('_canonical_route', $name);
                 $collection->add($name.'.'.$locale, $route, $priority);
             } else {
