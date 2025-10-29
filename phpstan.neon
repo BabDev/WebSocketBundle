@@ -6,6 +6,8 @@ parameters:
   paths:
     - %currentWorkingDirectory%/src
     - %currentWorkingDirectory%/tests
+  excludePaths:
+    - %currentWorkingDirectory%/src/DependencyInjection/Configuration.php # PHPStan's Symfony extension doesn't know how to work with the generics added in 7.4
   treatPhpDocTypesAsCertain: false
   ignoreErrors:
     -

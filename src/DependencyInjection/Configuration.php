@@ -19,8 +19,12 @@ final readonly class Configuration implements ConfigurationInterface
      */
     public function __construct(private array $authenticationProviderFactories) {}
 
+    /**
+     * @return TreeBuilder<'array'>
+     */
     public function getConfigTreeBuilder(): TreeBuilder
     {
+        /** @var TreeBuilder<'array'> $treeBuilder */
         $treeBuilder = new TreeBuilder('babdev_websocket');
 
         $rootNode = $treeBuilder->getRootNode();
@@ -31,6 +35,9 @@ final readonly class Configuration implements ConfigurationInterface
         return $treeBuilder;
     }
 
+    /**
+     * @param ArrayNodeDefinition<TreeBuilder<'array'>> $rootNode
+     */
     private function addAuthenticationSection(ArrayNodeDefinition $rootNode): void
     {
         $authenticationNode = $rootNode->children()
@@ -40,6 +47,9 @@ final readonly class Configuration implements ConfigurationInterface
         $this->addAuthenticationProvidersSection($authenticationNode);
     }
 
+    /**
+     * @param ArrayNodeDefinition<TreeBuilder<'array'>> $authenticationNode
+     */
     private function addAuthenticationProvidersSection(ArrayNodeDefinition $authenticationNode): void
     {
         $providerNodeBuilder = $authenticationNode
@@ -56,6 +66,9 @@ final readonly class Configuration implements ConfigurationInterface
         }
     }
 
+    /**
+     * @param ArrayNodeDefinition<TreeBuilder<'array'>> $rootNode
+     */
     private function addServerSection(ArrayNodeDefinition $rootNode): void
     {
         $rootNode->children()
