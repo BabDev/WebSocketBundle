@@ -31,7 +31,7 @@ babdev_websocket:
       enabled:              false
 
       # The interval, in seconds, which connections are pinged.
-      interval:             30 # Required
+      interval:             30
     periodic:
       dbal:
 
@@ -39,7 +39,7 @@ babdev_websocket:
         connections:          []
 
         # The interval, in seconds, which connections are pinged.
-        interval:             60 # Required
+        interval:             60
     router:
 
       # The main routing resource to import when loading the websocket server route definitions.
