@@ -15,13 +15,13 @@ final class ServiceBasedMiddlewareStackBuilderTest extends TestCase
         /** @var MockObject&ServerMiddleware $middleware */
         $middleware = $this->createMock(ServerMiddleware::class);
 
-        self::assertSame($middleware, (new ServiceBasedMiddlewareStackBuilder($middleware))->build());
+        self::assertSame($middleware, new ServiceBasedMiddlewareStackBuilder($middleware)->build());
     }
 
     public function testRaisesAnErrorWhenTheMiddlewareIsNotInjected(): void
     {
         $this->expectException(MiddlewareNotConfigured::class);
 
-        (new ServiceBasedMiddlewareStackBuilder())->build();
+        new ServiceBasedMiddlewareStackBuilder()->build();
     }
 }

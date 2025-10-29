@@ -30,7 +30,7 @@ final class RouterCacheWarmerTest extends TestCase
         self::assertSame([
             UrlGenerator::class,
             UrlMatcher::class,
-        ], (new RouterCacheWarmer($innerCacheWarmer, $cacheFolder))->warmUp($cacheDir, null));
+        ], new RouterCacheWarmer($innerCacheWarmer, $cacheFolder)->warmUp($cacheDir, null));
     }
 
     public function testWarmUpWithBuildDir(): void
@@ -53,6 +53,6 @@ final class RouterCacheWarmerTest extends TestCase
         self::assertSame([
             UrlGenerator::class,
             UrlMatcher::class,
-        ], (new RouterCacheWarmer($innerCacheWarmer, $cacheFolder))->warmUp($cacheDir, $buildDir));
+        ], new RouterCacheWarmer($innerCacheWarmer, $cacheFolder)->warmUp($cacheDir, $buildDir));
     }
 }

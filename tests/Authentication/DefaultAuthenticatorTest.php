@@ -25,7 +25,7 @@ final class DefaultAuthenticatorTest extends TestCase
         $tokenStorage->expects(self::never())
             ->method('addToken');
 
-        (new DefaultAuthenticator([], $tokenStorage))->authenticate($connection);
+        new DefaultAuthenticator([], $tokenStorage)->authenticate($connection);
     }
 
     public function testTheAuthenticatorAuthenticatesAConnectionWhenItHasOneProvider(): void
@@ -59,7 +59,7 @@ final class DefaultAuthenticatorTest extends TestCase
             ->with($connection)
             ->willReturn($token);
 
-        (new DefaultAuthenticator([$authenticationProvider], $tokenStorage))->authenticate($connection);
+        new DefaultAuthenticator([$authenticationProvider], $tokenStorage)->authenticate($connection);
     }
 
     public function testTheAuthenticatorAuthenticatesAConnectionUsingTheFirstSupportedProvider(): void
@@ -111,6 +111,6 @@ final class DefaultAuthenticatorTest extends TestCase
         $authenticationProvider3->expects(self::never())
             ->method('authenticate');
 
-        (new DefaultAuthenticator([$authenticationProvider1, $authenticationProvider2, $authenticationProvider3], $tokenStorage))->authenticate($connection);
+        new DefaultAuthenticator([$authenticationProvider1, $authenticationProvider2, $authenticationProvider3], $tokenStorage)->authenticate($connection);
     }
 }

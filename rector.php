@@ -3,7 +3,6 @@
 use Rector\Config\RectorConfig;
 use Rector\Php81\Rector\Array_\FirstClassCallableRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
-use Rector\Symfony\Set\SymfonySetList;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -34,8 +33,4 @@ return RectorConfig::configure()
         __DIR__.'/phpstan.neon',
     ])
     ->withPhpSets()
-    ->withPreparedSets(codeQuality: true, phpunitCodeQuality: true)
-    ->withSets([
-        SymfonySetList::SYMFONY_64,
-    ])
-    ->withPreparedSets(codeQuality: true);
+    ->withPreparedSets(codeQuality: true, phpunitCodeQuality: true);
