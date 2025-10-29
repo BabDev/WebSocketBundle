@@ -85,14 +85,14 @@ final class AttributeLoader extends AttributeClassLoader
             return $collection;
         }
 
-        /** @var AsMessageHandler $attrib */
-        $attrib = $attribute->newInstance();
+        /** @var AsMessageHandler $attr */
+        $attr = $attribute->newInstance();
 
-        if ($attrib->getEnv() && $attrib->getEnv() !== $this->env) {
+        if ($attr->envs && !\in_array($this->env, $attr->envs, true)) {
             return $collection;
         }
 
-        $requirements = $attrib->getRequirements();
+        $requirements = $attr->requirements;
 
         foreach ($requirements as $placeholder => $requirement) {
             if (\is_int($placeholder)) {
@@ -100,17 +100,17 @@ final class AttributeLoader extends AttributeClassLoader
             }
         }
 
-        $name = $attrib->getName() ?? $this->getDefaultRouteName($class);
-        $defaults = $attrib->getDefaults();
-        $options = $attrib->getOptions();
-        $schemes = $attrib->getSchemes();
-        $methods = $attrib->getMethods();
+        $name = $attr->name ?? $this->getDefaultRouteName($class);
+        $defaults = $attr->defaults;
+        $options = $attr->options;
+        $schemes = $attr->schemes;
+        $methods = $attr->methods;
 
-        $host = $attrib->getHost() ?? '';
-        $condition = $attrib->getCondition() ?? '';
-        $priority = $attrib->getPriority() ?? 0;
+        $host = $attr->host ?? '';
+        $condition = $attr->condition ?? '';
+        $priority = $attr->priority ?? 0;
 
-        $path = $attrib->getLocalizedPaths() ?: $attrib->getPath();
+        $path = $attr->path;
         $paths = [];
 
         if (\is_array($path)) {
