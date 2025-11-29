@@ -34,14 +34,12 @@ final class AttributeLoader extends AttributeClassLoader
      * @param class-string $class
      */
     #[\Deprecated(message: 'use setRouteAttributeClass() instead', since: 'babdev/websocket-server 0.1')]
-    #[\Override]
     public function setRouteAnnotationClass(string $class): void
     {
         $this->routeAttributeClass = $class;
 
-        /** @phpstan-ignore function.alreadyNarrowedType */
         if (method_exists(AttributeClassLoader::class, 'setRouteAnnotationClass')) {
-            parent::setRouteAnnotationClass($class);
+            parent::setRouteAnnotationClass($class); // @phpstan-ignore staticMethod.notFound
         }
     }
 
