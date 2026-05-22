@@ -3,14 +3,14 @@
 namespace BabDev\WebSocketBundle\Tests\Authentication;
 
 use BabDev\WebSocket\Server\Connection;
-use BabDev\WebSocketBundle\Authentication\DefaultAuthenticator;
+use BabDev\WebSocketBundle\Authentication\ProviderBackedAuthenticator;
 use BabDev\WebSocketBundle\Authentication\Provider\AuthenticationProvider;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
-final class DefaultAuthenticatorTest extends TestCase
+final class ProviderBackedAuthenticatorTest extends TestCase
 {
     public function testTheAuthenticatorDoesNotAuthenticateAConnectionWhenItHasNoProviders(): void
     {
@@ -25,7 +25,7 @@ final class DefaultAuthenticatorTest extends TestCase
         $tokenStorage->expects(self::never())
             ->method('addToken');
 
-        new DefaultAuthenticator([], $tokenStorage)->authenticate($connection);
+        new ProviderBackedAuthenticator([], $tokenStorage)->authenticate($connection);
     }
 
     public function testTheAuthenticatorAuthenticatesAConnectionWhenItHasOneProvider(): void
@@ -59,7 +59,7 @@ final class DefaultAuthenticatorTest extends TestCase
             ->with($connection)
             ->willReturn($token);
 
-        new DefaultAuthenticator([$authenticationProvider], $tokenStorage)->authenticate($connection);
+        new ProviderBackedAuthenticator([$authenticationProvider], $tokenStorage)->authenticate($connection);
     }
 
     public function testTheAuthenticatorAuthenticatesAConnectionUsingTheFirstSupportedProvider(): void
@@ -111,6 +111,6 @@ final class DefaultAuthenticatorTest extends TestCase
         $authenticationProvider3->expects(self::never())
             ->method('authenticate');
 
-        new DefaultAuthenticator([$authenticationProvider1, $authenticationProvider2, $authenticationProvider3], $tokenStorage)->authenticate($connection);
+        new ProviderBackedAuthenticator([$authenticationProvider1, $authenticationProvider2, $authenticationProvider3], $tokenStorage)->authenticate($connection);
     }
 }

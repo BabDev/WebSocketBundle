@@ -25,7 +25,7 @@ use BabDev\WebSocket\Server\WAMP\TopicRegistry;
 use BabDev\WebSocket\Server\WebSocket\Middleware\EstablishWebSocketConnection;
 use BabDev\WebSocketBundle\Authentication\Authenticator;
 use BabDev\WebSocketBundle\Authentication\ConnectionRepository;
-use BabDev\WebSocketBundle\Authentication\DefaultAuthenticator;
+use BabDev\WebSocketBundle\Authentication\ProviderBackedAuthenticator;
 use BabDev\WebSocketBundle\Authentication\Provider\SessionAuthenticationProvider;
 use BabDev\WebSocketBundle\Authentication\Storage\Driver\InMemoryStorageDriver;
 use BabDev\WebSocketBundle\Authentication\Storage\Driver\StorageDriver;
@@ -78,7 +78,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services = $container->services();
 
-    $services->set('babdev_websocket_server.authentication.authenticator', DefaultAuthenticator::class)
+    $services->set('babdev_websocket_server.authentication.authenticator', ProviderBackedAuthenticator::class)
         ->args([
             abstract_arg('authentication providers'),
             service(TokenStorage::class),

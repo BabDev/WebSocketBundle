@@ -9,7 +9,7 @@ use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 
-final class DefaultAuthenticator implements Authenticator, LoggerAwareInterface
+final class ProviderBackedAuthenticator implements Authenticator, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
