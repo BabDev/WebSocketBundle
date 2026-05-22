@@ -8,6 +8,7 @@ use BabDev\WebSocketBundle\Authentication\Provider\AuthenticationProvider;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 final class ProviderBackedAuthenticatorTest extends TestCase
@@ -19,11 +20,13 @@ final class ProviderBackedAuthenticatorTest extends TestCase
 
         /** @var MockObject&TokenStorage $tokenStorage */
         $tokenStorage = $this->createMock(TokenStorage::class);
-        $tokenStorage->expects(self::never())
-            ->method('generateStorageId');
+        $tokenStorage->expects(self::once())
+            ->method('generateStorageId')
+            ->willReturn('conn-123');
 
-        $tokenStorage->expects(self::never())
-            ->method('addToken');
+        $tokenStorage->expects(self::once())
+            ->method('addToken')
+            ->with('conn-123', self::isInstanceOf(NullToken::class));
 
         new ProviderBackedAuthenticator([], $tokenStorage)->authenticate($connection);
     }
