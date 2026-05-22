@@ -86,7 +86,7 @@ final readonly class StorageBackedConnectionRepository implements ConnectionRepo
             // Generally this would mean the token expired from storage, attempt to re-authenticate the connection
             $this->authenticator->authenticate($connection);
 
-            return $this->findTokenForConnection($connection);
+            return $this->tokenStorage->getToken($storageId);
         }
     }
 

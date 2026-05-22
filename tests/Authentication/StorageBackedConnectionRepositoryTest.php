@@ -66,7 +66,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         /** @var MockObject&TokenInterface $token */
         $token = $this->createMock(TokenInterface::class);
 
-        $this->tokenStorage->expects(self::exactly(2))
+        $this->tokenStorage->expects(self::once())
             ->method('generateStorageId')
             ->with($connection)
             ->willReturn((string) $storageId);
