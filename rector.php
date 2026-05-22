@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
-use Rector\Php81\Rector\Array_\FirstClassCallableRector;
+use Rector\Php81\Rector\Array_\ArrayToFirstClassCallableRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
 
 return RectorConfig::configure()
@@ -21,7 +21,7 @@ return RectorConfig::configure()
          * Skip selected rules in selected files
          */
 
-        FirstClassCallableRector::class => [
+        ArrayToFirstClassCallableRector::class => [
             // Do not change callables in config
             __DIR__.'/config/*',
         ],

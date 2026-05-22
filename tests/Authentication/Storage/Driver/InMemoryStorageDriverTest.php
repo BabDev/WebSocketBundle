@@ -4,7 +4,7 @@ namespace BabDev\WebSocketBundle\Tests\Authentication\Storage\Driver;
 
 use BabDev\WebSocketBundle\Authentication\Storage\Driver\InMemoryStorageDriver;
 use BabDev\WebSocketBundle\Authentication\Storage\Exception\TokenNotFound;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
@@ -12,8 +12,8 @@ final class InMemoryStorageDriverTest extends TestCase
 {
     public function testTokenIsManagedInStorage(): void
     {
-        /** @var MockObject&TokenInterface $token */
-        $token = $this->createMock(TokenInterface::class);
+        /** @var Stub&TokenInterface $token */
+        $token = self::createStub(TokenInterface::class);
 
         $driver = new InMemoryStorageDriver();
 

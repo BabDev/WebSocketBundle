@@ -3,10 +3,11 @@
 namespace BabDev\WebSocketBundle\Tests\Authentication;
 
 use BabDev\WebSocket\Server\Connection;
-use BabDev\WebSocketBundle\Authentication\ProviderBackedAuthenticator;
 use BabDev\WebSocketBundle\Authentication\Provider\AuthenticationProvider;
+use BabDev\WebSocketBundle\Authentication\ProviderBackedAuthenticator;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -15,8 +16,8 @@ final class ProviderBackedAuthenticatorTest extends TestCase
 {
     public function testTheAuthenticatorDoesNotAuthenticateAConnectionWhenItHasNoProviders(): void
     {
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        /** @var Stub&Connection $connection */
+        $connection = self::createStub(Connection::class);
 
         /** @var MockObject&TokenStorage $tokenStorage */
         $tokenStorage = $this->createMock(TokenStorage::class);
@@ -33,11 +34,11 @@ final class ProviderBackedAuthenticatorTest extends TestCase
 
     public function testTheAuthenticatorAuthenticatesAConnectionWhenItHasOneProvider(): void
     {
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        /** @var Stub&Connection $connection */
+        $connection = self::createStub(Connection::class);
 
-        /** @var MockObject&TokenInterface $token */
-        $token = $this->createMock(TokenInterface::class);
+        /** @var Stub&TokenInterface $token */
+        $token = self::createStub(TokenInterface::class);
 
         /** @var MockObject&TokenStorage $tokenStorage */
         $tokenStorage = $this->createMock(TokenStorage::class);
@@ -67,11 +68,11 @@ final class ProviderBackedAuthenticatorTest extends TestCase
 
     public function testTheAuthenticatorAuthenticatesAConnectionUsingTheFirstSupportedProvider(): void
     {
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        /** @var Stub&Connection $connection */
+        $connection = self::createStub(Connection::class);
 
-        /** @var MockObject&TokenInterface $token */
-        $token = $this->createMock(TokenInterface::class);
+        /** @var Stub&TokenInterface $token */
+        $token = self::createStub(TokenInterface::class);
 
         /** @var MockObject&TokenStorage $tokenStorage */
         $tokenStorage = $this->createMock(TokenStorage::class);

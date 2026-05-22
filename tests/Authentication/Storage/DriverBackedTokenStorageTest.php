@@ -8,6 +8,7 @@ use BabDev\WebSocketBundle\Authentication\Storage\Driver\StorageDriver;
 use BabDev\WebSocketBundle\Authentication\Storage\DriverBackedTokenStorage;
 use BabDev\WebSocketBundle\Authentication\Storage\Exception\StorageError;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
@@ -47,8 +48,8 @@ final class DriverBackedTokenStorageTest extends TestCase
 
     public function testTheTokenIsAddedToStorage(): void
     {
-        /** @var MockObject&TokenInterface $token */
-        $token = $this->createMock(TokenInterface::class);
+        /** @var Stub&TokenInterface $token */
+        $token = self::createStub(TokenInterface::class);
 
         $this->driver->expects(self::once())
             ->method('store')
@@ -79,8 +80,8 @@ final class DriverBackedTokenStorageTest extends TestCase
     {
         $storageId = '42';
 
-        /** @var MockObject&TokenInterface $token */
-        $token = $this->createMock(TokenInterface::class);
+        /** @var Stub&TokenInterface $token */
+        $token = self::createStub(TokenInterface::class);
 
         $this->driver->expects(self::once())
             ->method('get')

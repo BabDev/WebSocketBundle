@@ -46,7 +46,7 @@ final class PingDoctrineDBALConnectionsPeriodicManagerTest extends TestCase
 
         $loop->expects(self::once())
             ->method('addPeriodicTimer')
-            ->willReturn($this->createMock(TimerInterface::class));
+            ->willReturn(self::createStub(TimerInterface::class));
 
         $this->manager->register($loop);
     }

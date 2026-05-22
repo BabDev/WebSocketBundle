@@ -11,7 +11,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
-use Symfony\Component\Security\Core\Authentication\Token\OfflineTokenInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\User\InMemoryUser;
@@ -36,7 +35,7 @@ final class SessionAuthenticationProviderTest extends TestCase
     public function testTheProviderSupportsAConnectionWhenItHasASession(): void
     {
         $attributeStore = new ArrayAttributeStore();
-        $attributeStore->set('session', $this->createMock(SessionInterface::class));
+        $attributeStore->set('session', self::createStub(SessionInterface::class));
 
         /** @var MockObject&Connection $connection */
         $connection = $this->createMock(Connection::class);

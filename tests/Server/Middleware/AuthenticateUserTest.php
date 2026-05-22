@@ -10,6 +10,7 @@ use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use BabDev\WebSocketBundle\Server\Middleware\AuthenticateUser;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
@@ -35,8 +36,8 @@ final class AuthenticateUserTest extends TestCase
     #[TestDox('Handles a new connection being opened')]
     public function testOnOpen(): void
     {
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        /** @var Stub&Connection $connection */
+        $connection = self::createStub(Connection::class);
 
         $this->authenticator->expects(self::once())
             ->method('authenticate')
@@ -54,8 +55,8 @@ final class AuthenticateUserTest extends TestCase
     {
         $data = 'Testing';
 
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        /** @var Stub&Connection $connection */
+        $connection = self::createStub(Connection::class);
 
         $this->decoratedMiddleware->expects(self::once())
             ->method('onMessage')
@@ -95,7 +96,7 @@ final class AuthenticateUserTest extends TestCase
         $this->tokenStorage->expects(self::once())
             ->method('getToken')
             ->with('resource')
-            ->willReturn($this->createMock(TokenInterface::class));
+            ->willReturn(self::createStub(TokenInterface::class));
 
         $this->tokenStorage->expects(self::once())
             ->method('removeToken')
@@ -108,8 +109,8 @@ final class AuthenticateUserTest extends TestCase
     #[TestDox('Handles an error')]
     public function testOnError(): void
     {
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        /** @var Stub&Connection $connection */
+        $connection = self::createStub(Connection::class);
 
         $error = new \Exception('Testing');
 

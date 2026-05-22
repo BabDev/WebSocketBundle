@@ -11,6 +11,7 @@ use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use BabDev\WebSocketBundle\Authentication\StorageBackedConnectionRepository;
 use BabDev\WebSocketBundle\Authentication\TokenConnection;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -35,13 +36,13 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
 
     public function testFindTokenForConnection(): void
     {
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        /** @var Stub&Connection $connection */
+        $connection = self::createStub(Connection::class);
 
         $storageId = 42;
 
-        /** @var MockObject&TokenInterface $token */
-        $token = $this->createMock(TokenInterface::class);
+        /** @var Stub&TokenInterface $token */
+        $token = self::createStub(TokenInterface::class);
 
         $this->tokenStorage->expects(self::once())
             ->method('generateStorageId')
@@ -58,13 +59,13 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
 
     public function testFindTokenForConnectionAfterReauthenticating(): void
     {
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        /** @var Stub&Connection $connection */
+        $connection = self::createStub(Connection::class);
 
         $storageId = 42;
 
-        /** @var MockObject&TokenInterface $token */
-        $token = $this->createMock(TokenInterface::class);
+        /** @var Stub&TokenInterface $token */
+        $token = self::createStub(TokenInterface::class);
 
         $this->tokenStorage->expects(self::once())
             ->method('generateStorageId')
@@ -88,14 +89,14 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
 
     public function testAllConnectionsForAUserCanBeFoundByUsername(): void
     {
-        /** @var MockObject&WAMPConnection $connection1 */
-        $connection1 = $this->createMock(WAMPConnection::class);
+        /** @var Stub&WAMPConnection $connection1 */
+        $connection1 = self::createStub(WAMPConnection::class);
 
-        /** @var MockObject&WAMPConnection $connection2 */
-        $connection2 = $this->createMock(WAMPConnection::class);
+        /** @var Stub&WAMPConnection $connection2 */
+        $connection2 = self::createStub(WAMPConnection::class);
 
-        /** @var MockObject&WAMPConnection $connection3 */
-        $connection3 = $this->createMock(WAMPConnection::class);
+        /** @var Stub&WAMPConnection $connection3 */
+        $connection3 = self::createStub(WAMPConnection::class);
 
         $storageId1 = 42;
         $storageId2 = 43;
@@ -167,22 +168,22 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
 
     public function testFetchingAllConnectionsByDefaultOnlyReturnsAuthenticatedUsers(): void
     {
-        /** @var MockObject&WAMPConnection $connection1 */
-        $connection1 = $this->createMock(WAMPConnection::class);
+        /** @var Stub&WAMPConnection $connection1 */
+        $connection1 = self::createStub(WAMPConnection::class);
 
-        /** @var MockObject&WAMPConnection $connection2 */
-        $connection2 = $this->createMock(WAMPConnection::class);
+        /** @var Stub&WAMPConnection $connection2 */
+        $connection2 = self::createStub(WAMPConnection::class);
 
         $storageId1 = 42;
         $storageId2 = 84;
 
-        /** @var MockObject&TokenInterface $authenticatedToken */
+        /** @var Stub&TokenInterface $authenticatedToken */
         $authenticatedToken = $this->createMock(TokenInterface::class);
         $authenticatedToken->expects(self::once())
             ->method('getUser')
-            ->willReturn($this->createMock(UserInterface::class));
+            ->willReturn(self::createStub(UserInterface::class));
 
-        /** @var MockObject&TokenInterface $guestToken */
+        /** @var Stub&TokenInterface $guestToken */
         $guestToken = $this->createMock(TokenInterface::class);
         $guestToken->expects(self::once())
             ->method('getUser')
@@ -229,11 +230,11 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
 
     public function testFetchingAllConnectionsWithAnonymousFlagReturnsAllConnectedUsers(): void
     {
-        /** @var MockObject&WAMPConnection $connection1 */
-        $connection1 = $this->createMock(WAMPConnection::class);
+        /** @var Stub&WAMPConnection $connection1 */
+        $connection1 = self::createStub(WAMPConnection::class);
 
-        /** @var MockObject&WAMPConnection $connection2 */
-        $connection2 = $this->createMock(WAMPConnection::class);
+        /** @var Stub&WAMPConnection $connection2 */
+        $connection2 = self::createStub(WAMPConnection::class);
 
         $storageId1 = 42;
         $storageId2 = 84;
@@ -290,14 +291,14 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
 
     public function testFetchingAllUsersWithDefinedRolesOnlyReturnsMatchingUsers(): void
     {
-        /** @var MockObject&WAMPConnection $connection1 */
-        $connection1 = $this->createMock(WAMPConnection::class);
+        /** @var Stub&WAMPConnection $connection1 */
+        $connection1 = self::createStub(WAMPConnection::class);
 
-        /** @var MockObject&WAMPConnection $connection2 */
-        $connection2 = $this->createMock(WAMPConnection::class);
+        /** @var Stub&WAMPConnection $connection2 */
+        $connection2 = self::createStub(WAMPConnection::class);
 
-        /** @var MockObject&WAMPConnection $connection3 */
-        $connection3 = $this->createMock(WAMPConnection::class);
+        /** @var Stub&WAMPConnection $connection3 */
+        $connection3 = self::createStub(WAMPConnection::class);
 
         $storageId1 = 42;
         $storageId2 = 84;
@@ -365,14 +366,14 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
 
     public function testReportsWhetherAUserWithTheGivenUsernameHasAConnection(): void
     {
-        /** @var MockObject&WAMPConnection $connection1 */
-        $connection1 = $this->createMock(WAMPConnection::class);
+        /** @var Stub&WAMPConnection $connection1 */
+        $connection1 = self::createStub(WAMPConnection::class);
 
-        /** @var MockObject&WAMPConnection $connection2 */
-        $connection2 = $this->createMock(WAMPConnection::class);
+        /** @var Stub&WAMPConnection $connection2 */
+        $connection2 = self::createStub(WAMPConnection::class);
 
-        /** @var MockObject&WAMPConnection $connection3 */
-        $connection3 = $this->createMock(WAMPConnection::class);
+        /** @var Stub&WAMPConnection $connection3 */
+        $connection3 = self::createStub(WAMPConnection::class);
 
         $storageId1 = 42;
         $storageId2 = 43;

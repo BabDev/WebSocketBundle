@@ -8,6 +8,7 @@ use BabDev\WebSocketBundle\EventListener\PeriodicManagerSubscriber;
 use BabDev\WebSocketBundle\PeriodicManager\PeriodicManager;
 use BabDev\WebSocketBundle\PeriodicManager\PeriodicManagerRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use React\EventLoop\LoopInterface;
 use React\Socket\ServerInterface;
@@ -29,11 +30,11 @@ final class PeriodicManagerSubscriberTest extends TestCase
 
     public function testCancelsPeriodicManagers(): void
     {
-        /** @var MockObject&LoopInterface $loop */
-        $loop = $this->createMock(LoopInterface::class);
+        /** @var Stub&LoopInterface $loop */
+        $loop = self::createStub(LoopInterface::class);
 
-        /** @var MockObject&ServerInterface $server */
-        $server = $this->createMock(ServerInterface::class);
+        /** @var Stub&ServerInterface $server */
+        $server = self::createStub(ServerInterface::class);
 
         /** @var MockObject&PeriodicManager $manager */
         $manager = $this->createMock(PeriodicManager::class);
@@ -48,11 +49,11 @@ final class PeriodicManagerSubscriberTest extends TestCase
 
     public function testInitializesPeriodicManagers(): void
     {
-        /** @var MockObject&LoopInterface $loop */
-        $loop = $this->createMock(LoopInterface::class);
+        /** @var Stub&LoopInterface $loop */
+        $loop = self::createStub(LoopInterface::class);
 
-        /** @var MockObject&ServerInterface $server */
-        $server = $this->createMock(ServerInterface::class);
+        /** @var Stub&ServerInterface $server */
+        $server = self::createStub(ServerInterface::class);
 
         /** @var MockObject&PeriodicManager $manager */
         $manager = $this->createMock(PeriodicManager::class);
