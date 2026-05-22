@@ -4,6 +4,7 @@ namespace BabDev\WebSocketBundle\Tests\Authentication\Provider;
 
 use BabDev\WebSocket\Server\Connection;
 use BabDev\WebSocket\Server\Connection\ArrayAttributeStore;
+use BabDev\WebSocketBundle\Authentication\Exception\AuthenticationException;
 use BabDev\WebSocketBundle\Authentication\Provider\SessionAuthenticationProvider;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -125,10 +126,99 @@ final class SessionAuthenticationProviderTest extends TestCase
         $authenticatedToken = $this->provider->authenticate($connection);
 
         // After https://github.com/symfony/symfony/pull/59558 (introduced in Symfony 7.3), the roleNames property is lazily initialized so we need to trigger that
-        if (interface_exists(OfflineTokenInterface::class)) {
-            $authenticatedToken->getRoleNames();
-        }
+        $authenticatedToken->getRoleNames();
 
         self::assertEquals($token, $authenticatedToken);
+    }
+
+    public function testANullTokenUsedWhenANonSecurityTokenIsExtractedFromTheSession(): void
+    {
+        /** @var MockObject&SessionInterface $session */
+        $session = $this->createMock(SessionInterface::class);
+        $session->expects(self::once())
+            ->method('get')
+            ->with('_security_main')
+            ->willReturn(serialize(new \stdClass()));
+
+        $attributeStore = new ArrayAttributeStore();
+        $attributeStore->set('session', $session);
+        $attributeStore->set('resource_id', 'resource');
+
+        /** @var MockObject&Connection $connection */
+        $connection = $this->createMock(Connection::class);
+        $connection->method('getAttributeStore')
+            ->willReturn($attributeStore);
+
+        $storageIdentifier = '42';
+
+        $this->tokenStorage->expects(self::once())
+            ->method('generateStorageId')
+            ->willReturn($storageIdentifier);
+
+        $this->tokenStorage->expects(self::once())
+            ->method('addToken')
+            ->with($storageIdentifier, self::isInstanceOf(TokenInterface::class));
+
+        self::assertInstanceOf(NullToken::class, $this->provider->authenticate($connection));
+    }
+
+    public function testANullTokenUsedWhenUnserializingTheTokenRaisesAnError(): void
+    {
+        /** @var MockObject&SessionInterface $session */
+        $session = $this->createMock(SessionInterface::class);
+        $session->expects(self::once())
+            ->method('get')
+            ->with('_security_main')
+            ->willReturn('O:7:"stdClass":0:{}');
+
+        $attributeStore = new ArrayAttributeStore();
+        $attributeStore->set('session', $session);
+        $attributeStore->set('resource_id', 'resource');
+
+        /** @var MockObject&Connection $connection */
+        $connection = $this->createMock(Connection::class);
+        $connection->method('getAttributeStore')
+            ->willReturn($attributeStore);
+
+        $storageIdentifier = '42';
+
+        $this->tokenStorage->expects(self::once())
+            ->method('generateStorageId')
+            ->willReturn($storageIdentifier);
+
+        $this->tokenStorage->expects(self::once())
+            ->method('addToken')
+            ->with($storageIdentifier, self::isInstanceOf(TokenInterface::class));
+
+        self::assertInstanceOf(NullToken::class, $this->provider->authenticate($connection));
+    }
+
+    public function testDoesNotAuthenticateWhenATokenWithoutAUserIsUnserialized(): void
+    {
+        /** @var MockObject&SessionInterface $session */
+        $session = $this->createMock(SessionInterface::class);
+        $session->expects(self::once())
+            ->method('get')
+            ->with('_security_main')
+            ->willReturn(serialize(new NullToken()));
+
+        $attributeStore = new ArrayAttributeStore();
+        $attributeStore->set('session', $session);
+        $attributeStore->set('resource_id', 'resource');
+
+        /** @var MockObject&Connection $connection */
+        $connection = $this->createMock(Connection::class);
+        $connection->method('getAttributeStore')
+            ->willReturn($attributeStore);
+
+        $this->tokenStorage->expects(self::never())
+            ->method('generateStorageId');
+
+        $this->tokenStorage->expects(self::never())
+            ->method('addToken');
+
+        $this->expectException(AuthenticationException::class);
+
+        $this->provider->authenticate($connection);
     }
 }

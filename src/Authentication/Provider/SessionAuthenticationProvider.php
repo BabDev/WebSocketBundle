@@ -3,14 +3,18 @@
 namespace BabDev\WebSocketBundle\Authentication\Provider;
 
 use BabDev\WebSocket\Server\Connection;
+use BabDev\WebSocket\Server\IniOptionsHandler;
+use BabDev\WebSocket\Server\OptionsHandler;
 use BabDev\WebSocket\Server\WebSocketException;
 use BabDev\WebSocketBundle\Authentication\Exception\AuthenticationException;
+use BabDev\WebSocketBundle\Authentication\Exception\InvalidTokenException;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * The session authentication provider uses the HTTP session for your website's frontend for authenticating to the websocket server.
@@ -29,6 +33,7 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
     public function __construct(
         private readonly TokenStorage $tokenStorage,
         private readonly array $firewalls,
+        private readonly OptionsHandler $optionsHandler = new IniOptionsHandler(),
     ) {}
 
     public function supports(Connection $connection): bool
@@ -46,7 +51,6 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
         try {
             $token = $this->getToken($connection);
         } catch (WebSocketException $exception) {
-            // Out-of-the-box, we'll get a WebSocketException from our read-only session handler if there was an issue grabbing the session data, so focus only on the component's exceptions
             $this->logger?->error('Could not authenticate user.', ['exception' => $exception]);
 
             throw new AuthenticationException('Could not authenticate user.', previous: $exception);
@@ -75,18 +79,78 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
         /** @var SessionInterface $session */
         $session = $connection->getAttributeStore()->get('session');
 
+        $sessionKey = null;
+
         foreach ($this->firewalls as $firewall) {
-            if (false !== $serializedToken = $session->get('_security_'.$firewall, false)) {
-                $token = unserialize($serializedToken);
+            if (false !== $serializedToken = $session->get($sessionKey = '_security_'.$firewall, false)) {
+                $token = $this->safelyUnserialize($serializedToken, $sessionKey);
+
+                $this->logger?->debug('Read existing security token from the session.', [
+                    'key' => $sessionKey,
+                    'token_class' => \is_object($token) ? $token::class : null,
+                ]);
 
                 break;
             }
         }
 
-        if (!$token instanceof TokenInterface) {
-            $token = new NullToken();
+        if ($token instanceof TokenInterface) {
+            if (!$token->getUser() instanceof UserInterface) {
+                throw new InvalidTokenException(\sprintf('Cannot authenticate a "%s" token because it doesn\'t store a user.', $token::class));
+            }
+        } elseif (null !== $token) {
+            $this->logger?->warning('Expected a security token from the session, got something else.', ['key' => $sessionKey, 'received' => $token]);
+
+            $token = null;
+        }
+
+        return $token ?? new NullToken();
+    }
+
+    /**
+     * Safely unserialize a token from the session store.
+     *
+     * Forked from {@see \Symfony\Component\Security\Http\Firewall\ContextListener::safelyUnserialize}
+     */
+    private function safelyUnserialize(string $serializedToken, string $sessionKey): mixed
+    {
+        $token = null;
+
+        $prevUnserializeHandler = $this->optionsHandler->set('unserialize_callback_func', self::class.'::handleUnserializeCallback');
+
+        $prevErrorHandler = set_error_handler(static function (int $errno, string $errstr, string $errfile, int $errline) use (&$prevErrorHandler): bool {
+            if (__FILE__ === $errfile && !\in_array($errno, [\E_DEPRECATED, \E_USER_DEPRECATED], true)) {
+                throw new \ErrorException($errstr, 0x37313BC, $errno, $errfile, $errline);
+            }
+
+            /** @phpstan-ignore return.type */
+            return $prevErrorHandler ? $prevErrorHandler($errno, $errstr, $errfile, $errline) : false;
+        });
+
+        try {
+            $token = unserialize($serializedToken);
+        } catch (\ErrorException $e) {
+            if (0x37313BC !== $e->getCode()) {
+                throw $e;
+            }
+
+            $this->logger?->warning('Failed to unserialize the security token from the session.', ['key' => $sessionKey, 'received' => $serializedToken, 'exception' => $e]);
+        } finally {
+            restore_error_handler();
+
+            $this->optionsHandler->set('unserialize_callback_func', $prevUnserializeHandler);
         }
 
         return $token;
+    }
+
+    /**
+     * @param class-string $class
+     *
+     * @internal
+     */
+    public static function handleUnserializeCallback(string $class): never
+    {
+        throw new \ErrorException('Class not found: '.$class, 0x37313BC);
     }
 }

@@ -102,6 +102,7 @@ return static function (ContainerConfigurator $container): void {
         ->args([
             service(TokenStorage::class),
             abstract_arg('firewalls'),
+            service(OptionsHandler::class),
         ])
         ->call('setLogger', [
             service('logger'),
