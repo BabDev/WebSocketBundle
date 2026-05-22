@@ -2,7 +2,7 @@ name: GitHub Actions Security Analysis
 
 on:
   push:
-    branches: ['development', 'feature/nuxt', 'go-backend']
+    branches: ['0.1']
   pull_request:
     branches: ['**']
 
