@@ -2,6 +2,13 @@ name: 'Static Analysis'
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   sa-phpstan:
     runs-on: ubuntu-latest
@@ -9,11 +16,13 @@ jobs:
     name: PHPStan
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - name: Checkout Code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
         with:
           php-version: '8.5'
           tools: composer:v2,flex
