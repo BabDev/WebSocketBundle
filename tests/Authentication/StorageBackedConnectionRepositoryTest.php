@@ -177,13 +177,13 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $storageId1 = 42;
         $storageId2 = 84;
 
-        /** @var Stub&TokenInterface $authenticatedToken */
+        /** @var MockObject&TokenInterface $authenticatedToken */
         $authenticatedToken = $this->createMock(TokenInterface::class);
         $authenticatedToken->expects(self::once())
             ->method('getUser')
             ->willReturn(self::createStub(UserInterface::class));
 
-        /** @var Stub&TokenInterface $guestToken */
+        /** @var MockObject&TokenInterface $guestToken */
         $guestToken = $this->createMock(TokenInterface::class);
         $guestToken->expects(self::once())
             ->method('getUser')

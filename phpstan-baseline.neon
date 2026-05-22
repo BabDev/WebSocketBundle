@@ -1,12 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Parameter \#1 \$data of function unserialize expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Authentication/Provider/SessionAuthenticationProvider.php
-
-		-
 			message: '#^Cannot cast mixed to string\.$#'
 			identifier: cast.string
 			count: 1
@@ -145,12 +139,6 @@ parameters:
 			path: src/DependencyInjection/Compiler/PingDBALConnectionsCompilerPass.php
 
 		-
-			message: '#^Method BabDev\\WebSocketBundle\\DependencyInjection\\Factory\\Authentication\\AuthenticationProviderFactory\:\:addConfiguration\(\) has parameter \$builder with generic class Symfony\\Component\\Config\\Definition\\Builder\\NodeDefinition but does not specify its types\: TParent$#'
-			identifier: missingType.generics
-			count: 1
-			path: src/DependencyInjection/Factory/Authentication/AuthenticationProviderFactory.php
-
-		-
 			message: '#^Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeDefinition\:\:children\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -199,12 +187,6 @@ parameters:
 			path: src/DependencyInjection/Factory/Authentication/SessionAuthenticationProviderFactory.php
 
 		-
-			message: '#^Method BabDev\\WebSocketBundle\\DependencyInjection\\Factory\\Authentication\\SessionAuthenticationProviderFactory\:\:addConfiguration\(\) has parameter \$builder with generic class Symfony\\Component\\Config\\Definition\\Builder\\NodeDefinition but does not specify its types\: TParent$#'
-			identifier: missingType.generics
-			count: 1
-			path: src/DependencyInjection/Factory/Authentication/SessionAuthenticationProviderFactory.php
-
-		-
 			message: '#^Parameter \#1 \$class of function class_exists expects string, mixed given\.$#'
 			identifier: argument.type
 			count: 1
@@ -235,7 +217,7 @@ parameters:
 			path: src/Routing/Loader/AttributeLoader.php
 
 		-
-			message: '#^Cannot use array destructuring on \(list\<\(BabDev\\WebSocket\\Server\\WAMP\\WAMPConnection&PHPUnit\\Framework\\MockObject\\MockObject\)\|string\>\)\|null\.$#'
+			message: '#^Cannot use array destructuring on \(list\<\(BabDev\\WebSocket\\Server\\WAMP\\WAMPConnection&PHPUnit\\Framework\\MockObject\\Stub\)\|string\>\)\|null\.$#'
 			identifier: offsetAccess.nonArray
 			count: 5
 			path: tests/Authentication/StorageBackedConnectionRepositoryTest.php

@@ -83,6 +83,15 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
 
         foreach ($this->firewalls as $firewall) {
             if (false !== $serializedToken = $session->get($sessionKey = '_security_'.$firewall, false)) {
+                if (!is_string($serializedToken)) {
+                    $this->logger?->debug('Session has a non-string serialized token.', [
+                        'key' => $sessionKey,
+                        'type' => get_debug_type($serializedToken),
+                    ]);
+
+                    break;
+                }
+
                 $token = $this->safelyUnserialize($serializedToken, $sessionKey);
 
                 $this->logger?->debug('Read existing security token from the session.', [

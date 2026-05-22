@@ -161,6 +161,37 @@ final class SessionAuthenticationProviderTest extends TestCase
         self::assertInstanceOf(NullToken::class, $this->provider->authenticate($connection));
     }
 
+    public function testANullTokenUsedWhenANonStringIsExtractedFromTheSession(): void
+    {
+        /** @var MockObject&SessionInterface $session */
+        $session = $this->createMock(SessionInterface::class);
+        $session->expects(self::once())
+            ->method('get')
+            ->with('_security_main')
+            ->willReturn(new \stdClass());
+
+        $attributeStore = new ArrayAttributeStore();
+        $attributeStore->set('session', $session);
+        $attributeStore->set('resource_id', 'resource');
+
+        /** @var MockObject&Connection $connection */
+        $connection = $this->createMock(Connection::class);
+        $connection->method('getAttributeStore')
+            ->willReturn($attributeStore);
+
+        $storageIdentifier = '42';
+
+        $this->tokenStorage->expects(self::once())
+            ->method('generateStorageId')
+            ->willReturn($storageIdentifier);
+
+        $this->tokenStorage->expects(self::once())
+            ->method('addToken')
+            ->with($storageIdentifier, self::isInstanceOf(TokenInterface::class));
+
+        self::assertInstanceOf(NullToken::class, $this->provider->authenticate($connection));
+    }
+
     public function testANullTokenUsedWhenUnserializingTheTokenRaisesAnError(): void
     {
         /** @var MockObject&SessionInterface $session */
