@@ -32,5 +32,6 @@ return RectorConfig::configure()
         __DIR__.'/vendor/phpstan/phpstan-symfony/extension.neon',
         __DIR__.'/phpstan.neon',
     ])
+    ->withComposerBased(phpunit: true)
     ->withPhpSets()
     ->withPreparedSets(codeQuality: true, phpunitCodeQuality: true);
