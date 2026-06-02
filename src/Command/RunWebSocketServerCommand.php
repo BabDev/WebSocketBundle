@@ -61,6 +61,10 @@ final class RunWebSocketServerCommand extends Command
             $this->loop->addSignal(\SIGTERM, $closer);
         }
 
+        if (\defined('SIGQUIT')) {
+            $this->loop->addSignal(\SIGQUIT, $closer);
+        }
+
         $this->eventDispatcher?->dispatch(new BeforeRunServer($socketServer, $this->loop));
 
         $server->run();

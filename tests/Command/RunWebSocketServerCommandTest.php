@@ -94,4 +94,56 @@ final class RunWebSocketServerCommandTest extends TestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute(['uri' => $uri]);
     }
+
+    public function testCommandRegistersTheShutdownSignalsOnTheEventLoop(): void
+    {
+        $uri = 'tcp://127.0.0.1:8080';
+
+        /** @var Stub&ServerInterface $socketServer */
+        $socketServer = self::createStub(ServerInterface::class);
+
+        /** @var MockObject&Server $server */
+        $server = $this->createMock(Server::class);
+        $server->expects(self::once())
+            ->method('run');
+
+        /** @var MockObject&SocketServerFactory $socketServerFactory */
+        $socketServerFactory = $this->createMock(SocketServerFactory::class);
+        $socketServerFactory->method('build')
+            ->with($uri)
+            ->willReturn($socketServer);
+
+        /** @var MockObject&ServerFactory $serverFactory */
+        $serverFactory = $this->createMock(ServerFactory::class);
+        $serverFactory->method('build')
+            ->with($socketServer)
+            ->willReturn($server);
+
+        $registeredSignals = [];
+
+        /** @var Stub&LoopInterface $loop */
+        $loop = $this->createStub(LoopInterface::class);
+        $loop->method('addSignal')
+            ->willReturnCallback(function (int $signal) use (&$registeredSignals): void {
+                $registeredSignals[] = $signal;
+            });
+
+        $command = new RunWebSocketServerCommand(null, $socketServerFactory, $serverFactory, $loop, $uri);
+
+        $commandTester = new CommandTester($command);
+        $commandTester->execute([]);
+
+        // The command guards each registration with \defined() since the SIG* constants
+        // require ext-pcntl, so only assert on the signals available in this environment.
+        $expectedSignals = array_values(array_filter(
+            [
+                \defined('SIGINT') ? \SIGINT : null,
+                \defined('SIGTERM') ? \SIGTERM : null,
+                \defined('SIGQUIT') ? \SIGQUIT : null,
+            ],
+            static fn (?int $signal): bool => null !== $signal,
+        ));
+
+        self::assertSame($expectedSignals, $registeredSignals);
+    }
 }
