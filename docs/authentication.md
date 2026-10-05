@@ -22,7 +22,7 @@ services:
   session.handler.pdo:
     class: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
     arguments:
-      - !service { class: PDO, factory: ['@database_connection', 'getWrappedConnection'] }
+      - !service { class: PDO, factory: ['@database_connection', 'getNativeConnection'] }
       - { lock_mode: 0 }
 
 framework:
@@ -41,7 +41,7 @@ babdev_websocket:
 
 Configuring the session handler will add the [`InitializeSession` middleware](/open-source/packages/websocket-server/docs/1.x/middleware/initialize-session) to the websocket server which will provide a read-only interface for the session data from your website.
 
-By default, the session authentication provider will attempt to authenticate to any of the firewalls set in your `security.firewalls` configuration in the same order which the firewalls are defined. You can specify the firewall(s) to use with the `firewall` configuration key on the session provider.
+By default, the session authentication provider will attempt to authenticate to any of the firewalls set in your `security.firewalls` configuration in the same order which the firewalls are defined. You can specify the firewall(s) to use with the `firewalls` configuration key on the session provider.
 
 ```yaml
 babdev_websocket:
@@ -72,6 +72,7 @@ namespace App;
 use App\DependencyInjection\Factory\Authentication\CustomAuthenticationProviderFactory;
 use BabDev\WebSocketBundle\DependencyInjection\BabDevWebSocketExtension;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 
 class Kernel extends BaseKernel
@@ -103,15 +104,15 @@ The `BabDev\WebSocketBundle\Authentication\TokenConnection` object is a DTO whic
 
 ### Retrieving All Connections For A Topic
 
-The `findAll()` method is used to find all connections for a given topic. The method has an optional `$anonymous` parameter which can be used to filter out connections for unauthenticated users. The list will be returned as an array of `BabDev\WebSocketBundle\Authentication\TokenConnection` objects.
+The `findAll()` method is used to find all connections for a given topic. By default, only the connections for authenticated users are returned; the optional `$anonymous` parameter can be set to `true` to also include the connections for unauthenticated users. The list will be returned as an array of `BabDev\WebSocketBundle\Authentication\TokenConnection` objects.
 
 ### Retrieving All Connections For A Username
 
-The `findAllByUsername()` method is used to find all connections for a user with the given username. This is helpful if a user has multiple active connections (i.e. has multiple tabs in their browser open). The list will be returned as an array of `BabDev\WebSocketBundle\Authentication\TokenConnection` objects.
+The `findAllByUsername()` method is used to find all connections to a given topic for a user with the given username. This is helpful if a user has multiple active connections (i.e. has multiple tabs in their browser open). The list will be returned as an array of `BabDev\WebSocketBundle\Authentication\TokenConnection` objects.
 
 ### Retrieving All Connections For A User With A Role
 
-The `findAllWithRoles()` method is used to find all connections for a user who has any of the given roles. Note that this method checks the list of roles on the underlying security token and does not use the site's role hierarchy. The list will be returned as an array of `BabDev\WebSocketBundle\Authentication\TokenConnection` objects.
+The `findAllWithRoles()` method is used to find all connections to a given topic for a user who has any of the given roles. Note that this method checks the list of roles on the underlying security token and does not use the site's role hierarchy. The list will be returned as an array of `BabDev\WebSocketBundle\Authentication\TokenConnection` objects.
 
 ### Retrieving The Token For A Connection
 
@@ -119,8 +120,8 @@ The `findTokenForConnection()` method is used to find the security token for the
 
 ### Retrieving The User For A Connection
 
-The `getUser()` method is used to retrieve the user for the given connection. This is a shortcut for `$repository->findTokenForConnection($token)->getUser()`.
+The `getUser()` method is used to retrieve the user for the given connection. This is a shortcut for `$repository->findTokenForConnection($connection)->getUser()`.
 
 ### Checking For A Connection By Username
 
-The `hasConnectionForUsername()` method is used to determine if there is a connection for the given username and will return true when the first connection matches.
+The `hasConnectionForUsername()` method is used to determine if there is a connection to a given topic for the given username and will return true when the first connection matches.
