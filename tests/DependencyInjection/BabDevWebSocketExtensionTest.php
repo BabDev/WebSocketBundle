@@ -75,6 +75,12 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             [$identity],
         );
 
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
+            'babdev_websocket_server.server.server_middleware.parse_wamp_message',
+            'setMaxPrefixes',
+            [100],
+        );
+
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(
             'babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins',
             1,

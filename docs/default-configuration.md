@@ -31,6 +31,9 @@ babdev_websocket:
     # The maximum size, in bytes, of a single frame received from a client before its connection is closed with a "1009 Message Too Big" close frame; null uses the default from the "ratchet/rfc6455" package (a quarter of the memory limit, unlimited when the memory limit is disabled) and 0 disables the limit.
     max_frame_payload_size: null
 
+    # The maximum number of CURIE prefixes a client can register for its connection with the WAMP "PREFIX" message.
+    max_prefixes:         100
+
     # The default URI to listen for connections on.
     uri:                  ~ # Required
 

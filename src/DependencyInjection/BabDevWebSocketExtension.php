@@ -30,6 +30,7 @@ use Symfony\Component\Routing\Loader\XmlFileLoader as RoutingXmlFileLoader;
  *     shutdown_timeout: int|float|null,
  *     max_message_payload_size: int<0, max>|null,
  *     max_frame_payload_size: int<0, max>|null,
+ *     max_prefixes: int<1, max>,
  *     uri: string,
  *     context: mixed,
  *     allowed_origins: list<string>,
@@ -165,6 +166,7 @@ final class BabDevWebSocketExtension extends ConfigurableExtension implements Pr
 
         $container->getDefinition('babdev_websocket_server.server.server_middleware.parse_wamp_message')
             ->addMethodCall('setServerIdentity', [$mergedConfig['server']['identity']])
+            ->addMethodCall('setMaxPrefixes', [$mergedConfig['server']['max_prefixes']])
         ;
 
         if ([] !== $mergedConfig['server']['allowed_origins']) {
