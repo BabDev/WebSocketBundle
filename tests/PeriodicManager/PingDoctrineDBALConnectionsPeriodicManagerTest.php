@@ -167,4 +167,24 @@ final class PingDoctrineDBALConnectionsPeriodicManagerTest extends TestCase
             return \is_float($time) && $time >= 15.0 && $time < 1000.0;
         }), 'The ping duration should be logged in milliseconds.');
     }
+
+    public function testTheTimerIsCancelled(): void
+    {
+        $timer = self::createStub(TimerInterface::class);
+
+        /** @var MockObject&LoopInterface $loop */
+        $loop = $this->createMock(LoopInterface::class);
+        $loop->method('addPeriodicTimer')
+            ->willReturn($timer);
+
+        $loop->expects(self::once())
+            ->method('cancelTimer')
+            ->with($timer);
+
+        $this->manager->register($loop);
+        $this->manager->cancelTimers();
+
+        // A second call has no timer left to cancel
+        $this->manager->cancelTimers();
+    }
 }
