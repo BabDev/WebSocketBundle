@@ -21,6 +21,11 @@ Below is the list of middleware provided by this bundle and the library and thei
 
 New middleware should be added with a priority lower than 0 as the `BabDev\WebSocket\Server\WAMP\Middleware\DispatchMessageToHandler` middleware should be the last middleware in the stack.
 
+Middleware added between the WAMP middleware must implement the interface expected by the middleware decorating it:
+
+- Middleware with a priority between -20 and 0 is decorated by the `BabDev\WebSocket\Server\WAMP\Middleware\ParseWAMPMessage` or `BabDev\WebSocket\Server\WAMP\Middleware\UpdateTopicSubscriptions` middleware, and must implement `BabDev\WebSocket\Server\WAMPServerMiddleware`
+- Middleware with a priority between -30 and -20 is decorated by the `BabDev\WebSocket\Server\WebSocket\Middleware\EstablishWebSocketConnection` middleware, and should implement `BabDev\WebSocket\Server\WebSocketServerMiddleware` and return the sub-protocols of the middleware it decorates from `getSubProtocols()`; otherwise, the `wamp` sub-protocol is not supported and clients are rejected when the [strict sub-protocol check](/open-source/packages/websocketbundle/docs/1.x/running-the-server#wamp-protocol-options) is enabled
+
 Middleware must have the decorated middleware as the first parameter in the constructor, and cannot use a named parameter in the service definition (i.e. `$middleware: !abstract decorated middleware` for YAML); this is required for the compiler pass which builds the middleware stack to correctly set the arguments.
 
 The bundle supports autoconfiguration of `BabDev\WebSocket\Server\ServerMiddleware` classes using the `#[AsServerMiddleware]` attribute on your middleware class.
@@ -33,7 +38,7 @@ namespace App\WebSocket\Middleware;
 use BabDev\WebSocket\Server\ServerMiddleware;
 use BabDev\WebSocketBundle\Attribute\AsServerMiddleware;
 
-#[AsServerMiddleware(priority: -75)]
+#[AsServerMiddleware(priority: -100)]
 final readonly class EarlyMiddleware implements ServerMiddleware
 {
     public function __construct(
@@ -53,5 +58,5 @@ services:
     arguments:
       - !abstract decorated middleware
     tags:
-      - { name: babdev_websocket_server.server_middleware, priority: -75 }
+      - { name: babdev_websocket_server.server_middleware, priority: -100 }
 ```
