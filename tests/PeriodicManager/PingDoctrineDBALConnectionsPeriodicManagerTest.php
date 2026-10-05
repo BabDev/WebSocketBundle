@@ -131,4 +131,40 @@ final class PingDoctrineDBALConnectionsPeriodicManagerTest extends TestCase
 
         new PingDoctrineDBALConnectionsPeriodicManager([$connection])->pingConnections();
     }
+
+    public function testThePingDurationIsLoggedInMilliseconds(): void
+    {
+        $logger = new TestLogger();
+
+        $manager = new PingDoctrineDBALConnectionsPeriodicManager([$connection = $this->createMock(Connection::class)]);
+        $manager->setLogger($logger);
+
+        $platform = self::createStub(AbstractPlatform::class);
+        $platform->method('getDummySelectSQL')
+            ->willReturn('SELECT 1');
+
+        // The ping is timed from before the platform is resolved, so a delay here is included in the logged duration
+        $connection->expects(self::once())
+            ->method('getDatabasePlatform')
+            ->willReturnCallback(static function () use ($platform): AbstractPlatform {
+                usleep(20_000);
+
+                return $platform;
+            });
+
+        $connection->expects(self::once())
+            ->method('executeQuery');
+
+        $manager->pingConnections();
+
+        self::assertTrue($logger->hasInfoThatPasses(static function (array $record): bool {
+            if (!\is_string($record['message']) || !str_starts_with($record['message'], 'Successfully pinged database server') || !\is_array($record['context'])) {
+                return false;
+            }
+
+            $time = $record['context']['time'] ?? null;
+
+            return \is_float($time) && $time >= 15.0 && $time < 1000.0;
+        }), 'The ping duration should be logged in milliseconds.');
+    }
 }

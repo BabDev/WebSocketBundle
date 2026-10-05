@@ -69,7 +69,7 @@ final class PingDoctrineDBALConnectionsPeriodicManager implements PeriodicManage
 
                 $endTime = microtime(true);
 
-                $this->logger?->info('Successfully pinged database server (~{time} ms)', ['time' => round(($endTime - $startTime) * 100000, 2)]);
+                $this->logger?->info('Successfully pinged database server (~{time} ms)', ['time' => round(($endTime - $startTime) * 1000, 2)]);
             } catch (DBALException $e) {
                 $this->logger?->emergency('Could not ping database server', ['exception' => $e]);
 
