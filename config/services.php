@@ -345,7 +345,9 @@ return static function (ContainerConfigurator $container): void {
         ->args([
             service(MiddlewareStackBuilder::class),
             service(LoopInterface::class),
+            service('logger'),
         ])
+        ->tag('monolog.logger', ['channel' => 'websocket'])
     ;
     $services->alias(ServerFactory::class, 'babdev_websocket_server.server.factory.default');
 

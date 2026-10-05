@@ -83,6 +83,18 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             $blockedIps,
         );
 
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.factory.default',
+            2,
+            new Reference('logger'),
+        );
+
+        $this->assertContainerBuilderHasServiceDefinitionWithTag(
+            'babdev_websocket_server.server.factory.default',
+            'monolog.logger',
+            ['channel' => 'websocket'],
+        );
+
         self::assertThat($this->container->findDefinition('babdev_websocket_server.server.server_middleware.establish_websocket_connection'), new LogicalNot(new DefinitionHasMethodCallConstraint('enableKeepAlive')));
         $this->assertContainerBuilderHasAlias(StorageDriver::class, 'babdev_websocket_server.authentication.storage.driver.in_memory');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.periodic_manager.ping_doctrine_dbal_connections');
