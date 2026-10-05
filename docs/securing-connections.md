@@ -6,19 +6,29 @@ Note, it is recommended these types of checks are performed at a higher level in
 
 ## Restricting Allowed Origins
 
-The bundle can be configured to only allow requests when traffic originates from a list of allowed domains.
+The bundle can be configured to only allow requests when traffic originates from a list of allowed origins, which are compared against the `Origin` header of the HTTP request.
 
 ```yaml
 # config/packages/babdev_websocket.yaml
 babdev_websocket:
   server:
-    # A list of origins allowed to connect to the websocket server, must match the value from the "Origin" header of the HTTP request.
+    # A list of origins allowed to connect to the websocket server, each entry can be either a full origin (such as "https://example.com:8443") which must match the scheme, host, and port of the "Origin" header of the HTTP request, or a host (such as "example.com") which matches the host with any scheme or port.
     allowed_origins:
-      - www.example.com
-      - example.com
+      - https://www.example.com
+      - https://example.com
+      - localhost
 ```
 
-With this configuration, only connections from `www.example.com` and `example.com` will be accepted, others will be rejected.
+Each allowed origin can be given in one of two formats:
+
+- A full origin, such as `https://example.com` or `http://localhost:8080`, which only allows connections whose `Origin` header has the same scheme, host, and port; the default port for the `http`, `https`, `ws`, and `wss` schemes may be omitted, so `https://example.com` and `https://example.com:443` are equivalent
+- A host, such as `example.com`, which allows connections whose `Origin` header has the same host with any scheme and port
+
+Hosts are compared case-insensitively, and a host does not match its subdomains (`example.com` does not allow `https://www.example.com`). Using a full origin is recommended, as a host also allows connections from pages served over an insecure `http` scheme or from another port on the same host.
+
+With this configuration, only connections from `https://www.example.com`, `https://example.com`, and any scheme or port on `localhost` will be accepted, others will be rejected.
+
+An allowed origin which is not in one of these formats, such as a host with a port (`localhost:8080`) or an origin with a path (`https://example.com/path`), causes an error when the container is compiled.
 
 ## Blocking IP Addresses
 

@@ -2,6 +2,7 @@
 
 namespace BabDev\WebSocketBundle\DependencyInjection;
 
+use BabDev\WebSocket\Server\Http\Origin;
 use BabDev\WebSocket\Server\Server;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\AuthenticationProviderFactory;
 use Doctrine\DBAL\Connection;
@@ -98,8 +99,17 @@ final readonly class Configuration implements ConfigurationInterface
                         ->defaultValue([])
                     ->end()
                     ->arrayNode('allowed_origins')
-                        ->info('A list of origins allowed to connect to the websocket server, must match the value from the "Origin" header of the HTTP request.')
-                        ->scalarPrototype()->end()
+                        ->info('A list of origins allowed to connect to the websocket server, each entry can be either a full origin (such as "https://example.com:8443") which must match the scheme, host, and port of the "Origin" header of the HTTP request, or a host (such as "example.com") which matches the host with any scheme or port.')
+                        ->stringPrototype()
+                            ->validate()
+                                ->always(static function (string $origin): string {
+                                    // The server rejects an invalid origin when the middleware is created, this reports it when the container is compiled instead
+                                    Origin::normalizeAllowedOrigin($origin);
+
+                                    return $origin;
+                                })
+                            ->end()
+                        ->end()
                     ->end()
                     ->arrayNode('blocked_ip_addresses')
                         ->info('A list of IP addresses which are not allowed to connect to the websocket server, each entry can be either a single address or a CIDR range.')

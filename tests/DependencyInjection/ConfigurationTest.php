@@ -6,6 +6,7 @@ use BabDev\WebSocket\Server\Server;
 use BabDev\WebSocketBundle\DependencyInjection\Configuration;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\SessionAuthenticationProviderFactory;
 use Matthias\SymfonyConfigTest\PhpUnit\ConfigurationTestCaseTrait;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -49,6 +50,42 @@ final class ConfigurationTest extends TestCase
             [['server' => ['identity' => null]]],
             'server.identity',
             'Invalid configuration for path "babdev_websocket.server.identity": The server identity must be a string',
+        );
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function validAllowedOrigins(): iterable
+    {
+        yield 'full origin' => ['https://example.com'];
+        yield 'full origin with port' => ['http://localhost:8080'];
+        yield 'host' => ['example.com'];
+    }
+
+    #[DataProvider('validAllowedOrigins')]
+    public function testConfigurationIsValidWithAllowedOrigin(string $origin): void
+    {
+        $this->assertConfigurationIsValid([['server' => ['allowed_origins' => [$origin]]]], 'server.allowed_origins');
+    }
+
+    /**
+     * @return iterable<string, array{mixed, string}>
+     */
+    public static function invalidAllowedOrigins(): iterable
+    {
+        yield 'host with port' => ['localhost:8080', 'Invalid configuration for path "babdev_websocket.server.allowed_origins.0": The allowed origin "localhost:8080" is not a valid host'];
+        yield 'origin with path' => ['https://example.com/path', 'Invalid configuration for path "babdev_websocket.server.allowed_origins.0": The allowed origin "https://example.com/path" is not a valid origin.'];
+        yield 'non-string value' => [8080, 'Invalid type for path "babdev_websocket.server.allowed_origins.0". Expected "string", but got "int".'];
+    }
+
+    #[DataProvider('invalidAllowedOrigins')]
+    public function testConfigurationIsInvalidWithAllowedOrigin(mixed $origin, string $expectedMessage): void
+    {
+        $this->assertPartialConfigurationIsInvalid(
+            [['server' => ['allowed_origins' => [$origin]]]],
+            'server.allowed_origins',
+            $expectedMessage,
         );
     }
 

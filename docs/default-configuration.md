@@ -22,7 +22,7 @@ babdev_websocket:
     # Options used to configure the stream context, see the "React\Socket\SocketServer" class documentation for more details.
     context:              []
 
-    # A list of origins allowed to connect to the websocket server, must match the value from the "Origin" header of the HTTP request.
+    # A list of origins allowed to connect to the websocket server, each entry can be either a full origin (such as "https://example.com:8443") which must match the scheme, host, and port of the "Origin" header of the HTTP request, or a host (such as "example.com") which matches the host with any scheme or port.
     allowed_origins:      []
 
     # A list of IP addresses which are not allowed to connect to the websocket server, each entry can be either a single address or a CIDR range.
