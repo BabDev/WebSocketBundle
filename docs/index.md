@@ -6,4 +6,5 @@
 - [Managing Middleware](/open-source/packages/websocketbundle/docs/1.x/managing-middleware)
 - [Periodic Manager](/open-source/packages/websocketbundle/docs/1.x/periodic-manager)
 - [Registering Message Handlers](/open-source/packages/websocketbundle/docs/1.x/registering-message-handlers)
+- [Running the WebSocket Server](/open-source/packages/websocketbundle/docs/1.x/running-the-server)
 - [Securing Connections](/open-source/packages/websocketbundle/docs/1.x/securing-connections)
