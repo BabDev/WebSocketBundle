@@ -110,6 +110,18 @@ final readonly class Configuration implements ConfigurationInterface
                             ->defaultValue(5.0)
                             ->min(0)
                     )
+                    ->append(
+                        new NullableIntegerNodeDefinition('max_message_payload_size')
+                            ->info('The maximum size, in bytes, of a message received from a client before its connection is closed with a "1009 Message Too Big" close frame; null uses the default from the "ratchet/rfc6455" package (a quarter of the memory limit, unlimited when the memory limit is disabled) and 0 disables the limit.')
+                            ->defaultNull()
+                            ->min(0)
+                    )
+                    ->append(
+                        new NullableIntegerNodeDefinition('max_frame_payload_size')
+                            ->info('The maximum size, in bytes, of a single frame received from a client before its connection is closed with a "1009 Message Too Big" close frame; null uses the default from the "ratchet/rfc6455" package (a quarter of the memory limit, unlimited when the memory limit is disabled) and 0 disables the limit.')
+                            ->defaultNull()
+                            ->min(0)
+                    )
                     ->scalarNode('uri')
                         ->isRequired()
                         ->cannotBeEmpty()

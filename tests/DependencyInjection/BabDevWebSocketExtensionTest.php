@@ -111,6 +111,18 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             5.0,
         );
 
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.server_middleware.establish_websocket_connection',
+            2,
+            null,
+        );
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.server_middleware.establish_websocket_connection',
+            3,
+            null,
+        );
+
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
             'babdev_websocket_server.server.server_middleware.parse_http_request',
             'enableRequestTimeout',
@@ -436,6 +448,32 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             'babdev_websocket_server.command.run_websocket_server',
             6,
             null,
+        );
+    }
+
+    public function testContainerIsLoadedWithPayloadSizeLimits(): void
+    {
+        $this->load([
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'max_message_payload_size' => 1_048_576,
+                'max_frame_payload_size' => 65_536,
+                'router' => [
+                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
+                ],
+            ],
+        ]);
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.server_middleware.establish_websocket_connection',
+            2,
+            1_048_576,
+        );
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.server_middleware.establish_websocket_connection',
+            3,
+            65_536,
         );
     }
 

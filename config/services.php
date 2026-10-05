@@ -383,6 +383,8 @@ return static function (ContainerConfigurator $container): void {
         ->args([
             abstract_arg('decorated middleware'),
             service('babdev_websocket_server.rfc6455.server_negotiator'),
+            abstract_arg('maximum message payload size'),
+            abstract_arg('maximum frame payload size'),
         ])
         ->tag('babdev_websocket_server.server_middleware', ['priority' => -30])
     ;

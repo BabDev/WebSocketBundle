@@ -29,11 +29,11 @@ final class ConfigurationTest extends TestCase
         $this->assertProcessedConfigurationEquals(
             [
                 [
-                    'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'write_buffer_limit' => 2048, 'shutdown_timeout' => 1.5, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
+                    'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'write_buffer_limit' => 2048, 'shutdown_timeout' => 1.5, 'max_message_payload_size' => 1048576, 'max_frame_payload_size' => 65536, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 ],
             ],
             [
-                'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'write_buffer_limit' => 2048, 'shutdown_timeout' => 1.5, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
+                'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'write_buffer_limit' => 2048, 'shutdown_timeout' => 1.5, 'max_message_payload_size' => 1048576, 'max_frame_payload_size' => 65536, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 'authentication' => [],
             ],
         );
@@ -243,6 +243,50 @@ final class ConfigurationTest extends TestCase
             [['server' => ['shutdown_timeout' => -1]]],
             'server.shutdown_timeout',
             'The value -1 is too small for path "babdev_websocket.server.shutdown_timeout". Should be greater than or equal to 0',
+        );
+    }
+
+    /**
+     * @return iterable<string, array{string, array<string, mixed>, int|null}>
+     */
+    public static function validPayloadSizes(): iterable
+    {
+        foreach (['max_message_payload_size', 'max_frame_payload_size'] as $option) {
+            yield "{$option} default" => [$option, [], null];
+            yield "{$option} limited" => [$option, [$option => 65_536], 65_536];
+            yield "{$option} unlimited" => [$option, [$option => 0], 0];
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $serverConfig
+     */
+    #[DataProvider('validPayloadSizes')]
+    public function testConfigurationIsValidWithPayloadSize(string $option, array $serverConfig, ?int $expectedSize): void
+    {
+        $this->assertProcessedConfigurationEquals(
+            [['server' => $serverConfig]],
+            ['server' => [$option => $expectedSize]],
+            "server.{$option}",
+        );
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function payloadSizeOptions(): iterable
+    {
+        yield 'max_message_payload_size' => ['max_message_payload_size'];
+        yield 'max_frame_payload_size' => ['max_frame_payload_size'];
+    }
+
+    #[DataProvider('payloadSizeOptions')]
+    public function testConfigurationIsInvalidWithNegativePayloadSize(string $option): void
+    {
+        $this->assertPartialConfigurationIsInvalid(
+            [['server' => [$option => -1]]],
+            "server.{$option}",
+            "The value -1 is too small for path \"babdev_websocket.server.{$option}\". Should be greater than or equal to 0",
         );
     }
 

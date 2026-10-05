@@ -28,6 +28,8 @@ use Symfony\Component\Routing\Loader\XmlFileLoader as RoutingXmlFileLoader;
  *     request_timeout: int|float|null,
  *     write_buffer_limit: int<1, max>|null,
  *     shutdown_timeout: int|float|null,
+ *     max_message_payload_size: int<0, max>|null,
+ *     max_frame_payload_size: int<0, max>|null,
  *     uri: string,
  *     context: mixed,
  *     allowed_origins: list<string>,
@@ -186,6 +188,11 @@ final class BabDevWebSocketExtension extends ConfigurableExtension implements Pr
         } else {
             $container->removeDefinition('babdev_websocket_server.server.server_middleware.resolve_forwarded_client_address');
         }
+
+        $container->getDefinition('babdev_websocket_server.server.server_middleware.establish_websocket_connection')
+            ->replaceArgument(2, $mergedConfig['server']['max_message_payload_size'])
+            ->replaceArgument(3, $mergedConfig['server']['max_frame_payload_size'])
+        ;
 
         if ($this->isConfigEnabled($container, $mergedConfig['server']['keepalive'])) {
             $container->getDefinition('babdev_websocket_server.server.server_middleware.establish_websocket_connection')

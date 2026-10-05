@@ -46,6 +46,20 @@ babdev_websocket:
 
 With this configuration, all connections from `8.8.8.8` and the `192.168.1.0/24` range will be rejected.
 
+## Limiting Message Sizes
+
+Messages received from clients are buffered in memory until they are complete, so the bundle can be configured to limit the size of the messages and frames a client can send. A connection sending a message or frame over the limit is closed with a "1009 Message Too Big" close frame.
+
+```yaml
+# config/packages/babdev_websocket.yaml
+babdev_websocket:
+  server:
+    max_message_payload_size: 1048576 # 1 MiB for a complete message
+    max_frame_payload_size: 65536 # 64 KiB for a single frame
+```
+
+By default, the limits from the `ratchet/rfc6455` package are used, which are a quarter of PHP's `memory_limit` setting. As the memory limit is commonly disabled for long-running CLI processes (`memory_limit = -1`), there is no limit in that case, so setting explicit limits suited to your application's messages is recommended. A limit of `0` disables the limit.
+
 ## Running Behind a Reverse Proxy
 
 When the websocket server is behind a reverse proxy (such as nginx or a load balancer), every connection comes from the proxy, so the IP address checks above would only see the proxy's address. The bundle can be configured to trust the forwarding headers set by your proxies, which replaces the connection's address with the client's IP address before the blocked IP addresses are checked.

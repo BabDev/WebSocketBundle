@@ -25,6 +25,12 @@ babdev_websocket:
     # The time, in seconds, to wait for connections to close when the server is stopped with a shutdown signal before they are forcibly closed.
     shutdown_timeout:     5.0
 
+    # The maximum size, in bytes, of a message received from a client before its connection is closed with a "1009 Message Too Big" close frame; null uses the default from the "ratchet/rfc6455" package (a quarter of the memory limit, unlimited when the memory limit is disabled) and 0 disables the limit.
+    max_message_payload_size: null
+
+    # The maximum size, in bytes, of a single frame received from a client before its connection is closed with a "1009 Message Too Big" close frame; null uses the default from the "ratchet/rfc6455" package (a quarter of the memory limit, unlimited when the memory limit is disabled) and 0 disables the limit.
+    max_frame_payload_size: null
+
     # The default URI to listen for connections on.
     uri:                  ~ # Required
 
