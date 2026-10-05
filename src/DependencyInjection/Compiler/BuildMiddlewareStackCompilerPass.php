@@ -35,8 +35,9 @@ final class BuildMiddlewareStackCompilerPass implements CompilerPassInterface
                 continue;
             }
 
+            // Autowired services may not have any arguments configured yet, so the argument is set instead of replaced
             $container->getDefinition((string) $middleware)
-                ->replaceArgument(0, $previousMiddleware);
+                ->setArgument(0, $previousMiddleware);
 
             $previousMiddleware = $middleware;
             $outerMiddleware = $middleware;
