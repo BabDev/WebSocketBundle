@@ -3,6 +3,7 @@
 namespace BabDev\WebSocketBundle\Tests\Authentication\Storage;
 
 use BabDev\WebSocket\Server\Connection;
+use BabDev\WebSocket\Server\Connection\AttributeKey;
 use BabDev\WebSocket\Server\Connection\AttributeStore;
 use BabDev\WebSocketBundle\Authentication\Storage\Driver\StorageDriver;
 use BabDev\WebSocketBundle\Authentication\Storage\DriverBackedTokenStorage;
@@ -35,7 +36,7 @@ final class DriverBackedTokenStorageTest extends TestCase
         $attributeStore = $this->createMock(AttributeStore::class);
         $attributeStore->expects(self::once())
             ->method('get')
-            ->with('resource_id')
+            ->with(AttributeKey::RESOURCE_ID)
             ->willReturn($clientId);
 
         /** @var MockObject&Connection $connection */

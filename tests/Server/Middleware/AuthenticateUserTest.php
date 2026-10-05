@@ -3,6 +3,7 @@
 namespace BabDev\WebSocketBundle\Tests\Server\Middleware;
 
 use BabDev\WebSocket\Server\Connection;
+use BabDev\WebSocket\Server\Connection\AttributeKey;
 use BabDev\WebSocket\Server\Connection\AttributeStore;
 use BabDev\WebSocket\Server\ServerMiddleware;
 use BabDev\WebSocketBundle\Authentication\Authenticator;
@@ -71,7 +72,7 @@ final class AuthenticateUserTest extends TestCase
         /** @var MockObject&AttributeStore $attributeStore */
         $attributeStore = $this->createMock(AttributeStore::class);
         $attributeStore->method('get')
-            ->with('resource_id')
+            ->with(AttributeKey::RESOURCE_ID)
             ->willReturn('resource');
 
         /** @var MockObject&Connection $connection */

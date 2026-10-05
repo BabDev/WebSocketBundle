@@ -3,6 +3,7 @@
 namespace BabDev\WebSocketBundle\Authentication\Storage;
 
 use BabDev\WebSocket\Server\Connection;
+use BabDev\WebSocket\Server\Connection\AttributeKey;
 use BabDev\WebSocketBundle\Authentication\Storage\Driver\StorageDriver;
 use BabDev\WebSocketBundle\Authentication\Storage\Exception\StorageError;
 use BabDev\WebSocketBundle\Authentication\Storage\Exception\TokenNotFound;
@@ -18,7 +19,7 @@ final class DriverBackedTokenStorage implements TokenStorage, LoggerAwareInterfa
 
     public function generateStorageId(Connection $connection): string
     {
-        return (string) $connection->getAttributeStore()->get('resource_id', '');
+        return (string) $connection->getAttributeStore()->get(AttributeKey::RESOURCE_ID, '');
     }
 
     /**

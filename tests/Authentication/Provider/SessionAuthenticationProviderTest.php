@@ -4,6 +4,7 @@ namespace BabDev\WebSocketBundle\Tests\Authentication\Provider;
 
 use BabDev\WebSocket\Server\Connection;
 use BabDev\WebSocket\Server\Connection\ArrayAttributeStore;
+use BabDev\WebSocket\Server\Connection\AttributeKey;
 use BabDev\WebSocketBundle\Authentication\Exception\AuthenticationException;
 use BabDev\WebSocketBundle\Authentication\Provider\SessionAuthenticationProvider;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
@@ -37,7 +38,7 @@ final class SessionAuthenticationProviderTest extends TestCase
     public function testTheProviderSupportsAConnectionWhenItHasASession(): void
     {
         $attributeStore = new ArrayAttributeStore();
-        $attributeStore->set('session', self::createStub(SessionInterface::class));
+        $attributeStore->set(AttributeKey::SESSION, self::createStub(SessionInterface::class));
 
         /** @var MockObject&Connection $connection */
         $connection = $this->createMock(Connection::class);
@@ -69,8 +70,8 @@ final class SessionAuthenticationProviderTest extends TestCase
             ->willReturn(false);
 
         $attributeStore = new ArrayAttributeStore();
-        $attributeStore->set('session', $session);
-        $attributeStore->set('resource_id', 'resource');
+        $attributeStore->set(AttributeKey::SESSION, $session);
+        $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
 
         /** @var MockObject&Connection $connection */
         $connection = $this->createMock(Connection::class);
@@ -106,8 +107,8 @@ final class SessionAuthenticationProviderTest extends TestCase
             ->willReturn(serialize($token));
 
         $attributeStore = new ArrayAttributeStore();
-        $attributeStore->set('session', $session);
-        $attributeStore->set('resource_id', 'resource');
+        $attributeStore->set(AttributeKey::SESSION, $session);
+        $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
 
         /** @var MockObject&Connection $connection */
         $connection = $this->createMock(Connection::class);
@@ -142,8 +143,8 @@ final class SessionAuthenticationProviderTest extends TestCase
             ->willReturn(serialize(new \stdClass()));
 
         $attributeStore = new ArrayAttributeStore();
-        $attributeStore->set('session', $session);
-        $attributeStore->set('resource_id', 'resource');
+        $attributeStore->set(AttributeKey::SESSION, $session);
+        $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
 
         /** @var MockObject&Connection $connection */
         $connection = $this->createMock(Connection::class);
@@ -173,8 +174,8 @@ final class SessionAuthenticationProviderTest extends TestCase
             ->willReturn(new \stdClass());
 
         $attributeStore = new ArrayAttributeStore();
-        $attributeStore->set('session', $session);
-        $attributeStore->set('resource_id', 'resource');
+        $attributeStore->set(AttributeKey::SESSION, $session);
+        $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
 
         /** @var MockObject&Connection $connection */
         $connection = $this->createMock(Connection::class);
@@ -204,8 +205,8 @@ final class SessionAuthenticationProviderTest extends TestCase
             ->willReturn('O:7:"stdClass":0:{}');
 
         $attributeStore = new ArrayAttributeStore();
-        $attributeStore->set('session', $session);
-        $attributeStore->set('resource_id', 'resource');
+        $attributeStore->set(AttributeKey::SESSION, $session);
+        $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
 
         /** @var MockObject&Connection $connection */
         $connection = $this->createMock(Connection::class);
@@ -246,8 +247,8 @@ final class SessionAuthenticationProviderTest extends TestCase
             ->willReturn($serializedToken);
 
         $attributeStore = new ArrayAttributeStore();
-        $attributeStore->set('session', $session);
-        $attributeStore->set('resource_id', 'resource');
+        $attributeStore->set(AttributeKey::SESSION, $session);
+        $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
 
         $connection = self::createStub(Connection::class);
         $connection->method('getAttributeStore')
@@ -275,8 +276,8 @@ final class SessionAuthenticationProviderTest extends TestCase
             ->willReturn(serialize(new NullToken()));
 
         $attributeStore = new ArrayAttributeStore();
-        $attributeStore->set('session', $session);
-        $attributeStore->set('resource_id', 'resource');
+        $attributeStore->set(AttributeKey::SESSION, $session);
+        $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
 
         /** @var MockObject&Connection $connection */
         $connection = $this->createMock(Connection::class);

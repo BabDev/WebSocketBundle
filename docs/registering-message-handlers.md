@@ -44,6 +44,7 @@ This example handler will simply echo the provided event to all subscribers conn
 
 namespace App\WebSocket\MessageHandler;
 
+use BabDev\WebSocket\Server\Connection\AttributeKey;
 use BabDev\WebSocket\Server\TopicMessageHandler;
 use BabDev\WebSocket\Server\WAMP\Topic;
 use BabDev\WebSocket\Server\WAMP\WAMPConnection;
@@ -55,12 +56,12 @@ final class EchoMessageHandler implements TopicMessageHandler
 {
     public function onSubscribe(WAMPConnection $connection, Topic $topic, WAMPMessageRequest $request): void
     {
-        $topic->broadcast(['msg' => 'Connection opened'], [], [$connection->getAttributeStore()->get('wamp.session_id')]);
+        $topic->broadcast(['msg' => 'Connection opened'], [], [$connection->getAttributeStore()->get(AttributeKey::WAMP_SESSION_ID)]);
     }
 
     public function onUnsubscribe(WAMPConnection $connection, Topic $topic, WAMPMessageRequest $request): void
     {
-        $topic->broadcast(['msg' => 'Connection closed'], [], [$connection->getAttributeStore()->get('wamp.session_id')]);
+        $topic->broadcast(['msg' => 'Connection closed'], [], [$connection->getAttributeStore()->get(AttributeKey::WAMP_SESSION_ID)]);
     }
 
     /**

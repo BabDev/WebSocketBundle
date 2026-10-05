@@ -3,6 +3,7 @@
 namespace BabDev\WebSocketBundle\Server\Middleware;
 
 use BabDev\WebSocket\Server\Connection;
+use BabDev\WebSocket\Server\Connection\AttributeKey;
 use BabDev\WebSocket\Server\Connection\ClosesConnectionWithResponse;
 use BabDev\WebSocket\Server\ServerMiddleware;
 use BabDev\WebSocketBundle\Authentication\Authenticator;
@@ -77,7 +78,7 @@ final class AuthenticateUser implements ServerMiddleware, LoggerAwareInterface
         $storageId = $this->tokenStorage->generateStorageId($connection);
 
         $loggerContext = [
-            'resource_id' => $connection->getAttributeStore()->get('resource_id'),
+            'resource_id' => $connection->getAttributeStore()->get(AttributeKey::RESOURCE_ID),
             'storage_id' => $storageId,
         ];
 

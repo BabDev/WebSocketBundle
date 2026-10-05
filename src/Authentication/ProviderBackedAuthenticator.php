@@ -3,6 +3,7 @@
 namespace BabDev\WebSocketBundle\Authentication;
 
 use BabDev\WebSocket\Server\Connection;
+use BabDev\WebSocket\Server\Connection\AttributeKey;
 use BabDev\WebSocketBundle\Authentication\Exception\AuthenticationException;
 use BabDev\WebSocketBundle\Authentication\Provider\AuthenticationProvider;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
@@ -58,7 +59,7 @@ final class ProviderBackedAuthenticator implements Authenticator, LoggerAwareInt
         $this->logger?->info(
             'User "{user}" authenticated to websocket server',
             [
-                'resource_id' => $connection->getAttributeStore()->get('resource_id'),
+                'resource_id' => $connection->getAttributeStore()->get(AttributeKey::RESOURCE_ID),
                 'storage_id' => $id,
                 'user' => $token->getUserIdentifier() ?: 'Unknown User',
             ],

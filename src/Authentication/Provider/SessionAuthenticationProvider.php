@@ -3,6 +3,7 @@
 namespace BabDev\WebSocketBundle\Authentication\Provider;
 
 use BabDev\WebSocket\Server\Connection;
+use BabDev\WebSocket\Server\Connection\AttributeKey;
 use BabDev\WebSocket\Server\IniOptionsHandler;
 use BabDev\WebSocket\Server\OptionsHandler;
 use BabDev\WebSocket\Server\WebSocketException;
@@ -40,7 +41,7 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
     {
         $attributeStore = $connection->getAttributeStore();
 
-        return $attributeStore->has('session') && $attributeStore->get('session') instanceof SessionInterface;
+        return $attributeStore->has(AttributeKey::SESSION) && $attributeStore->get(AttributeKey::SESSION) instanceof SessionInterface;
     }
 
     /**
@@ -63,7 +64,7 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
         $this->logger?->info(
             '{user} connected',
             [
-                'resource_id' => $connection->getAttributeStore()->get('resource_id'),
+                'resource_id' => $connection->getAttributeStore()->get(AttributeKey::RESOURCE_ID),
                 'storage_id' => $storageId,
                 'user' => $token->getUserIdentifier() ?: 'Unknown User',
             ],
@@ -77,7 +78,7 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
         $token = null;
 
         /** @var SessionInterface $session */
-        $session = $connection->getAttributeStore()->get('session');
+        $session = $connection->getAttributeStore()->get(AttributeKey::SESSION);
 
         $sessionKey = null;
 
