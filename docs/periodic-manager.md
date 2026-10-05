@@ -10,7 +10,7 @@ The bundle will autoconfigure periodic managers with the `babdev_websocket_serve
 
 ### `getName()`
 
-A manager must provide a unique name, these names are used in conjunction with the `BabDev\WebSocketBundle\PeriodicManager\PeriodicManagerRegistry`
+A manager must provide a unique name, these names are used in conjunction with the `BabDev\WebSocketBundle\PeriodicManager\PeriodicManagerRegistry`.
 
 ### `register()`
 
@@ -31,6 +31,7 @@ use BabDev\WebSocketBundle\PeriodicManager\PeriodicManager;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use React\EventLoop\LoopInterface;
+use React\EventLoop\TimerInterface;
 
 final class EchoPeriodicManager implements PeriodicManager, LoggerAwareInterface
 {
@@ -38,37 +39,50 @@ final class EchoPeriodicManager implements PeriodicManager, LoggerAwareInterface
 
     private ?LoopInterface $loop = null;
 
+    private ?TimerInterface $timer = null;
+
     public function getName(): string
     {
-        return 'echo'
+        return 'echo';
     }
 
     public function register(LoopInterface $loop): void
     {
         $this->loop = $loop;
 
-        // Wrap the entire loop in try/catch to prevent fatal errors crashing the websocket server
-        try {
-            // Register the timer to run every 15 seconds
-            $this->loop->addPeriodicTimer(
-                15,
-                static function (): void {
-                    echo 'This is a demo';
-                },
-            );
-        } catch (\Throwable $exception) {
-            $this->logger->error(
-                'Uncaught Throwable in the echo manager.',
-                [
-                    'exception' => $exception,
-                ],
-            );
-        }
+        // Register the timer to run every 15 seconds
+        $this->timer = $loop->addPeriodicTimer(
+            15,
+            function (): void {
+                // The timer runs inside the event loop, so an exception thrown here stops the websocket server; catch the errors you expect and let anything else stop the server
+                try {
+                    $this->echo();
+                } catch (\RuntimeException $exception) {
+                    $this->logger?->error(
+                        'The echo manager failed.',
+                        [
+                            'exception' => $exception,
+                        ],
+                    );
+                }
+            },
+        );
     }
 
     public function cancelTimers(): void
     {
-        // Nothing required for this manager
+        if (!$this->timer instanceof TimerInterface) {
+            return;
+        }
+
+        $this->loop?->cancelTimer($this->timer);
+
+        $this->timer = null;
+    }
+
+    private function echo(): void
+    {
+        echo 'This is a demo';
     }
 }
 ```
