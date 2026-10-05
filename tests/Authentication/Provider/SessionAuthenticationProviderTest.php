@@ -7,8 +7,10 @@ use BabDev\WebSocket\Server\Connection\ArrayAttributeStore;
 use BabDev\WebSocketBundle\Authentication\Exception\AuthenticationException;
 use BabDev\WebSocketBundle\Authentication\Provider\SessionAuthenticationProvider;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\Test\TestLogger;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -221,6 +223,46 @@ final class SessionAuthenticationProviderTest extends TestCase
             ->with($storageIdentifier, self::isInstanceOf(TokenInterface::class));
 
         self::assertInstanceOf(NullToken::class, $this->provider->authenticate($connection));
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function invalidSerializedTokens(): iterable
+    {
+        yield 'truncated data' => ['O:8:"stdClass":0:'];
+        yield 'unknown class' => ['O:30:"App\Security\RemovedTokenClass":0:{}'];
+    }
+
+    #[DataProvider('invalidSerializedTokens')]
+    public function testANullTokenUsedWhenTheTokenCannotBeUnserialized(string $serializedToken): void
+    {
+        $logger = new TestLogger();
+
+        $this->provider->setLogger($logger);
+
+        $session = self::createStub(SessionInterface::class);
+        $session->method('get')
+            ->willReturn($serializedToken);
+
+        $attributeStore = new ArrayAttributeStore();
+        $attributeStore->set('session', $session);
+        $attributeStore->set('resource_id', 'resource');
+
+        $connection = self::createStub(Connection::class);
+        $connection->method('getAttributeStore')
+            ->willReturn($attributeStore);
+
+        $this->tokenStorage->expects(self::once())
+            ->method('generateStorageId')
+            ->willReturn('42');
+
+        $this->tokenStorage->expects(self::once())
+            ->method('addToken')
+            ->with('42', self::isInstanceOf(NullToken::class));
+
+        self::assertInstanceOf(NullToken::class, $this->provider->authenticate($connection));
+        self::assertTrue($logger->hasWarningThatContains('Failed to unserialize the security token from the session.'));
     }
 
     public function testDoesNotAuthenticateWhenATokenWithoutAUserIsUnserialized(): void

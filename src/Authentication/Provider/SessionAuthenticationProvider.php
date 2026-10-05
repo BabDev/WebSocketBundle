@@ -138,6 +138,7 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
 
         try {
             $token = unserialize($serializedToken);
+            // @phpstan-ignore catch.neverThrown (The error handler and unserialize callback above throw this exception from within unserialize())
         } catch (\ErrorException $e) {
             if (0x37313BC !== $e->getCode()) {
                 throw $e;
