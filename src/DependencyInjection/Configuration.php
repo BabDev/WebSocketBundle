@@ -104,6 +104,12 @@ final readonly class Configuration implements ConfigurationInterface
                             ->defaultValue(ReactPhpServer::DEFAULT_WRITE_BUFFER_LIMIT)
                             ->min(1)
                     )
+                    ->append(
+                        new NullableFloatNodeDefinition('shutdown_timeout')
+                            ->info('The time, in seconds, to wait for connections to close when the server is stopped with a shutdown signal before they are forcibly closed.')
+                            ->defaultValue(5.0)
+                            ->min(0)
+                    )
                     ->scalarNode('uri')
                         ->isRequired()
                         ->cannotBeEmpty()

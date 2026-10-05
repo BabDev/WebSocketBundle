@@ -27,6 +27,7 @@ use Symfony\Component\Routing\Loader\XmlFileLoader as RoutingXmlFileLoader;
  *     max_http_request_size: int<1, max>,
  *     request_timeout: int|float|null,
  *     write_buffer_limit: int<1, max>|null,
+ *     shutdown_timeout: int|float|null,
  *     uri: string,
  *     context: mixed,
  *     allowed_origins: list<string>,
@@ -136,6 +137,7 @@ final class BabDevWebSocketExtension extends ConfigurableExtension implements Pr
     {
         $container->getDefinition('babdev_websocket_server.command.run_websocket_server')
             ->replaceArgument(4, $mergedConfig['server']['uri'])
+            ->replaceArgument(6, $mergedConfig['server']['shutdown_timeout'])
         ;
 
         $container->getDefinition('babdev_websocket_server.socket_server.factory.default')

@@ -22,6 +22,9 @@ babdev_websocket:
     # The number of bytes which can be written to a connection after its write buffer is full before the connection is closed.
     write_buffer_limit:   1048576
 
+    # The time, in seconds, to wait for connections to close when the server is stopped with a shutdown signal before they are forcibly closed.
+    shutdown_timeout:     5.0
+
     # The default URI to listen for connections on.
     uri:                  ~ # Required
 

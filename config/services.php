@@ -142,6 +142,7 @@ return static function (ContainerConfigurator $container): void {
             service(LoopInterface::class),
             abstract_arg('server URI'),
             service('babdev_websocket_server.server.server_middleware.establish_websocket_connection')->nullOnInvalid(),
+            abstract_arg('shutdown timeout'),
         ])
         ->tag('console.command')
     ;

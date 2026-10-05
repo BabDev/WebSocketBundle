@@ -32,7 +32,7 @@ final class RunWebSocketServerCommand extends Command
         private readonly LoopInterface $loop,
         private readonly string $uri,
         private readonly ?EstablishWebSocketConnection $webSocketMiddleware = null,
-        private readonly float $shutdownTimeout = 5.0,
+        private readonly ?float $shutdownTimeout = 5.0,
     ) {
         parent::__construct();
     }
@@ -95,12 +95,13 @@ final class RunWebSocketServerCommand extends Command
     {
         $this->style->info('The websocket server is being stopped.');
 
-        if ($server instanceof ReactPhpServer) {
+        if ($server instanceof ReactPhpServer && null !== $this->shutdownTimeout) {
             // Clients are sent a "1001 Going Away" close frame, then the server stops the event loop once all connections have closed or the timeout is reached
             $this->webSocketMiddleware?->closeAllConnections();
 
             $server->shutdown($this->shutdownTimeout);
         } else {
+            // The server is stopped immediately when graceful shutdown is disabled or not supported by the server
             $socketServer->close();
 
             $this->loop->stop();

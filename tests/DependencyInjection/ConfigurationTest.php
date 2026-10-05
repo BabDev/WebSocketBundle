@@ -29,11 +29,11 @@ final class ConfigurationTest extends TestCase
         $this->assertProcessedConfigurationEquals(
             [
                 [
-                    'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'write_buffer_limit' => 2048, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
+                    'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'write_buffer_limit' => 2048, 'shutdown_timeout' => 1.5, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 ],
             ],
             [
-                'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'write_buffer_limit' => 2048, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
+                'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'write_buffer_limit' => 2048, 'shutdown_timeout' => 1.5, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 'authentication' => [],
             ],
         );
@@ -211,6 +211,38 @@ final class ConfigurationTest extends TestCase
             [['server' => ['write_buffer_limit' => $limit]]],
             'server.write_buffer_limit',
             $expectedMessage,
+        );
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, int|float|null}>
+     */
+    public static function validShutdownTimeouts(): iterable
+    {
+        yield 'default' => [[], 5.0];
+        yield 'close connections immediately' => [['shutdown_timeout' => 0], 0];
+        yield 'disabled' => [['shutdown_timeout' => null], null];
+    }
+
+    /**
+     * @param array<string, mixed> $serverConfig
+     */
+    #[DataProvider('validShutdownTimeouts')]
+    public function testConfigurationIsValidWithShutdownTimeout(array $serverConfig, int|float|null $expectedTimeout): void
+    {
+        $this->assertProcessedConfigurationEquals(
+            [['server' => $serverConfig]],
+            ['server' => ['shutdown_timeout' => $expectedTimeout]],
+            'server.shutdown_timeout',
+        );
+    }
+
+    public function testConfigurationIsInvalidWithNegativeShutdownTimeout(): void
+    {
+        $this->assertPartialConfigurationIsInvalid(
+            [['server' => ['shutdown_timeout' => -1]]],
+            'server.shutdown_timeout',
+            'The value -1 is too small for path "babdev_websocket.server.shutdown_timeout". Should be greater than or equal to 0',
         );
     }
 

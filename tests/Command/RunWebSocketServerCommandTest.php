@@ -12,11 +12,14 @@ use BabDev\WebSocketBundle\Event\AfterServerClosed;
 use BabDev\WebSocketBundle\Event\BeforeRunServer;
 use BabDev\WebSocketBundle\Server\ServerFactory;
 use BabDev\WebSocketBundle\Server\SocketServerFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use React\EventLoop\LoopInterface;
+use React\EventLoop\TimerInterface;
+use React\Socket\ConnectionInterface;
 use React\Socket\ServerInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -284,5 +287,91 @@ final class RunWebSocketServerCommandTest extends TestCase
         $commandTester->execute([]);
 
         self::assertSame([BeforeRunServer::class, AfterServerClosed::class, AfterLoopStopped::class], $dispatchedEvents);
+    }
+
+    /**
+     * @return iterable<string, array{float|null}>
+     */
+    public static function shutdownTimeouts(): iterable
+    {
+        yield 'graceful shutdown' => [2.5];
+        yield 'immediate shutdown' => [null];
+    }
+
+    #[DataProvider('shutdownTimeouts')]
+    #[RequiresPhpExtension('pcntl')]
+    public function testTheShutdownTimeoutControlsHowOpenConnectionsAreClosed(?float $shutdownTimeout): void
+    {
+        /** @var MockObject&ServerInterface $socketServer */
+        $socketServer = $this->createMock(ServerInterface::class);
+        $socketServer->expects(self::once())
+            ->method('close');
+
+        /** @var array<int, callable> $signalHandlers */
+        $signalHandlers = [];
+
+        /** @var MockObject&LoopInterface $loop */
+        $loop = $this->createMock(LoopInterface::class);
+        $loop->method('addSignal')
+            ->willReturnCallback(static function (int $signal, callable $listener) use (&$signalHandlers): void {
+                $signalHandlers[$signal] = $listener;
+            });
+
+        $server = new ReactPhpServer(self::createStub(ServerMiddleware::class), $socketServer, $loop);
+
+        /** @var MockObject&ConnectionInterface $connection */
+        $connection = $this->createMock(ConnectionInterface::class);
+
+        $loop->expects(self::once())
+            ->method('run')
+            ->willReturnCallback(static function () use ($server, $connection, &$signalHandlers): void {
+                $server->onConnection($connection);
+
+                $signalHandlers[\SIGTERM]();
+            });
+
+        if (null !== $shutdownTimeout) {
+            // The server waits for the open connection to close, up to the shutdown timeout
+            $connection->expects(self::once())
+                ->method('end');
+
+            $loop->expects(self::once())
+                ->method('addTimer')
+                ->with($shutdownTimeout)
+                ->willReturn(self::createStub(TimerInterface::class));
+
+            $loop->expects(self::never())
+                ->method('stop');
+        } else {
+            $connection->expects(self::never())
+                ->method('end');
+
+            $loop->expects(self::never())
+                ->method('addTimer');
+
+            $loop->expects(self::once())
+                ->method('stop');
+        }
+
+        $socketServerFactory = self::createStub(SocketServerFactory::class);
+        $socketServerFactory->method('build')
+            ->willReturn($socketServer);
+
+        $serverFactory = self::createStub(ServerFactory::class);
+        $serverFactory->method('build')
+            ->willReturn($server);
+
+        $command = new RunWebSocketServerCommand(
+            null,
+            $socketServerFactory,
+            $serverFactory,
+            $loop,
+            'tcp://127.0.0.1:8080',
+            new EstablishWebSocketConnection(self::createStub(ServerMiddleware::class)),
+            $shutdownTimeout,
+        );
+
+        $commandTester = new CommandTester($command);
+        $commandTester->execute([]);
     }
 }

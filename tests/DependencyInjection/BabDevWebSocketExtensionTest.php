@@ -105,6 +105,12 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             1_048_576,
         );
 
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.command.run_websocket_server',
+            6,
+            5.0,
+        );
+
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
             'babdev_websocket_server.server.server_middleware.parse_http_request',
             'enableRequestTimeout',
@@ -410,6 +416,25 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(
             'babdev_websocket_server.server.factory.default',
             3,
+            null,
+        );
+    }
+
+    public function testContainerIsLoadedWithGracefulShutdownDisabled(): void
+    {
+        $this->load([
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'shutdown_timeout' => null,
+                'router' => [
+                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
+                ],
+            ],
+        ]);
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.command.run_websocket_server',
+            6,
             null,
         );
     }
