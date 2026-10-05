@@ -30,6 +30,12 @@ With this configuration, only connections from `https://www.example.com`, `https
 
 An allowed origin which is not in one of these formats, such as a host with a port (`localhost:8080`) or an origin with a path (`https://example.com/path`), causes an error when the container is compiled.
 
+### Allowed Origins and Session Authentication
+
+When using the [session authentication provider](/open-source/packages/websocketbundle/docs/1.x/authentication#session-authentication), configuring the allowed origins is strongly recommended. Browsers send cookies with the request opening a websocket connection, and do not restrict websocket connections to the page's own origin, so without an origin check a page on another origin can open a connection which is authenticated as the user visiting it (known as cross-site WebSocket hijacking).
+
+The `SameSite` attribute of your session cookie (`lax` by default in Symfony) prevents the cookie from being sent from other sites, but it does not prevent this from other origins on the same site, such as another subdomain or port, and offers no protection if the cookie uses `SameSite=None`. Restricting the allowed origins to the origins serving your application ensures only your pages can open authenticated connections.
+
 ## Blocking IP Addresses
 
 The bundle can be configured to block traffic from specified IP addresses. The configuration accepts both single addresses and network ranges in both IPv4 and IPv6 format.

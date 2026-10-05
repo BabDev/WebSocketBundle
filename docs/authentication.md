@@ -41,6 +41,8 @@ babdev_websocket:
 
 Configuring the session handler will add the [`InitializeSession` middleware](/open-source/packages/websocket-server/docs/1.x/middleware/initialize-session) to the websocket server which will provide a read-only interface for the session data from your website.
 
+When using session authentication, you should also restrict the [allowed origins](/open-source/packages/websocketbundle/docs/1.x/securing-connections#allowed-origins-and-session-authentication) so other websites cannot open connections authenticated as your users.
+
 By default, the session authentication provider will attempt to authenticate to any of the firewalls set in your `security.firewalls` configuration in the same order which the firewalls are defined. You can specify the firewall(s) to use with the `firewalls` configuration key on the session provider.
 
 ```yaml
