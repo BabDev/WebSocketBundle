@@ -81,6 +81,12 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             [100],
         );
 
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
+            'babdev_websocket_server.server.server_middleware.establish_websocket_connection',
+            'setStrictSubProtocolCheck',
+            [true],
+        );
+
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(
             'babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins',
             1,
@@ -480,6 +486,25 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             'babdev_websocket_server.server.server_middleware.establish_websocket_connection',
             3,
             65_536,
+        );
+    }
+
+    public function testContainerIsLoadedWithTheStrictSubProtocolCheckDisabled(): void
+    {
+        $this->load([
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'strict_sub_protocol_check' => false,
+                'router' => [
+                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
+                ],
+            ],
+        ]);
+
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
+            'babdev_websocket_server.server.server_middleware.establish_websocket_connection',
+            'setStrictSubProtocolCheck',
+            [false],
         );
     }
 

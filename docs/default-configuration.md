@@ -34,6 +34,9 @@ babdev_websocket:
     # The maximum number of CURIE prefixes a client can register for its connection with the WAMP "PREFIX" message.
     max_prefixes:         100
 
+    # Whether clients must request the "wamp" sub-protocol in their "Sec-WebSocket-Protocol" header, rejecting other clients with a "426 Upgrade Required" response.
+    strict_sub_protocol_check: true
+
     # The default URI to listen for connections on.
     uri:                  ~ # Required
 

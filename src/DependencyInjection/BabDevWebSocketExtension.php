@@ -31,6 +31,7 @@ use Symfony\Component\Routing\Loader\XmlFileLoader as RoutingXmlFileLoader;
  *     max_message_payload_size: int<0, max>|null,
  *     max_frame_payload_size: int<0, max>|null,
  *     max_prefixes: int<1, max>,
+ *     strict_sub_protocol_check: bool,
  *     uri: string,
  *     context: mixed,
  *     allowed_origins: list<string>,
@@ -194,6 +195,7 @@ final class BabDevWebSocketExtension extends ConfigurableExtension implements Pr
         $container->getDefinition('babdev_websocket_server.server.server_middleware.establish_websocket_connection')
             ->replaceArgument(2, $mergedConfig['server']['max_message_payload_size'])
             ->replaceArgument(3, $mergedConfig['server']['max_frame_payload_size'])
+            ->addMethodCall('setStrictSubProtocolCheck', [$mergedConfig['server']['strict_sub_protocol_check']])
         ;
 
         if ($this->isConfigEnabled($container, $mergedConfig['server']['keepalive'])) {
