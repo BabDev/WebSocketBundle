@@ -56,8 +56,24 @@ final class AuthenticateUser implements ServerMiddleware, LoggerAwareInterface
      */
     public function onClose(Connection $connection): void
     {
-        $this->middleware->onClose($connection);
+        // The token is removed after the decorated middleware has run so it is available while the connection closes, and even if that middleware fails
+        try {
+            $this->middleware->onClose($connection);
+        } finally {
+            $this->removeToken($connection);
+        }
+    }
 
+    /**
+     * Reacts to an unhandled Throwable.
+     */
+    public function onError(Connection $connection, \Throwable $throwable): void
+    {
+        $this->middleware->onError($connection, $throwable);
+    }
+
+    private function removeToken(Connection $connection): void
+    {
         $storageId = $this->tokenStorage->generateStorageId($connection);
 
         $loggerContext = [
@@ -87,13 +103,5 @@ final class AuthenticateUser implements ServerMiddleware, LoggerAwareInterface
                 [...$loggerContext, 'exception' => $e]
             );
         }
-    }
-
-    /**
-     * Reacts to an unhandled Throwable.
-     */
-    public function onError(Connection $connection, \Throwable $throwable): void
-    {
-        $this->middleware->onError($connection, $throwable);
     }
 }

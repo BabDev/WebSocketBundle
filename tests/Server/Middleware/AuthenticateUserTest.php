@@ -106,6 +106,43 @@ final class AuthenticateUserTest extends TestCase
         $this->middleware->onClose($connection);
     }
 
+    #[TestDox('Removes the token when the decorated middleware fails while closing a connection')]
+    public function testOnCloseRemovesTheTokenWhenTheDecoratedMiddlewareFails(): void
+    {
+        $attributeStore = self::createStub(AttributeStore::class);
+        $attributeStore->method('get')
+            ->willReturn('resource');
+
+        $connection = self::createStub(Connection::class);
+        $connection->method('getAttributeStore')
+            ->willReturn($attributeStore);
+
+        $exception = new \RuntimeException('Failed to close the connection');
+
+        $this->decoratedMiddleware->expects(self::once())
+            ->method('onClose')
+            ->with($connection)
+            ->willThrowException($exception);
+
+        $this->tokenStorage->method('generateStorageId')
+            ->willReturn('resource');
+
+        $this->tokenStorage->method('hasToken')
+            ->willReturn(true);
+
+        $this->tokenStorage->method('getToken')
+            ->willReturn(self::createStub(TokenInterface::class));
+
+        $this->tokenStorage->expects(self::once())
+            ->method('removeToken')
+            ->with('resource')
+            ->willReturn(true);
+
+        $this->expectExceptionObject($exception);
+
+        $this->middleware->onClose($connection);
+    }
+
     #[TestDox('Handles an error')]
     public function testOnError(): void
     {
