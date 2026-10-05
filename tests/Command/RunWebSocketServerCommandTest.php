@@ -2,11 +2,17 @@
 
 namespace BabDev\WebSocketBundle\Tests\Command;
 
+use BabDev\WebSocket\Server\ReactPhpServer;
 use BabDev\WebSocket\Server\Server;
+use BabDev\WebSocket\Server\ServerMiddleware;
+use BabDev\WebSocket\Server\WebSocket\Middleware\EstablishWebSocketConnection;
 use BabDev\WebSocketBundle\Command\RunWebSocketServerCommand;
+use BabDev\WebSocketBundle\Event\AfterLoopStopped;
+use BabDev\WebSocketBundle\Event\AfterServerClosed;
 use BabDev\WebSocketBundle\Event\BeforeRunServer;
 use BabDev\WebSocketBundle\Server\ServerFactory;
 use BabDev\WebSocketBundle\Server\SocketServerFactory;
+use PHPUnit\Framework\Attributes\RequiresPhpExtension;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
@@ -23,9 +29,9 @@ final class RunWebSocketServerCommandTest extends TestCase
 
         /** @var MockObject&EventDispatcherInterface $eventDispatcher */
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $eventDispatcher->expects(self::once())
+        $eventDispatcher->expects(self::exactly(2))
             ->method('dispatch')
-            ->with(self::isInstanceOf(BeforeRunServer::class))
+            ->with(self::logicalOr(self::isInstanceOf(BeforeRunServer::class), self::isInstanceOf(AfterLoopStopped::class)))
             ->willReturnArgument(0);
 
         /** @var Stub&ServerInterface $socketServer */
@@ -62,9 +68,9 @@ final class RunWebSocketServerCommandTest extends TestCase
 
         /** @var MockObject&EventDispatcherInterface $eventDispatcher */
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
-        $eventDispatcher->expects(self::once())
+        $eventDispatcher->expects(self::exactly(2))
             ->method('dispatch')
-            ->with(self::isInstanceOf(BeforeRunServer::class))
+            ->with(self::logicalOr(self::isInstanceOf(BeforeRunServer::class), self::isInstanceOf(AfterLoopStopped::class)))
             ->willReturnArgument(0);
 
         /** @var Stub&ServerInterface $socketServer */
@@ -122,9 +128,9 @@ final class RunWebSocketServerCommandTest extends TestCase
         $registeredSignals = [];
 
         /** @var Stub&LoopInterface $loop */
-        $loop = $this->createStub(LoopInterface::class);
+        $loop = self::createStub(LoopInterface::class);
         $loop->method('addSignal')
-            ->willReturnCallback(function (int $signal) use (&$registeredSignals): void {
+            ->willReturnCallback(static function (int $signal) use (&$registeredSignals): void {
                 $registeredSignals[] = $signal;
             });
 
@@ -145,5 +151,138 @@ final class RunWebSocketServerCommandTest extends TestCase
         ));
 
         self::assertSame($expectedSignals, $registeredSignals);
+    }
+
+    #[RequiresPhpExtension('pcntl')]
+    public function testTheServerIsShutDownGracefullyWhenAShutdownSignalIsReceived(): void
+    {
+        $uri = 'tcp://127.0.0.1:8080';
+
+        /** @var MockObject&ServerInterface $socketServer */
+        $socketServer = $this->createMock(ServerInterface::class);
+        $socketServer->expects(self::once())
+            ->method('close');
+
+        /** @var array<int, callable> $signalHandlers */
+        $signalHandlers = [];
+
+        /** @var MockObject&LoopInterface $loop */
+        $loop = $this->createMock(LoopInterface::class);
+        $loop->method('addSignal')
+            ->willReturnCallback(static function (int $signal, callable $listener) use (&$signalHandlers): void {
+                $signalHandlers[$signal] = $listener;
+            });
+
+        // A signal is received while the server is running
+        $loop->expects(self::once())
+            ->method('run')
+            ->willReturnCallback(static function () use (&$signalHandlers): void {
+                $signalHandlers[\SIGTERM]();
+            });
+
+        $removedSignals = [];
+
+        $loop->expects(self::exactly(3))
+            ->method('removeSignal')
+            ->willReturnCallback(static function (int $signal, callable $listener) use (&$signalHandlers, &$removedSignals): void {
+                self::assertSame($signalHandlers[$signal], $listener);
+
+                $removedSignals[] = $signal;
+            });
+
+        // With no open connections, the server stops the event loop as soon as it shuts down
+        $loop->expects(self::once())
+            ->method('stop');
+
+        $server = new ReactPhpServer(self::createStub(ServerMiddleware::class), $socketServer, $loop);
+
+        $socketServerFactory = self::createStub(SocketServerFactory::class);
+        $socketServerFactory->method('build')
+            ->willReturn($socketServer);
+
+        $serverFactory = self::createStub(ServerFactory::class);
+        $serverFactory->method('build')
+            ->willReturn($server);
+
+        $dispatchedEvents = [];
+
+        $eventDispatcher = self::createStub(EventDispatcherInterface::class);
+        $eventDispatcher->method('dispatch')
+            ->willReturnCallback(static function (object $event) use (&$dispatchedEvents): object {
+                $dispatchedEvents[] = $event::class;
+
+                return $event;
+            });
+
+        $command = new RunWebSocketServerCommand(
+            $eventDispatcher,
+            $socketServerFactory,
+            $serverFactory,
+            $loop,
+            $uri,
+            new EstablishWebSocketConnection(self::createStub(ServerMiddleware::class)),
+        );
+
+        $commandTester = new CommandTester($command);
+        $commandTester->execute([]);
+
+        self::assertSame([\SIGINT, \SIGTERM, \SIGQUIT], $removedSignals, 'All signal handlers should be removed so a second signal stops the server immediately.');
+        self::assertSame([BeforeRunServer::class, AfterServerClosed::class, AfterLoopStopped::class], $dispatchedEvents);
+        self::assertStringContainsString('The websocket server has been stopped.', $commandTester->getDisplay());
+    }
+
+    #[RequiresPhpExtension('pcntl')]
+    public function testAServerWithoutGracefulShutdownSupportIsStoppedWhenAShutdownSignalIsReceived(): void
+    {
+        /** @var MockObject&ServerInterface $socketServer */
+        $socketServer = $this->createMock(ServerInterface::class);
+        $socketServer->expects(self::once())
+            ->method('close');
+
+        /** @var array<int, callable> $signalHandlers */
+        $signalHandlers = [];
+
+        /** @var MockObject&LoopInterface $loop */
+        $loop = $this->createMock(LoopInterface::class);
+        $loop->method('addSignal')
+            ->willReturnCallback(static function (int $signal, callable $listener) use (&$signalHandlers): void {
+                $signalHandlers[$signal] = $listener;
+            });
+
+        $loop->expects(self::once())
+            ->method('stop');
+
+        /** @var MockObject&Server $server */
+        $server = $this->createMock(Server::class);
+        $server->expects(self::once())
+            ->method('run')
+            ->willReturnCallback(static function () use (&$signalHandlers): void {
+                $signalHandlers[\SIGINT]();
+            });
+
+        $socketServerFactory = self::createStub(SocketServerFactory::class);
+        $socketServerFactory->method('build')
+            ->willReturn($socketServer);
+
+        $serverFactory = self::createStub(ServerFactory::class);
+        $serverFactory->method('build')
+            ->willReturn($server);
+
+        $dispatchedEvents = [];
+
+        $eventDispatcher = self::createStub(EventDispatcherInterface::class);
+        $eventDispatcher->method('dispatch')
+            ->willReturnCallback(static function (object $event) use (&$dispatchedEvents): object {
+                $dispatchedEvents[] = $event::class;
+
+                return $event;
+            });
+
+        $command = new RunWebSocketServerCommand($eventDispatcher, $socketServerFactory, $serverFactory, $loop, 'tcp://127.0.0.1:8080');
+
+        $commandTester = new CommandTester($command);
+        $commandTester->execute([]);
+
+        self::assertSame([BeforeRunServer::class, AfterServerClosed::class, AfterLoopStopped::class], $dispatchedEvents);
     }
 }

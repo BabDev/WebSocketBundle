@@ -12,8 +12,8 @@ The WebSocketBundle and the parent library provide several events which can be u
 
 ### Bundle Events
 
-- `BabDev\WebSocketBundle\Event\AfterLoopStopped` - dispatched after the event loop has been stopped
-- `BabDev\WebSocketBundle\Event\AfterServerClosed` - dispatched after the shutdown signal has been received but before the event loop is stopped
+- `BabDev\WebSocketBundle\Event\AfterLoopStopped` - dispatched after the event loop has stopped and the websocket server is no longer running
+- `BabDev\WebSocketBundle\Event\AfterServerClosed` - dispatched after a shutdown signal has been received and the server has stopped accepting new connections, while open connections are still being closed
 - `BabDev\WebSocketBundle\Event\BeforeRunServer` - dispatched before the websocket server is started
 
 ## Creating an event listener

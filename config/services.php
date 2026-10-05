@@ -139,6 +139,7 @@ return static function (ContainerConfigurator $container): void {
             service(ServerFactory::class),
             service(LoopInterface::class),
             abstract_arg('server URI'),
+            service('babdev_websocket_server.server.server_middleware.establish_websocket_connection')->nullOnInvalid(),
         ])
         ->tag('console.command')
     ;
