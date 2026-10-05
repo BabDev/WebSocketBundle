@@ -4,6 +4,7 @@ namespace BabDev\WebSocketBundle\Tests\DependencyInjection;
 
 use BabDev\WebSocketBundle\Authentication\Storage\Driver\StorageDriver;
 use BabDev\WebSocketBundle\DependencyInjection\BabDevWebSocketExtension;
+use BabDev\WebSocketBundle\DependencyInjection\Compiler\BuildMiddlewareStackCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\SessionAuthenticationProviderFactory;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\ContainerHasParameterConstraint;
@@ -278,6 +279,41 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
 
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins');
+    }
+
+    public function testTheBlockedIpAddressCheckRunsAfterTheHttpRequestIsParsed(): void
+    {
+        $this->container->addCompilerPass(new BuildMiddlewareStackCompilerPass());
+
+        $this->load([
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'allowed_origins' => [
+                    'example.com',
+                ],
+                'blocked_ip_addresses' => [
+                    '192.168.1.1',
+                ],
+                'router' => [
+                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
+                ],
+            ],
+        ]);
+
+        $this->compile();
+
+        // The blocked address check needs the client address, which behind a trusted proxy is only known once the HTTP request has been parsed
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.server_middleware.parse_http_request',
+            0,
+            new Reference('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address'),
+        );
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.server_middleware.reject_blocked_ip_address',
+            0,
+            new Reference('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins'),
+        );
     }
 
     /**

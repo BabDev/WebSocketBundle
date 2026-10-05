@@ -13,8 +13,8 @@ Below is the list of middleware provided by this bundle and the library and thei
 | `BabDev\WebSocketBundle\Server\Middleware\AuthenticateUser`                 | `babdev_websocket_server.server.server_middleware.authenticate_user`              | -40      |
 | `BabDev\WebSocket\Server\Session\Middleware\InitializeSession`              | `babdev_websocket_server.server.server_middleware.initialize_session`             | -50      |
 | `BabDev\WebSocket\Server\Http\Middleware\RestrictToAllowedOrigins`          | `babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins`    | -60      |
-| `BabDev\WebSocket\Server\Http\Middleware\ParseHttpRequest`                  | `babdev_websocket_server.server.server_middleware.parse_http_request`             | -70      |
-| `BabDev\WebSocket\Server\Http\Middleware\RejectBlockedIpAddress`            | `babdev_websocket_server.server.server_middleware.reject_blocked_ip_address`      | -80      |
+| `BabDev\WebSocket\Server\Http\Middleware\RejectBlockedIpAddress`            | `babdev_websocket_server.server.server_middleware.reject_blocked_ip_address`      | -70      |
+| `BabDev\WebSocket\Server\Http\Middleware\ParseHttpRequest`                  | `babdev_websocket_server.server.server_middleware.parse_http_request`             | -80      |
 
 ## Adding Middleware
 

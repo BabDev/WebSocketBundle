@@ -411,18 +411,18 @@ return static function (ContainerConfigurator $container): void {
         ->tag('babdev_websocket_server.server_middleware', ['priority' => -60])
     ;
 
-    $services->set('babdev_websocket_server.server.server_middleware.parse_http_request', ParseHttpRequest::class)
-        ->args([
-            abstract_arg('decorated middleware'),
-            service(RequestParser::class),
-        ])
-        ->tag('babdev_websocket_server.server_middleware', ['priority' => -70])
-    ;
-
     $services->set('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address', RejectBlockedIpAddress::class)
         ->args([
             abstract_arg('decorated middleware'),
             abstract_arg('blocked address list'),
+        ])
+        ->tag('babdev_websocket_server.server_middleware', ['priority' => -70])
+    ;
+
+    $services->set('babdev_websocket_server.server.server_middleware.parse_http_request', ParseHttpRequest::class)
+        ->args([
+            abstract_arg('decorated middleware'),
+            service(RequestParser::class),
         ])
         ->tag('babdev_websocket_server.server_middleware', ['priority' => -80])
     ;
