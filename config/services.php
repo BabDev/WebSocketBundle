@@ -5,6 +5,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 use BabDev\WebSocket\Server\Http\GuzzleRequestParser;
 use BabDev\WebSocket\Server\Http\Middleware\ParseHttpRequest;
 use BabDev\WebSocket\Server\Http\Middleware\RejectBlockedIpAddress;
+use BabDev\WebSocket\Server\Http\Middleware\ResolveForwardedClientAddress;
 use BabDev\WebSocket\Server\Http\Middleware\RestrictToAllowedOrigins;
 use BabDev\WebSocket\Server\Http\RequestParser;
 use BabDev\WebSocket\Server\IniOptionsHandler;
@@ -42,6 +43,7 @@ use BabDev\WebSocketBundle\PeriodicManager\PeriodicManagerRegistry;
 use BabDev\WebSocketBundle\PeriodicManager\PingDoctrineDBALConnectionsPeriodicManager;
 use BabDev\WebSocketBundle\Routing\Loader\AttributeLoader;
 use BabDev\WebSocketBundle\Server\Middleware\AuthenticateUser;
+use BabDev\WebSocketBundle\Server\Middleware\ResolveForwardedClientAddressFactory;
 use BabDev\WebSocketBundle\Server\ServiceBasedMiddlewareStackBuilder;
 use BabDev\WebSocketBundle\Server\DefaultServerFactory;
 use BabDev\WebSocketBundle\Server\DefaultSocketServerFactory;
@@ -419,12 +421,22 @@ return static function (ContainerConfigurator $container): void {
         ->tag('babdev_websocket_server.server_middleware', ['priority' => -70])
     ;
 
+    $services->set('babdev_websocket_server.server.server_middleware.resolve_forwarded_client_address', ResolveForwardedClientAddress::class)
+        ->factory([ResolveForwardedClientAddressFactory::class, 'create'])
+        ->args([
+            abstract_arg('decorated middleware'),
+            abstract_arg('trusted proxies'),
+            abstract_arg('trusted headers'),
+        ])
+        ->tag('babdev_websocket_server.server_middleware', ['priority' => -80])
+    ;
+
     $services->set('babdev_websocket_server.server.server_middleware.parse_http_request', ParseHttpRequest::class)
         ->args([
             abstract_arg('decorated middleware'),
             service(RequestParser::class),
         ])
-        ->tag('babdev_websocket_server.server_middleware', ['priority' => -80])
+        ->tag('babdev_websocket_server.server_middleware', ['priority' => -90])
     ;
 
     $services->set('babdev_websocket_server.server.options_handler', IniOptionsHandler::class);

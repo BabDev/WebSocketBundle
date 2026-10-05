@@ -45,3 +45,32 @@ babdev_websocket:
 ```
 
 With this configuration, all connections from `8.8.8.8` and the `192.168.1.0/24` range will be rejected.
+
+## Running Behind a Reverse Proxy
+
+When the websocket server is behind a reverse proxy (such as nginx or a load balancer), every connection comes from the proxy, so the IP address checks above would only see the proxy's address. The bundle can be configured to trust the forwarding headers set by your proxies, which replaces the connection's address with the client's IP address before the blocked IP addresses are checked.
+
+```yaml
+# config/packages/babdev_websocket.yaml
+babdev_websocket:
+  server:
+    trusted_proxies:
+      - 192.0.2.1
+      - 10.0.0.0/8
+    # Defaults to x-forwarded-for
+    trusted_headers:
+      - x-forwarded-for
+```
+
+These options use the same formats as the [`framework.trusted_proxies` and `framework.trusted_headers`](https://symfony.com/doc/current/deployment/proxies.html) options, so the same values can be shared between your application and the websocket server, including through an environment variable with a comma-separated list:
+
+```yaml
+# config/packages/babdev_websocket.yaml
+babdev_websocket:
+  server:
+    trusted_proxies: '%env(SYMFONY_TRUSTED_PROXIES)%'
+```
+
+The trusted proxies can be single addresses, CIDR ranges, `PRIVATE_SUBNETS` to trust all private network ranges, or `REMOTE_ADDR` to trust every connection (only use this when the server can only be reached through the proxy).
+
+Only the `forwarded` and `x-forwarded-for` headers are used to resolve the client's IP address, any other supported header is accepted and ignored. Only trust the headers your proxy sets, as a proxy which sets one of these headers usually passes the other through from the client unchanged, allowing clients to send any IP address. A trusted header which is not supported causes an error when the websocket server is started.

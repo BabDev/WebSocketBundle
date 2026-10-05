@@ -29,11 +29,11 @@ final class ConfigurationTest extends TestCase
         $this->assertProcessedConfigurationEquals(
             [
                 [
-                    'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
+                    'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 ],
             ],
             [
-                'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
+                'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 'authentication' => [],
             ],
         );
@@ -86,6 +86,45 @@ final class ConfigurationTest extends TestCase
             [['server' => ['allowed_origins' => [$origin]]]],
             'server.allowed_origins',
             $expectedMessage,
+        );
+    }
+
+    public function testConfigurationIsValidWithTrustedProxiesAsAString(): void
+    {
+        $this->assertProcessedConfigurationEquals(
+            [
+                ['server' => ['trusted_proxies' => '127.0.0.1,REMOTE_ADDR']],
+            ],
+            [
+                'server' => ['trusted_proxies' => ['127.0.0.1,REMOTE_ADDR']],
+            ],
+            'server.trusted_proxies',
+        );
+    }
+
+    public function testConfigurationIsValidWithTrustedHeadersAsAString(): void
+    {
+        $this->assertProcessedConfigurationEquals(
+            [
+                ['server' => ['trusted_headers' => 'forwarded,x-forwarded-for']],
+            ],
+            [
+                'server' => ['trusted_headers' => ['forwarded,x-forwarded-for']],
+            ],
+            'server.trusted_headers',
+        );
+    }
+
+    public function testTheXForwardedForHeaderIsTrustedByDefault(): void
+    {
+        $this->assertProcessedConfigurationEquals(
+            [
+                [],
+            ],
+            [
+                'server' => ['trusted_headers' => ['x-forwarded-for']],
+            ],
+            'server.trusted_headers',
         );
     }
 

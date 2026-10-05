@@ -29,6 +29,8 @@ use Symfony\Component\Routing\Loader\XmlFileLoader as RoutingXmlFileLoader;
  *     context: mixed,
  *     allowed_origins: list<string>,
  *     blocked_ip_addresses: list<scalar>,
+ *     trusted_proxies: list<string>,
+ *     trusted_headers: list<string>,
  *     keepalive: array{enabled: bool, interval: int<1, max>},
  *     periodic: array{dbal: array{connections: list<scalar>, interval: int<1, max>}},
  *     router: array{resource: string},
@@ -162,6 +164,14 @@ final class BabDevWebSocketExtension extends ConfigurableExtension implements Pr
                 ->replaceArgument(1, $mergedConfig['server']['blocked_ip_addresses']);
         } else {
             $container->removeDefinition('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address');
+        }
+
+        if ([] !== $mergedConfig['server']['trusted_proxies']) {
+            $container->getDefinition('babdev_websocket_server.server.server_middleware.resolve_forwarded_client_address')
+                ->replaceArgument(1, $mergedConfig['server']['trusted_proxies'])
+                ->replaceArgument(2, $mergedConfig['server']['trusted_headers']);
+        } else {
+            $container->removeDefinition('babdev_websocket_server.server.server_middleware.resolve_forwarded_client_address');
         }
 
         if ($this->isConfigEnabled($container, $mergedConfig['server']['keepalive'])) {

@@ -27,6 +27,15 @@ babdev_websocket:
 
     # A list of IP addresses which are not allowed to connect to the websocket server, each entry can be either a single address or a CIDR range.
     blocked_ip_addresses: []
+
+    # A list of reverse proxies trusted to forward the client IP address, using the same format as the "framework.trusted_proxies" option (single addresses, CIDR ranges, "PRIVATE_SUBNETS", or "REMOTE_ADDR"); can also be a comma-separated string, such as an environment variable.
+    trusted_proxies:      []
+
+    # The forwarding headers trusted from the trusted proxies, using the same format as the "framework.trusted_headers" option; only the "forwarded" and "x-forwarded-for" headers are used to resolve the client IP address.
+    trusted_headers:
+
+      # Default:
+      - x-forwarded-for
     keepalive:
       enabled:              false
 

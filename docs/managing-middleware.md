@@ -4,17 +4,18 @@ By default, this bundle registers [server middleware](/open-source/packages/webs
 
 Below is the list of middleware provided by this bundle and the library and their default priorities:
 
-| Middleware Class                                                            | Service ID                                                                        | Priority |
-|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------------|----------|
-| `BabDev\WebSocket\Server\WAMP\Middleware\DispatchMessageToHandler`          | `babdev_websocket_server.server.server_middleware.dispatch_to_message_handler`    | 0        |
-| `BabDev\WebSocket\Server\WAMP\Middleware\UpdateTopicSubscriptions`          | `babdev_websocket_server.server.server_middleware.update_topic_subscriptions`     | -10      |
-| `BabDev\WebSocket\Server\WAMP\Middleware\ParseWAMPMessage`                  | `babdev_websocket_server.server.server_middleware.parse_wamp_message`             | -20      |
-| `BabDev\WebSocket\Server\WebSocket\Middleware\EstablishWebSocketConnection` | `babdev_websocket_server.server.server_middleware.establish_websocket_connection` | -30      |
-| `BabDev\WebSocketBundle\Server\Middleware\AuthenticateUser`                 | `babdev_websocket_server.server.server_middleware.authenticate_user`              | -40      |
-| `BabDev\WebSocket\Server\Session\Middleware\InitializeSession`              | `babdev_websocket_server.server.server_middleware.initialize_session`             | -50      |
-| `BabDev\WebSocket\Server\Http\Middleware\RestrictToAllowedOrigins`          | `babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins`    | -60      |
-| `BabDev\WebSocket\Server\Http\Middleware\RejectBlockedIpAddress`            | `babdev_websocket_server.server.server_middleware.reject_blocked_ip_address`      | -70      |
-| `BabDev\WebSocket\Server\Http\Middleware\ParseHttpRequest`                  | `babdev_websocket_server.server.server_middleware.parse_http_request`             | -80      |
+| Middleware Class                                                            | Service ID                                                                          | Priority |
+|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------------|----------|
+| `BabDev\WebSocket\Server\WAMP\Middleware\DispatchMessageToHandler`          | `babdev_websocket_server.server.server_middleware.dispatch_to_message_handler`      | 0        |
+| `BabDev\WebSocket\Server\WAMP\Middleware\UpdateTopicSubscriptions`          | `babdev_websocket_server.server.server_middleware.update_topic_subscriptions`       | -10      |
+| `BabDev\WebSocket\Server\WAMP\Middleware\ParseWAMPMessage`                  | `babdev_websocket_server.server.server_middleware.parse_wamp_message`               | -20      |
+| `BabDev\WebSocket\Server\WebSocket\Middleware\EstablishWebSocketConnection` | `babdev_websocket_server.server.server_middleware.establish_websocket_connection`   | -30      |
+| `BabDev\WebSocketBundle\Server\Middleware\AuthenticateUser`                 | `babdev_websocket_server.server.server_middleware.authenticate_user`                | -40      |
+| `BabDev\WebSocket\Server\Session\Middleware\InitializeSession`              | `babdev_websocket_server.server.server_middleware.initialize_session`               | -50      |
+| `BabDev\WebSocket\Server\Http\Middleware\RestrictToAllowedOrigins`          | `babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins`      | -60      |
+| `BabDev\WebSocket\Server\Http\Middleware\RejectBlockedIpAddress`            | `babdev_websocket_server.server.server_middleware.reject_blocked_ip_address`        | -70      |
+| `BabDev\WebSocket\Server\Http\Middleware\ResolveForwardedClientAddress`     | `babdev_websocket_server.server.server_middleware.resolve_forwarded_client_address` | -80      |
+| `BabDev\WebSocket\Server\Http\Middleware\ParseHttpRequest`                  | `babdev_websocket_server.server.server_middleware.parse_http_request`               | -90      |
 
 ## Adding Middleware
 

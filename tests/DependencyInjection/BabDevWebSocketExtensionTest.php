@@ -87,9 +87,36 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderHasAlias(StorageDriver::class, 'babdev_websocket_server.authentication.storage.driver.in_memory');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.periodic_manager.ping_doctrine_dbal_connections');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.server_middleware.initialize_session');
+        $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.server_middleware.resolve_forwarded_client_address');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.factory');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.storage.factory.read_only_native');
         self::assertThat($this->container, new LogicalNot(new ContainerHasParameterConstraint('babdev_websocket_server.ping_dbal_connections', null, false)));
+    }
+
+    public function testContainerIsLoadedWithTrustedProxies(): void
+    {
+        $this->load([
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'trusted_proxies' => '10.0.0.1,REMOTE_ADDR',
+                'trusted_headers' => ['forwarded', 'x-forwarded-for'],
+                'router' => [
+                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
+                ],
+            ],
+        ]);
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.server_middleware.resolve_forwarded_client_address',
+            1,
+            ['10.0.0.1,REMOTE_ADDR'],
+        );
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.server_middleware.resolve_forwarded_client_address',
+            2,
+            ['forwarded', 'x-forwarded-for'],
+        );
     }
 
     public function testContainerIsLoadedWithKeepaliveEnabled(): void
@@ -294,6 +321,9 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
                 'blocked_ip_addresses' => [
                     '192.168.1.1',
                 ],
+                'trusted_proxies' => [
+                    '10.0.0.1',
+                ],
                 'router' => [
                     'resource' => '%kernel.project_dir%/config/websocket_router.php',
                 ],
@@ -302,9 +332,15 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
 
         $this->compile();
 
-        // The blocked address check needs the client address, which behind a trusted proxy is only known once the HTTP request has been parsed
+        // The blocked address check needs the client address, which behind a trusted proxy is only known once the HTTP request has been parsed and the forwarded client address resolved
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(
             'babdev_websocket_server.server.server_middleware.parse_http_request',
+            0,
+            new Reference('babdev_websocket_server.server.server_middleware.resolve_forwarded_client_address'),
+        );
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.server_middleware.resolve_forwarded_client_address',
             0,
             new Reference('babdev_websocket_server.server.server_middleware.reject_blocked_ip_address'),
         );
