@@ -45,9 +45,9 @@ The bundle can be configured to block traffic from specified IP addresses. The c
 babdev_websocket:
   server:
     # A list of IP addresses which are not allowed to connect to the websocket server, each entry can be either a single address or a CIDR range.
-      blocked_ip_addresses:
-        - 8.8.8.8
-        - 192.168.1.0/24
+    blocked_ip_addresses:
+      - 8.8.8.8
+      - 192.168.1.0/24
 ```
 
 With this configuration, all connections from `8.8.8.8` and the `192.168.1.0/24` range will be rejected.
