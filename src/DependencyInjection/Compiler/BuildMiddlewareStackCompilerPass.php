@@ -23,26 +23,22 @@ final class BuildMiddlewareStackCompilerPass implements CompilerPassInterface
 
     public function process(ContainerBuilder $container): void
     {
+        /** @var Reference|null $previousMiddleware */
         $previousMiddleware = null;
 
-        /** @var Reference|null $outerMiddleware */
-        $outerMiddleware = null;
-
         foreach ($this->findAndSortTaggedServices('babdev_websocket_server.server_middleware', $container) as $middleware) {
-            if (!$previousMiddleware instanceof Reference) {
-                $previousMiddleware = $middleware;
-
-                continue;
+            if ($previousMiddleware instanceof Reference) {
+                // Autowired services may not have any arguments configured yet, so the argument is set instead of replaced
+                $container->getDefinition((string) $middleware)
+                    ->setArgument(0, $previousMiddleware);
             }
 
-            // Autowired services may not have any arguments configured yet, so the argument is set instead of replaced
-            $container->getDefinition((string) $middleware)
-                ->setArgument(0, $previousMiddleware);
-
             $previousMiddleware = $middleware;
-            $outerMiddleware = $middleware;
         }
 
-        $container->setAlias(ServerMiddleware::class, new Alias((string) $outerMiddleware));
+        // The last middleware in the stack is the outermost one, and is left unaliased when there is no middleware so the stack builder can report it
+        if ($previousMiddleware instanceof Reference) {
+            $container->setAlias(ServerMiddleware::class, new Alias((string) $previousMiddleware));
+        }
     }
 }

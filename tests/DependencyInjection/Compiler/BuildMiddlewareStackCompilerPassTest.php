@@ -72,6 +72,23 @@ final class BuildMiddlewareStackCompilerPassTest extends AbstractCompilerPassTes
         );
     }
 
+    public function testASingleMiddlewareIsAliasedAsTheStack(): void
+    {
+        $this->container->register('middleware.inner', ServerMiddleware::class)
+            ->addTag('babdev_websocket_server.server_middleware', ['priority' => 0]);
+
+        $this->compile();
+
+        $this->assertContainerBuilderHasAlias(ServerMiddleware::class, 'middleware.inner');
+    }
+
+    public function testTheStackIsNotAliasedWhenThereIsNoMiddleware(): void
+    {
+        $this->compile();
+
+        self::assertFalse($this->container->hasAlias(ServerMiddleware::class));
+    }
+
     protected function registerCompilerPass(ContainerBuilder $container): void
     {
         $container->addCompilerPass(new BuildMiddlewareStackCompilerPass());
