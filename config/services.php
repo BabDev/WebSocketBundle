@@ -188,7 +188,11 @@ return static function (ContainerConfigurator $container): void {
             tagged_iterator('babdev_websocket_server.ping.dbal.connection'),
             abstract_arg('ping interval'),
         ])
+        ->call('setLogger', [
+            service('logger'),
+        ])
         ->tag('babdev_websocket_server.periodic_manager')
+        ->tag('monolog.logger', ['channel' => 'websocket'])
     ;
 
     $services->set('babdev_websocket_server.periodic_manager.registry', ArrayPeriodicManagerRegistry::class)

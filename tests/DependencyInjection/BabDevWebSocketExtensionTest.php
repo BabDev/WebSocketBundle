@@ -138,6 +138,18 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             15,
         );
 
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
+            'babdev_websocket_server.periodic_manager.ping_doctrine_dbal_connections',
+            'setLogger',
+            [new Reference('logger')],
+        );
+
+        $this->assertContainerBuilderHasServiceDefinitionWithTag(
+            'babdev_websocket_server.periodic_manager.ping_doctrine_dbal_connections',
+            'monolog.logger',
+            ['channel' => 'websocket'],
+        );
+
         $this->assertContainerBuilderHasParameter('babdev_websocket_server.ping_dbal_connections', ['database_connection']);
     }
 
