@@ -32,17 +32,12 @@ final class PingDoctrineDBALConnectionsPeriodicManager implements PeriodicManage
     {
         $this->loop = $loop;
 
-        // Wrap the entire loop in try/catch to prevent fatal errors crashing the websocket server
-        try {
-            $this->logger?->info('Registering ping doctrine/dbal connections manager.');
+        $this->logger?->info('Registering ping doctrine/dbal connections manager.');
 
-            $this->timer = $this->loop->addPeriodicTimer(
-                $this->interval,
-                $this->pingConnections(...),
-            );
-        } catch (\Throwable $exception) {
-            $this->logger?->error('Uncaught Throwable in the ping doctrine/dbal connections loop.', ['exception' => $exception]);
-        }
+        $this->timer = $this->loop->addPeriodicTimer(
+            $this->interval,
+            $this->pingConnections(...),
+        );
     }
 
     public function cancelTimers(): void
@@ -57,7 +52,7 @@ final class PingDoctrineDBALConnectionsPeriodicManager implements PeriodicManage
     }
 
     /**
-     * @throws DBALException if the connection could not be pinged
+     * @throws \Throwable if an unexpected error occurs while pinging a connection
      *
      * @internal
      */
@@ -66,6 +61,7 @@ final class PingDoctrineDBALConnectionsPeriodicManager implements PeriodicManage
         $this->logger?->debug('Pinging all connections');
 
         foreach ($this->connections as $connection) {
+            // This runs inside the event loop, so a database error must not escape or it will stop the websocket server; anything else is unexpected and is left to stop it
             try {
                 $startTime = microtime(true);
 
@@ -77,7 +73,8 @@ final class PingDoctrineDBALConnectionsPeriodicManager implements PeriodicManage
             } catch (DBALException $e) {
                 $this->logger?->emergency('Could not ping database server', ['exception' => $e]);
 
-                throw $e;
+                // Closing the connection allows it to reconnect the next time it is used
+                $connection->close();
             }
         }
     }

@@ -4,6 +4,7 @@ namespace BabDev\WebSocketBundle\Tests\PeriodicManager;
 
 use BabDev\WebSocketBundle\PeriodicManager\PingDoctrineDBALConnectionsPeriodicManager;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception\InvalidArgumentException as DBALInvalidArgumentException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -72,5 +73,62 @@ final class PingDoctrineDBALConnectionsPeriodicManagerTest extends TestCase
         }
 
         $this->manager->pingConnections();
+    }
+
+    public function testAConnectionWhichCannotBePingedIsClosedWithoutStoppingTheOtherPings(): void
+    {
+        $logger = new TestLogger();
+
+        $this->manager->setLogger($logger);
+
+        foreach ($this->connections as $index => $connection) {
+            $platform = self::createStub(AbstractPlatform::class);
+            $platform->method('getDummySelectSQL')
+                ->willReturn('SELECT 1');
+
+            $connection->method('getDatabasePlatform')
+                ->willReturn($platform);
+
+            if (0 === $index) {
+                $connection->expects(self::once())
+                    ->method('executeQuery')
+                    ->willThrowException(new DBALInvalidArgumentException('Server has gone away'));
+
+                $connection->expects(self::once())
+                    ->method('close');
+            } else {
+                $connection->expects(self::once())
+                    ->method('executeQuery');
+
+                $connection->expects(self::never())
+                    ->method('close');
+            }
+        }
+
+        $this->manager->pingConnections();
+
+        self::assertTrue($logger->hasEmergencyThatContains('Could not ping database server'));
+    }
+
+    public function testAnUnexpectedErrorWhilePingingIsNotCaught(): void
+    {
+        $platform = self::createStub(AbstractPlatform::class);
+        $platform->method('getDummySelectSQL')
+            ->willReturn('SELECT 1');
+
+        $connection = $this->createMock(Connection::class);
+        $connection->method('getDatabasePlatform')
+            ->willReturn($platform);
+
+        $connection->expects(self::once())
+            ->method('executeQuery')
+            ->willThrowException(new \LogicException('Something unexpected'));
+
+        $connection->expects(self::never())
+            ->method('close');
+
+        $this->expectException(\LogicException::class);
+
+        new PingDoctrineDBALConnectionsPeriodicManager([$connection])->pingConnections();
     }
 }
