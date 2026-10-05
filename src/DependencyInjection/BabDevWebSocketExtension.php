@@ -19,6 +19,23 @@ use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\ConfigurableExtension;
 use Symfony\Component\Routing\Loader\XmlFileLoader as RoutingXmlFileLoader;
 
+/**
+ * @phpstan-type AuthenticationConfig array{providers?: array<string, array<string, mixed>>}
+ * @phpstan-type SessionConfig array{factory_service_id?: string, storage_factory_service_id?: string, handler_service_id?: string}
+ * @phpstan-type ServerConfig array{
+ *     identity: string,
+ *     max_http_request_size: int<1, max>,
+ *     uri: string,
+ *     context: mixed,
+ *     allowed_origins: list<string>,
+ *     blocked_ip_addresses: list<scalar>,
+ *     keepalive: array{enabled: bool, interval: int<1, max>},
+ *     periodic: array{dbal: array{connections: list<scalar>, interval: int<1, max>}},
+ *     router: array{resource: string},
+ *     session: SessionConfig,
+ * }
+ * @phpstan-type BundleConfig array{authentication: AuthenticationConfig, server: ServerConfig}
+ */
 final class BabDevWebSocketExtension extends ConfigurableExtension implements PrependExtensionInterface
 {
     /**
@@ -59,6 +76,9 @@ final class BabDevWebSocketExtension extends ConfigurableExtension implements Pr
         return 'babdev_websocket';
     }
 
+    /**
+     * @param BundleConfig $mergedConfig
+     */
     protected function loadInternal(array $mergedConfig, ContainerBuilder $container): void
     {
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__.'/../../config'));
@@ -82,6 +102,9 @@ final class BabDevWebSocketExtension extends ConfigurableExtension implements Pr
         $this->registerServerConfiguration($mergedConfig, $container);
     }
 
+    /**
+     * @param BundleConfig $mergedConfig
+     */
     private function registerAuthenticationConfiguration(array $mergedConfig, ContainerBuilder $container): void
     {
         $authenticators = [];
@@ -102,6 +125,9 @@ final class BabDevWebSocketExtension extends ConfigurableExtension implements Pr
             ->replaceArgument(0, new IteratorArgument($authenticators));
     }
 
+    /**
+     * @param BundleConfig $mergedConfig
+     */
     private function registerServerConfiguration(array $mergedConfig, ContainerBuilder $container): void
     {
         $container->getDefinition('babdev_websocket_server.command.run_websocket_server')
@@ -160,6 +186,9 @@ final class BabDevWebSocketExtension extends ConfigurableExtension implements Pr
         $this->configureWebSocketSession($mergedConfig['server']['session'], $container);
     }
 
+    /**
+     * @param SessionConfig $sessionConfig
+     */
     private function configureWebSocketSession(array $sessionConfig, ContainerBuilder $container): void
     {
         if (isset($sessionConfig['factory_service_id'])) {
