@@ -57,11 +57,9 @@ babdev_websocket:
 
       # Default:
       - x-forwarded-for
-    keepalive:
-      enabled:              false
 
-      # The interval, in seconds, which connections are pinged.
-      interval:             30
+    # The interval, in seconds, at which connected clients are pinged, closing connections which do not respond before the next ping.
+    keepalive:            null
     periodic:
       dbal:
 

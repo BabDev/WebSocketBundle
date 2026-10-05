@@ -29,11 +29,11 @@ final class ConfigurationTest extends TestCase
         $this->assertProcessedConfigurationEquals(
             [
                 [
-                    'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'write_buffer_limit' => 2048, 'shutdown_timeout' => 1.5, 'max_message_payload_size' => 1048576, 'max_frame_payload_size' => 65536, 'max_prefixes' => 25, 'strict_sub_protocol_check' => false, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
+                    'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'write_buffer_limit' => 2048, 'shutdown_timeout' => 1.5, 'max_message_payload_size' => 1048576, 'max_frame_payload_size' => 65536, 'max_prefixes' => 25, 'strict_sub_protocol_check' => false, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => 60, 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 ],
             ],
             [
-                'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'write_buffer_limit' => 2048, 'shutdown_timeout' => 1.5, 'max_message_payload_size' => 1048576, 'max_frame_payload_size' => 65536, 'max_prefixes' => 25, 'strict_sub_protocol_check' => false, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
+                'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'write_buffer_limit' => 2048, 'shutdown_timeout' => 1.5, 'max_message_payload_size' => 1048576, 'max_frame_payload_size' => 65536, 'max_prefixes' => 25, 'strict_sub_protocol_check' => false, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => 60, 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 'authentication' => [],
             ],
         );
@@ -326,12 +326,31 @@ final class ConfigurationTest extends TestCase
         );
     }
 
-    public function testConfigurationIsInvalidWithKeepaliveInterval(): void
+    public function testKeepaliveIsDisabledByDefault(): void
+    {
+        $this->assertProcessedConfigurationEquals(
+            [[]],
+            ['server' => ['keepalive' => null]],
+            'server.keepalive',
+        );
+    }
+
+    /**
+     * @return iterable<string, array{mixed, string}>
+     */
+    public static function invalidKeepaliveIntervals(): iterable
+    {
+        yield 'zero' => [0, 'The value 0 is too small for path "babdev_websocket.server.keepalive". Should be greater than or equal to 1'];
+        yield 'removed array format' => [['enabled' => true, 'interval' => 60], 'Invalid type for path "babdev_websocket.server.keepalive". Expected "int", but got "array".'];
+    }
+
+    #[DataProvider('invalidKeepaliveIntervals')]
+    public function testConfigurationIsInvalidWithKeepaliveInterval(mixed $keepalive, string $expectedMessage): void
     {
         $this->assertPartialConfigurationIsInvalid(
-            [['server' => ['keepalive' => ['interval' => -1]]]],
+            [['server' => ['keepalive' => $keepalive]]],
             'server.keepalive',
-            'The value -1 is too small for path "babdev_websocket.server.keepalive.interval". Should be greater than or equal to 1',
+            $expectedMessage,
         );
     }
 

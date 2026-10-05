@@ -182,10 +182,7 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
         $this->load([
             'server' => [
                 'uri' => 'tcp://127.0.0.1:8080',
-                'keepalive' => [
-                    'enabled' => true,
-                    'interval' => 15,
-                ],
+                'keepalive' => 15,
                 'router' => [
                     'resource' => '%kernel.project_dir%/config/websocket_router.php',
                 ],

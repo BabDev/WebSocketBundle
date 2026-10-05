@@ -38,7 +38,7 @@ use Symfony\Component\Routing\Loader\XmlFileLoader as RoutingXmlFileLoader;
  *     blocked_ip_addresses: list<scalar>,
  *     trusted_proxies: list<string>,
  *     trusted_headers: list<string>,
- *     keepalive: array{enabled: bool, interval: int<1, max>},
+ *     keepalive: int<1, max>|null,
  *     periodic: array{dbal: array{connections: list<scalar>, interval: int<1, max>}},
  *     router: array{resource: string},
  *     session: SessionConfig,
@@ -198,9 +198,9 @@ final class BabDevWebSocketExtension extends ConfigurableExtension implements Pr
             ->addMethodCall('setStrictSubProtocolCheck', [$mergedConfig['server']['strict_sub_protocol_check']])
         ;
 
-        if ($this->isConfigEnabled($container, $mergedConfig['server']['keepalive'])) {
+        if (null !== $mergedConfig['server']['keepalive']) {
             $container->getDefinition('babdev_websocket_server.server.server_middleware.establish_websocket_connection')
-                ->addMethodCall('enableKeepAlive', [new Reference(LoopInterface::class), $mergedConfig['server']['keepalive']['interval']]);
+                ->addMethodCall('enableKeepAlive', [new Reference(LoopInterface::class), $mergedConfig['server']['keepalive']]);
         }
 
         // When we have a list of connections to ping, save it to a temporary container parameter for use in our compiler pass
