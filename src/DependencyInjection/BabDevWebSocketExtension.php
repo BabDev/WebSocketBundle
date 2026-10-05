@@ -25,6 +25,7 @@ use Symfony\Component\Routing\Loader\XmlFileLoader as RoutingXmlFileLoader;
  * @phpstan-type ServerConfig array{
  *     identity: string,
  *     max_http_request_size: int<1, max>,
+ *     request_timeout: int|float|null,
  *     uri: string,
  *     context: mixed,
  *     allowed_origins: list<string>,
@@ -147,6 +148,11 @@ final class BabDevWebSocketExtension extends ConfigurableExtension implements Pr
         $container->getDefinition('babdev_websocket_server.server.request_parser')
             ->replaceArgument(0, $mergedConfig['server']['max_http_request_size'])
         ;
+
+        if (null !== $mergedConfig['server']['request_timeout']) {
+            $container->getDefinition('babdev_websocket_server.server.server_middleware.parse_http_request')
+                ->addMethodCall('enableRequestTimeout', [new Reference(LoopInterface::class), $mergedConfig['server']['request_timeout']]);
+        }
 
         $container->getDefinition('babdev_websocket_server.server.server_middleware.parse_wamp_message')
             ->addMethodCall('setServerIdentity', [$mergedConfig['server']['identity']])

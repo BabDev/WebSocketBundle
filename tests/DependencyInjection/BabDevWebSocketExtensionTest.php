@@ -12,6 +12,10 @@ use Matthias\SymfonyDependencyInjectionTest\PhpUnit\DefinitionHasMethodCallConst
 use PHPUnit\Framework\Constraint\LogicalNot;
 use React\EventLoop\LoopInterface;
 use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
+use Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationPass;
+use Symfony\Component\DependencyInjection\Compiler\RegisterEnvVarProcessorsPass;
+use Symfony\Component\DependencyInjection\Compiler\ValidateEnvPlaceholdersPass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Reference;
 
@@ -93,6 +97,12 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             'babdev_websocket_server.server.factory.default',
             'monolog.logger',
             ['channel' => 'websocket'],
+        );
+
+        $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
+            'babdev_websocket_server.server.server_middleware.parse_http_request',
+            'enableRequestTimeout',
+            [new Reference(LoopInterface::class), 10.0],
         );
 
         self::assertThat($this->container->findDefinition('babdev_websocket_server.server.server_middleware.establish_websocket_connection'), new LogicalNot(new DefinitionHasMethodCallConstraint('enableKeepAlive')));
@@ -361,6 +371,47 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             'babdev_websocket_server.server.server_middleware.reject_blocked_ip_address',
             0,
             new Reference('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins'),
+        );
+    }
+
+    public function testContainerIsLoadedWithTheRequestTimeoutDisabled(): void
+    {
+        $this->load([
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'request_timeout' => null,
+                'router' => [
+                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
+                ],
+            ],
+        ]);
+
+        self::assertThat($this->container->findDefinition('babdev_websocket_server.server.server_middleware.parse_http_request'), new LogicalNot(new DefinitionHasMethodCallConstraint('enableRequestTimeout')));
+    }
+
+    public function testEnvironmentVariablesCanBeUsedForTheRequestTimeout(): void
+    {
+        $container = new ContainerBuilder();
+        $container->registerExtension($this->getContainerExtensions()[0]);
+        $container->setParameter('kernel.project_dir', __DIR__);
+        $container->loadFromExtension('babdev_websocket', [
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'request_timeout' => '%env(float:WEBSOCKET_REQUEST_TIMEOUT)%',
+                'router' => [
+                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
+                ],
+            ],
+        ]);
+
+        // These process and validate the configuration with environment variable placeholders in the same way as compiling the container
+        new RegisterEnvVarProcessorsPass()->process($container);
+        new MergeExtensionConfigurationPass()->process($container);
+        new ValidateEnvPlaceholdersPass()->process($container);
+
+        self::assertThat(
+            $container->getDefinition('babdev_websocket_server.server.server_middleware.parse_http_request'),
+            new DefinitionHasMethodCallConstraint('enableRequestTimeout', [new Reference(LoopInterface::class), $container->getParameterBag()->get('env(float:WEBSOCKET_REQUEST_TIMEOUT)')]),
         );
     }
 

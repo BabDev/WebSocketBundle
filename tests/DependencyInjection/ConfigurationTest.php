@@ -29,11 +29,11 @@ final class ConfigurationTest extends TestCase
         $this->assertProcessedConfigurationEquals(
             [
                 [
-                    'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
+                    'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 ],
             ],
             [
-                'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
+                'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 'authentication' => [],
             ],
         );
@@ -125,6 +125,50 @@ final class ConfigurationTest extends TestCase
                 'server' => ['trusted_headers' => ['x-forwarded-for']],
             ],
             'server.trusted_headers',
+        );
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, int|float|null}>
+     */
+    public static function validRequestTimeouts(): iterable
+    {
+        yield 'default' => [[], 10.0];
+        yield 'float' => [['request_timeout' => 2.5], 2.5];
+        yield 'integer' => [['request_timeout' => 5], 5];
+        yield 'disabled' => [['request_timeout' => null], null];
+    }
+
+    /**
+     * @param array<string, mixed> $serverConfig
+     */
+    #[DataProvider('validRequestTimeouts')]
+    public function testConfigurationIsValidWithRequestTimeout(array $serverConfig, int|float|null $expectedTimeout): void
+    {
+        $this->assertProcessedConfigurationEquals(
+            [['server' => $serverConfig]],
+            ['server' => ['request_timeout' => $expectedTimeout]],
+            'server.request_timeout',
+        );
+    }
+
+    /**
+     * @return iterable<string, array{mixed, string}>
+     */
+    public static function invalidRequestTimeouts(): iterable
+    {
+        yield 'zero' => [0, 'The value 0 is too small for path "babdev_websocket.server.request_timeout". Should be greater than 0'];
+        yield 'negative' => [-1.5, 'The value -1.5 is too small for path "babdev_websocket.server.request_timeout". Should be greater than 0'];
+        yield 'string' => ['10 seconds', 'Invalid type for path "babdev_websocket.server.request_timeout". Expected "float", but got "string".'];
+    }
+
+    #[DataProvider('invalidRequestTimeouts')]
+    public function testConfigurationIsInvalidWithRequestTimeout(mixed $timeout, string $expectedMessage): void
+    {
+        $this->assertPartialConfigurationIsInvalid(
+            [['server' => ['request_timeout' => $timeout]]],
+            'server.request_timeout',
+            $expectedMessage,
         );
     }
 

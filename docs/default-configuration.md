@@ -16,6 +16,9 @@ babdev_websocket:
     # The maximum size of the HTTP request body, in bytes, that is allowed for incoming requests.
     max_http_request_size: 4096
 
+    # The time, in seconds, a client has to send its HTTP request before the connection is closed with a "408 Request Timeout" response.
+    request_timeout:      10.0
+
     # The default URI to listen for connections on.
     uri:                  ~ # Required
 

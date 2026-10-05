@@ -4,6 +4,7 @@ namespace BabDev\WebSocketBundle\DependencyInjection;
 
 use BabDev\WebSocket\Server\Http\Origin;
 use BabDev\WebSocket\Server\Server;
+use BabDev\WebSocketBundle\DependencyInjection\Config\NullableFloatNodeDefinition;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\AuthenticationProviderFactory;
 use Doctrine\DBAL\Connection;
 use React\Socket\SocketServer;
@@ -89,6 +90,12 @@ final readonly class Configuration implements ConfigurationInterface
                         ->defaultValue(4096)
                         ->min(1)
                     ->end()
+                    ->append(
+                        new NullableFloatNodeDefinition('request_timeout')
+                            ->info('The time, in seconds, a client has to send its HTTP request before the connection is closed with a "408 Request Timeout" response.')
+                            ->defaultValue(10.0)
+                            ->positive()
+                    )
                     ->scalarNode('uri')
                         ->isRequired()
                         ->cannotBeEmpty()
