@@ -10,10 +10,14 @@ use React\Socket\ServerInterface;
 
 final readonly class DefaultServerFactory implements ServerFactory
 {
+    /**
+     * @param int<1, max>|null $writeBufferLimit
+     */
     public function __construct(
         private MiddlewareStackBuilder $middlewareStackBuilder,
         private LoopInterface $loop,
         private ?LoggerInterface $logger = null,
+        private ?int $writeBufferLimit = ReactPhpServer::DEFAULT_WRITE_BUFFER_LIMIT,
     ) {}
 
     public function build(ServerInterface $socket): Server
@@ -23,6 +27,7 @@ final readonly class DefaultServerFactory implements ServerFactory
             $socket,
             $this->loop,
             $this->logger,
+            $this->writeBufferLimit,
         );
     }
 }

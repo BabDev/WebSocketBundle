@@ -346,6 +346,7 @@ return static function (ContainerConfigurator $container): void {
             service(MiddlewareStackBuilder::class),
             service(LoopInterface::class),
             service('logger'),
+            abstract_arg('write buffer limit'),
         ])
         ->tag('monolog.logger', ['channel' => 'websocket'])
     ;

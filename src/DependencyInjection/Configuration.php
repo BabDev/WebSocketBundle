@@ -3,8 +3,10 @@
 namespace BabDev\WebSocketBundle\DependencyInjection;
 
 use BabDev\WebSocket\Server\Http\Origin;
+use BabDev\WebSocket\Server\ReactPhpServer;
 use BabDev\WebSocket\Server\Server;
 use BabDev\WebSocketBundle\DependencyInjection\Config\NullableFloatNodeDefinition;
+use BabDev\WebSocketBundle\DependencyInjection\Config\NullableIntegerNodeDefinition;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\AuthenticationProviderFactory;
 use Doctrine\DBAL\Connection;
 use React\Socket\SocketServer;
@@ -95,6 +97,12 @@ final readonly class Configuration implements ConfigurationInterface
                             ->info('The time, in seconds, a client has to send its HTTP request before the connection is closed with a "408 Request Timeout" response.')
                             ->defaultValue(10.0)
                             ->positive()
+                    )
+                    ->append(
+                        new NullableIntegerNodeDefinition('write_buffer_limit')
+                            ->info('The number of bytes which can be written to a connection after its write buffer is full before the connection is closed.')
+                            ->defaultValue(ReactPhpServer::DEFAULT_WRITE_BUFFER_LIMIT)
+                            ->min(1)
                     )
                     ->scalarNode('uri')
                         ->isRequired()

@@ -19,6 +19,9 @@ babdev_websocket:
     # The time, in seconds, a client has to send its HTTP request before the connection is closed with a "408 Request Timeout" response.
     request_timeout:      10.0
 
+    # The number of bytes which can be written to a connection after its write buffer is full before the connection is closed.
+    write_buffer_limit:   1048576
+
     # The default URI to listen for connections on.
     uri:                  ~ # Required
 

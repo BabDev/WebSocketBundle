@@ -99,6 +99,12 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
             ['channel' => 'websocket'],
         );
 
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.factory.default',
+            3,
+            1_048_576,
+        );
+
         $this->assertContainerBuilderHasServiceDefinitionWithMethodCall(
             'babdev_websocket_server.server.server_middleware.parse_http_request',
             'enableRequestTimeout',
@@ -387,6 +393,51 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
         ]);
 
         self::assertThat($this->container->findDefinition('babdev_websocket_server.server.server_middleware.parse_http_request'), new LogicalNot(new DefinitionHasMethodCallConstraint('enableRequestTimeout')));
+    }
+
+    public function testContainerIsLoadedWithTheWriteBufferLimitDisabled(): void
+    {
+        $this->load([
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'write_buffer_limit' => null,
+                'router' => [
+                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
+                ],
+            ],
+        ]);
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'babdev_websocket_server.server.factory.default',
+            3,
+            null,
+        );
+    }
+
+    public function testEnvironmentVariablesCanBeUsedForTheWriteBufferLimit(): void
+    {
+        $container = new ContainerBuilder();
+        $container->registerExtension($this->getContainerExtensions()[0]);
+        $container->setParameter('kernel.project_dir', __DIR__);
+        $container->loadFromExtension('babdev_websocket', [
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'write_buffer_limit' => '%env(int:WEBSOCKET_WRITE_BUFFER_LIMIT)%',
+                'router' => [
+                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
+                ],
+            ],
+        ]);
+
+        // These process and validate the configuration with environment variable placeholders in the same way as compiling the container
+        new RegisterEnvVarProcessorsPass()->process($container);
+        new MergeExtensionConfigurationPass()->process($container);
+        new ValidateEnvPlaceholdersPass()->process($container);
+
+        self::assertSame(
+            $container->getParameterBag()->get('env(int:WEBSOCKET_WRITE_BUFFER_LIMIT)'),
+            $container->getDefinition('babdev_websocket_server.server.factory.default')->getArgument(3),
+        );
     }
 
     public function testEnvironmentVariablesCanBeUsedForTheRequestTimeout(): void

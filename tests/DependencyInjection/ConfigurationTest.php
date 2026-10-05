@@ -29,11 +29,11 @@ final class ConfigurationTest extends TestCase
         $this->assertProcessedConfigurationEquals(
             [
                 [
-                    'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
+                    'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'write_buffer_limit' => 2048, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 ],
             ],
             [
-                'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
+                'server' => ['identity' => Server::VERSION, 'max_http_request_size' => 1024, 'request_timeout' => 5, 'write_buffer_limit' => 2048, 'uri' => 'tcp://127.0.0.1:8080', 'context' => ['tls' => ['verify_peer' => false]], 'allowed_origins' => ['example.com'], 'blocked_ip_addresses' => ['192.168.1.1'], 'trusted_proxies' => ['10.0.0.1'], 'trusted_headers' => ['forwarded'], 'keepalive' => ['enabled' => true, 'interval' => 60], 'periodic' => ['dbal' => ['connections' => ['database_connection'], 'interval' => 60]], 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 'authentication' => [],
             ],
         );
@@ -168,6 +168,48 @@ final class ConfigurationTest extends TestCase
         $this->assertPartialConfigurationIsInvalid(
             [['server' => ['request_timeout' => $timeout]]],
             'server.request_timeout',
+            $expectedMessage,
+        );
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>, int|null}>
+     */
+    public static function validWriteBufferLimits(): iterable
+    {
+        yield 'default' => [[], 1_048_576];
+        yield 'custom limit' => [['write_buffer_limit' => 512], 512];
+        yield 'disabled' => [['write_buffer_limit' => null], null];
+    }
+
+    /**
+     * @param array<string, mixed> $serverConfig
+     */
+    #[DataProvider('validWriteBufferLimits')]
+    public function testConfigurationIsValidWithWriteBufferLimit(array $serverConfig, ?int $expectedLimit): void
+    {
+        $this->assertProcessedConfigurationEquals(
+            [['server' => $serverConfig]],
+            ['server' => ['write_buffer_limit' => $expectedLimit]],
+            'server.write_buffer_limit',
+        );
+    }
+
+    /**
+     * @return iterable<string, array{mixed, string}>
+     */
+    public static function invalidWriteBufferLimits(): iterable
+    {
+        yield 'zero' => [0, 'The value 0 is too small for path "babdev_websocket.server.write_buffer_limit". Should be greater than or equal to 1'];
+        yield 'string' => ['1 MiB', 'Invalid type for path "babdev_websocket.server.write_buffer_limit". Expected "int", but got "string".'];
+    }
+
+    #[DataProvider('invalidWriteBufferLimits')]
+    public function testConfigurationIsInvalidWithWriteBufferLimit(mixed $limit, string $expectedMessage): void
+    {
+        $this->assertPartialConfigurationIsInvalid(
+            [['server' => ['write_buffer_limit' => $limit]]],
+            'server.write_buffer_limit',
             $expectedMessage,
         );
     }
