@@ -121,7 +121,7 @@ final class SessionAuthenticationProviderTest extends TestCase
 
         $session = self::createStub(SessionInterface::class);
         $session->method('get')
-            ->willReturnMap([
+            ->willReturnStrictMap([
                 ['_security_admin', false, ['not' => 'a token']],
                 ['_security_main', false, serialize($token)],
             ]);
