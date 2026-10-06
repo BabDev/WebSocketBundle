@@ -35,7 +35,9 @@ final class ConfigureHttpFactoriesCompilerPass implements CompilerPassInterface
         }
 
         // Since the `guzzle/psr7` package is a hard requirement of the server library, we'll use that as a fallback
+        $container->register('.babdev_websocket_server.psr17_response_factory', HttpFactory::class);
+
         $container->getDefinition('babdev_websocket_server.rfc6455.server_negotiator')
-            ->replaceArgument(1, $container->register('.babdev_websocket_server.psr17_response_factory', HttpFactory::class));
+            ->replaceArgument(1, new Reference('.babdev_websocket_server.psr17_response_factory'));
     }
 }

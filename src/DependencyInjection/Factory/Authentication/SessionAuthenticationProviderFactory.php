@@ -2,7 +2,7 @@
 
 namespace BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication;
 
-use Symfony\Component\Config\Definition\Builder\NodeDefinition;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Parameter;
@@ -27,7 +27,7 @@ final class SessionAuthenticationProviderFactory implements AuthenticationProvid
         return 0;
     }
 
-    public function addConfiguration(NodeDefinition $builder): void
+    public function addConfiguration(ArrayNodeDefinition $builder): void
     {
         $builder->children()
             ->variableNode('firewalls')

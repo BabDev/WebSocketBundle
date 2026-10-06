@@ -255,7 +255,6 @@ return static function (ContainerConfigurator $container): void {
     ;
 
     $services->set('babdev_websocket_server.routing.loader', DelegatingLoader::class)
-        ->public()
         ->args([
             service('babdev_websocket_server.routing.resolver'),
         ])

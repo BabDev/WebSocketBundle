@@ -2,7 +2,7 @@
 
 namespace BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication;
 
-use Symfony\Component\Config\Definition\Builder\NodeDefinition;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 interface AuthenticationProviderFactory
@@ -19,7 +19,10 @@ interface AuthenticationProviderFactory
      */
     public function getPriority(): int;
 
-    public function addConfiguration(NodeDefinition $builder): void;
+    /**
+     * Defines the configuration for the authentication provider, added to the provider's node in the authentication configuration.
+     */
+    public function addConfiguration(ArrayNodeDefinition $builder): void;
 
     /**
      * Creates the authentication provider service for the provided configuration.

@@ -45,7 +45,7 @@ final class ConfigureHttpFactoriesCompilerPassTest extends AbstractCompilerPassT
         $this->compile();
 
         $this->assertContainerBuilderHasService('.babdev_websocket_server.psr17_response_factory');
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument('babdev_websocket_server.rfc6455.server_negotiator', 1, $this->container->getDefinition('.babdev_websocket_server.psr17_response_factory'));
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument('babdev_websocket_server.rfc6455.server_negotiator', 1, new Reference('.babdev_websocket_server.psr17_response_factory'));
     }
 
     protected function registerCompilerPass(ContainerBuilder $container): void
