@@ -534,6 +534,32 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
         );
     }
 
+    public function testEnvironmentVariablesCanBeUsedForAllowedOrigins(): void
+    {
+        $container = new ContainerBuilder();
+        $container->registerExtension($this->getContainerExtensions()[0]);
+        $container->setParameter('kernel.project_dir', __DIR__);
+        $container->loadFromExtension('babdev_websocket', [
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'allowed_origins' => ['%env(WEBSOCKET_ALLOWED_ORIGIN)%', 'https://%env(WEBSOCKET_ORIGIN_HOST)%'],
+                'router' => [
+                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
+                ],
+            ],
+        ]);
+
+        // These process and validate the configuration with environment variable placeholders in the same way as compiling the container
+        new RegisterEnvVarProcessorsPass()->process($container);
+        new MergeExtensionConfigurationPass()->process($container);
+        new ValidateEnvPlaceholdersPass()->process($container);
+
+        self::assertSame(
+            ['%env(WEBSOCKET_ALLOWED_ORIGIN)%', 'https://%env(WEBSOCKET_ORIGIN_HOST)%'],
+            $container->resolveEnvPlaceholders($container->getDefinition('babdev_websocket_server.server.server_middleware.restrict_to_allowed_origins')->getArgument(1)),
+        );
+    }
+
     public function testEnvironmentVariablesCanBeUsedForTheRequestTimeout(): void
     {
         $container = new ContainerBuilder();

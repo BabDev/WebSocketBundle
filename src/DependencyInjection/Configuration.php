@@ -153,6 +153,11 @@ final readonly class Configuration implements ConfigurationInterface
                         ->stringPrototype()
                             ->validate()
                                 ->always(static function (string $origin): string {
+                                    // An environment variable is validated with an empty value, so an empty value is left for the server to reject when the middleware is created
+                                    if ('' === $origin) {
+                                        return $origin;
+                                    }
+
                                     // The server rejects an invalid origin when the middleware is created, this reports it when the container is compiled instead
                                     Origin::normalizeAllowedOrigin($origin);
 
