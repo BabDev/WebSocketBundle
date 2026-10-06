@@ -251,6 +251,9 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
                 'router' => [
                     'resource' => '%kernel.project_dir%/config/websocket_router.php',
                 ],
+                'session' => [
+                    'handler_service_id' => 'session.handler.test',
+                ],
             ],
         ]);
 

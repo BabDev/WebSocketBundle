@@ -317,6 +317,42 @@ final class ConfigurationTest extends TestCase
         );
     }
 
+    public function testTheSessionAuthenticationProviderRequiresTheSessionToBeConfigured(): void
+    {
+        $this->assertConfigurationIsInvalid(
+            [
+                [
+                    'authentication' => ['providers' => ['session' => ['firewalls' => 'main']]],
+                    'server' => ['uri' => 'tcp://127.0.0.1:8080', 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php']],
+                ],
+            ],
+            'Invalid configuration for path "babdev_websocket": The session authentication provider requires one of the "server.session" options to be configured so the websocket server can read the session.',
+        );
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function sessionOptions(): iterable
+    {
+        yield 'session factory' => ['factory_service_id'];
+        yield 'session storage factory' => ['storage_factory_service_id'];
+        yield 'session handler' => ['handler_service_id'];
+    }
+
+    #[DataProvider('sessionOptions')]
+    public function testTheSessionAuthenticationProviderCanBeUsedWithAConfiguredSession(string $sessionOption): void
+    {
+        $this->assertConfigurationIsValid(
+            [
+                [
+                    'authentication' => ['providers' => ['session' => ['firewalls' => 'main']]],
+                    'server' => ['uri' => 'tcp://127.0.0.1:8080', 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => [$sessionOption => 'session.service.test']],
+                ],
+            ],
+        );
+    }
+
     public function testConfigurationIsInvalidWithNegativeRequestSize(): void
     {
         $this->assertPartialConfigurationIsInvalid(

@@ -36,6 +36,14 @@ final readonly class Configuration implements ConfigurationInterface
         $this->addAuthenticationSection($rootNode);
         $this->addServerSection($rootNode);
 
+        // Without a session option the session middleware is not registered, so the session authentication provider would treat every user as anonymous
+        $rootNode
+            ->validate()
+                ->ifTrue(static fn (array $config): bool => isset($config['authentication']['providers']['session']) && !isset($config['server']['session']['factory_service_id']) && !isset($config['server']['session']['storage_factory_service_id']) && !isset($config['server']['session']['handler_service_id']))
+                ->thenInvalid('The session authentication provider requires one of the "server.session" options to be configured so the websocket server can read the session.')
+            ->end()
+        ;
+
         return $treeBuilder;
     }
 

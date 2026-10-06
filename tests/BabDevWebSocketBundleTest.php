@@ -48,7 +48,7 @@ final class BabDevWebSocketBundleTest extends TestCase
             [
                 [
                     'authentication' => ['providers' => ['session' => ['firewalls' => 'main']]],
-                    'server' => ['uri' => 'tcp://127.0.0.1:8080', 'router' => ['resource' => 'websocket_router.yaml']],
+                    'server' => ['uri' => 'tcp://127.0.0.1:8080', 'router' => ['resource' => 'websocket_router.yaml'], 'session' => ['handler_service_id' => 'session.handler.test']],
                 ],
             ],
         );
