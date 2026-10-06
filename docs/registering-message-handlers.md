@@ -99,3 +99,12 @@ services:
     tags:
       - { name: babdev_websocket_server.message_handler }
 ```
+
+Message handlers are looked up by their service ID, using the `_controller` default of the matched route. Routes created from the `AsMessageHandler` attribute use the class name of the message handler, so the service ID must be the class name, which is the default for services registered through a resource in your service configuration. When a message handler service uses a different ID, define its route in a routing file and set the `controller` option to the service ID:
+
+```yaml
+# config/websocket_router.yaml
+echo:
+  path: /echo
+  controller: app.websocket.echo_message_handler
+```
