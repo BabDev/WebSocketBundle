@@ -65,7 +65,7 @@ final class ResolveForwardedClientAddressFactoryTest extends TestCase
     public function testAnUnsupportedTrustedHeaderIsRejected(): void
     {
         $this->expectException(InvalidConfiguration::class);
-        $this->expectExceptionMessage('The trusted header "x-real-ip" is not supported.');
+        $this->expectExceptionMessageIs('The trusted header "x-real-ip" is not supported.');
 
         ResolveForwardedClientAddressFactory::create(self::createStub(ServerMiddleware::class), ['10.0.0.1'], ['x-real-ip']);
     }

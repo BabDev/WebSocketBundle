@@ -30,7 +30,7 @@ final class PingDBALConnectionsCompilerPassTest extends AbstractCompilerPassTest
     public function testThrowsAnExceptionIfAConnectionServiceIsNotConfigured(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The "database_connection" service does not exist in the container, please review the "server.periodic.dbal.connections" configuration for the BabDevWebSocketBundle to ensure all connections are set in your DoctrineBundle configuration.');
+        $this->expectExceptionMessageIs('The "database_connection" service does not exist in the container, please review the "server.periodic.dbal.connections" configuration for the BabDevWebSocketBundle to ensure all connections are set in your DoctrineBundle configuration.');
 
         $this->container->register('babdev_websocket_server.periodic_manager.ping_doctrine_dbal_connections', PingDoctrineDBALConnectionsPeriodicManager::class);
 

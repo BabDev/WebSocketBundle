@@ -81,7 +81,7 @@ final class AttributeLoaderTest extends TestCase
     public function testAnAbstractClassCannotBeLoaded(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage(\sprintf('Attributes from class "%s" cannot be read as it is abstract.', AbstractMessageHandler::class));
+        $this->expectExceptionMessageIs(\sprintf('Attributes from class "%s" cannot be read as it is abstract.', AbstractMessageHandler::class));
 
         new AttributeLoader()->load(AbstractMessageHandler::class);
     }
@@ -89,7 +89,7 @@ final class AttributeLoaderTest extends TestCase
     public function testAClassWhichDoesNotExistCannotBeLoaded(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Class "App\WebSocket\MissingMessageHandler" does not exist.');
+        $this->expectExceptionMessageIs('Class "App\WebSocket\MissingMessageHandler" does not exist.');
 
         new AttributeLoader()->load('App\WebSocket\MissingMessageHandler');
     }
@@ -97,7 +97,7 @@ final class AttributeLoaderTest extends TestCase
     public function testARequirementWithoutAPlaceholderNameIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('A placeholder name must be a string (0 given).');
+        $this->expectExceptionMessageIs(\sprintf('A placeholder name must be a string (0 given). Did you forget to specify the placeholder key for the requirement "\d+" of the route in "%s"?', InvalidRequirementMessageHandler::class));
 
         new AttributeLoader()->load(InvalidRequirementMessageHandler::class);
     }
@@ -105,7 +105,7 @@ final class AttributeLoaderTest extends TestCase
     public function testAMessageHandlerWithoutAPathIsRejected(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(\sprintf('The "%s" attribute on class "%s" must define a path.', AsMessageHandler::class, MissingPathMessageHandler::class));
+        $this->expectExceptionMessageIs(\sprintf('The "%s" attribute on class "%s" must define a path.', AsMessageHandler::class, MissingPathMessageHandler::class));
 
         new AttributeLoader()->load(MissingPathMessageHandler::class);
     }

@@ -60,7 +60,7 @@ final class DriverBackedTokenStorageTest extends TestCase
         $storage = $this->createStorage(driver: $driver);
 
         $this->expectException(StorageError::class);
-        $this->expectExceptionMessage('Unable to add client "user" to storage');
+        $this->expectExceptionMessageIs('Unable to add client "user" to storage');
 
         /** @var MockObject&TokenInterface $token */
         $token = $this->createMock(TokenInterface::class);

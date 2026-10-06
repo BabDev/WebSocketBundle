@@ -13,7 +13,7 @@ final class ValidateSessionStorageOptionsCompilerPassTest extends AbstractCompil
     public function testTheSessionOptionsAreRequiredWhenUsingASessionHandler(): void
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The "server.session.handler_service_id" option requires sessions to be enabled in the FrameworkBundle configuration ("framework.session")');
+        $this->expectExceptionMessageIs('The "server.session.handler_service_id" option requires sessions to be enabled in the FrameworkBundle configuration ("framework.session"), as the websocket server reads sessions using the same options. To read sessions without the FrameworkBundle session configuration, use the "server.session.factory_service_id" or "server.session.storage_factory_service_id" option instead.');
 
         $this->registerSessionStorageFactory();
 

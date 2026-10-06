@@ -29,7 +29,7 @@ final class ArrayPeriodicManagerRegistryTest extends TestCase
     public function testMultipleManagersWithTheSameNameAreNotAllowed(): void
     {
         $this->expectException(ManagerAlreadyRegistered::class);
-        $this->expectExceptionMessage('A manager named "test" is already registered.');
+        $this->expectExceptionMessageIs('A manager named "test" is already registered.');
 
         $registry = new ArrayPeriodicManagerRegistry();
 

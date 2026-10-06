@@ -17,7 +17,7 @@ final class ConfigureSessionAuthenticationProviderCompilerPassTest extends Abstr
     public function testTheFirewallsParameterIsRequiredWhenUsingAllFirewalls(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('The "firewalls" config for the session authentication provider is not set and the "security.firewalls" container parameter has not been set.');
+        $this->expectExceptionMessageIs('The "firewalls" config for the session authentication provider is not set and the "security.firewalls" container parameter has not been set. Ensure the SecurityBundle is configured or set a list of firewalls to use.');
 
         $this->registerSessionProvider(null);
 

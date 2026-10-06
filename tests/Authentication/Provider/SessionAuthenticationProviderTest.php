@@ -313,7 +313,7 @@ final class SessionAuthenticationProviderTest extends TestCase
             ->willReturn(false);
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage(\sprintf('There is no user provider for user "%s".', InMemoryUser::class));
+        $this->expectExceptionMessageIs(\sprintf('There is no user provider for user "%s". Shouldn\'t the "supportsClass()" method of your user provider return true for this classname?', InMemoryUser::class));
 
         $this->authenticateWithSessionToken(
             new UsernamePasswordToken(new InMemoryUser('user', 'password', ['ROLE_USER']), 'main', ['ROLE_USER']),
