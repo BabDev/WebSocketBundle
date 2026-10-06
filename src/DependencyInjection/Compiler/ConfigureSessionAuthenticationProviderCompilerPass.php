@@ -10,12 +10,12 @@ use Symfony\Component\DependencyInjection\Exception\RuntimeException;
 use Symfony\Component\DependencyInjection\Parameter;
 
 /**
- * The resolve session authentication firewalls compiler pass converts the firewalls used by the session authentication
- * provider to the security contexts their tokens are stored in the session with.
+ * The configure session authentication provider compiler pass configures the session authentication provider from the
+ * SecurityBundle configuration, which is only available after all extensions are loaded.
  *
  * @internal
  */
-final class ResolveSessionAuthenticationFirewallsCompilerPass implements CompilerPassInterface
+final class ConfigureSessionAuthenticationProviderCompilerPass implements CompilerPassInterface
 {
     private const string PROVIDER_ID = 'babdev_websocket_server.authentication.provider.session.default';
 
@@ -58,6 +58,11 @@ final class ResolveSessionAuthenticationFirewallsCompilerPass implements Compile
         }
 
         $provider->replaceArgument(0, array_values(array_unique($contexts)));
+
+        // The SecurityBundle gives the context listener the user providers to refresh the user with
+        if ($container->hasDefinition('security.context_listener')) {
+            $provider->replaceArgument(2, $container->getDefinition('security.context_listener')->getArgument(1));
+        }
     }
 
     /**

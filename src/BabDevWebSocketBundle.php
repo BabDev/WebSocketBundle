@@ -5,8 +5,8 @@ namespace BabDev\WebSocketBundle;
 use BabDev\WebSocketBundle\DependencyInjection\BabDevWebSocketExtension;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\BuildMiddlewareStackCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\ConfigureHttpFactoriesCompilerPass;
+use BabDev\WebSocketBundle\DependencyInjection\Compiler\ConfigureSessionAuthenticationProviderCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\PingDBALConnectionsCompilerPass;
-use BabDev\WebSocketBundle\DependencyInjection\Compiler\ResolveSessionAuthenticationFirewallsCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\RoutingResolverCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\ValidateSessionStorageOptionsCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\SessionAuthenticationProviderFactory;
@@ -23,7 +23,7 @@ final class BabDevWebSocketBundle extends Bundle
         $container->addCompilerPass(new PingDBALConnectionsCompilerPass());
         $container->addCompilerPass(new RoutingResolverCompilerPass());
         $container->addCompilerPass(new ValidateSessionStorageOptionsCompilerPass());
-        $container->addCompilerPass(new ResolveSessionAuthenticationFirewallsCompilerPass());
+        $container->addCompilerPass(new ConfigureSessionAuthenticationProviderCompilerPass());
 
         /** @var BabDevWebSocketExtension $extension */
         $extension = $container->getExtension('babdev_websocket');

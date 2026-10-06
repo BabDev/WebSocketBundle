@@ -15,6 +15,14 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\LegacyPasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\EquatableInterface;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
+use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
+use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
+use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
 
 /**
  * The session authentication provider uses the HTTP session for your website's frontend for authenticating to the websocket server.
@@ -28,11 +36,13 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
     use LoggerAwareTrait;
 
     /**
-     * @param list<string> $firewalls The security contexts of the firewalls whose token can be read from the session
+     * @param list<string>    $firewalls     The security contexts of the firewalls whose token can be read from the session
+     * @param iterable<mixed> $userProviders The user providers used to refresh the user from the token, the same as the SecurityBundle uses when reading the token for an HTTP request
      */
     public function __construct(
         private readonly array $firewalls,
         private readonly OptionsHandler $optionsHandler = new IniOptionsHandler(),
+        private readonly iterable $userProviders = [],
     ) {}
 
     public function supports(Connection $connection): bool
@@ -93,6 +103,8 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
             if (!$token->getUser() instanceof UserInterface) {
                 throw new InvalidTokenException(\sprintf('Cannot authenticate a "%s" token because it doesn\'t store a user.', $token::class));
             }
+
+            $token = $this->refreshUserFromToken($token);
         } elseif (null !== $token) {
             $this->logger?->warning('Expected a security token from the session, got something else.', ['key' => $sessionKey, 'received' => $token]);
 
@@ -100,6 +112,164 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
         }
 
         return $token ?? new NullToken();
+    }
+
+    /**
+     * Refreshes the user from the token in the same way as the SecurityBundle does when reading the token for an HTTP request.
+     *
+     * Without any user providers, such as when the SecurityBundle is not installed, the token is used as is.
+     *
+     * @throws \RuntimeException if no user provider supports the user from the token
+     */
+    private function refreshUserFromToken(TokenInterface $token): TokenInterface
+    {
+        if (!$this->hasUserProviders()) {
+            return $token;
+        }
+
+        $refreshedToken = $this->refreshUser($token);
+
+        if (!$refreshedToken instanceof TokenInterface) {
+            $this->logger?->debug('Token was deauthenticated after trying to refresh it.');
+
+            return new NullToken();
+        }
+
+        return $refreshedToken;
+    }
+
+    private function hasUserProviders(): bool
+    {
+        // The providers may be a lazy iterable from the container, which can only be checked by iterating it
+        foreach ($this->userProviders as $provider) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Forked from {@see \Symfony\Component\Security\Http\Firewall\ContextListener::refreshUser}.
+     *
+     * @throws \RuntimeException if no user provider supports the user from the token
+     */
+    private function refreshUser(TokenInterface $token): ?TokenInterface
+    {
+        if ($token instanceof SwitchUserToken && $token->getOriginalToken()->getUser() && !$this->refreshUser($token->getOriginalToken())) {
+            return null;
+        }
+
+        /** @var UserInterface $user */
+        $user = $token->getUser();
+
+        $userNotFoundByProvider = false;
+        $userDeauthenticated = false;
+        $userClass = $user::class;
+
+        foreach ($this->userProviders as $provider) {
+            if (!$provider instanceof UserProviderInterface) {
+                throw new \InvalidArgumentException(\sprintf('User provider "%s" must implement "%s".', get_debug_type($provider), UserProviderInterface::class));
+            }
+
+            if (!$provider->supportsClass($userClass)) {
+                continue;
+            }
+
+            try {
+                $refreshedUser = $provider->refreshUser($user);
+
+                // tokens can be deauthenticated if the user has been changed.
+                if ($token instanceof AbstractToken && self::hasUserChanged($token, $user, $refreshedUser)) {
+                    $userDeauthenticated = true;
+
+                    $this->logger?->debug('Cannot refresh token because user has changed.', ['username' => $refreshedUser->getUserIdentifier(), 'provider' => $provider::class]);
+
+                    continue;
+                }
+
+                $token->setUser($refreshedUser);
+
+                if (null !== $this->logger) {
+                    $context = ['provider' => $provider::class, 'username' => $refreshedUser->getUserIdentifier()];
+
+                    if ($token instanceof SwitchUserToken) {
+                        $originalToken = $token->getOriginalToken();
+                        $context['impersonator_username'] = $originalToken->getUserIdentifier();
+                    }
+
+                    $this->logger->debug('User was reloaded from a user provider.', $context);
+                }
+
+                return $token;
+            } catch (UnsupportedUserException) {
+                // let's try the next user provider
+            } catch (UserNotFoundException $e) {
+                $this->logger?->info('Username could not be found in the selected user provider.', ['username' => $e->getUserIdentifier(), 'provider' => $provider::class]);
+
+                $userNotFoundByProvider = true;
+            }
+        }
+
+        if ($userDeauthenticated) {
+            return null;
+        }
+
+        if ($userNotFoundByProvider) {
+            return null;
+        }
+
+        throw new \RuntimeException(\sprintf('There is no user provider for user "%s". Shouldn\'t the "supportsClass()" method of your user provider return true for this classname?', $userClass));
+    }
+
+    /**
+     * Forked from {@see \Symfony\Component\Security\Http\Firewall\ContextListener::hasUserChanged}.
+     */
+    private static function hasUserChanged(AbstractToken $token, UserInterface $originalUser, UserInterface $refreshedUser): bool
+    {
+        if ($originalUser instanceof EquatableInterface) {
+            return !$originalUser->isEqualTo($refreshedUser);
+        }
+
+        if ($originalUser instanceof PasswordAuthenticatedUserInterface || $refreshedUser instanceof PasswordAuthenticatedUserInterface) {
+            if (!$originalUser instanceof PasswordAuthenticatedUserInterface || !$refreshedUser instanceof PasswordAuthenticatedUserInterface) {
+                return true;
+            }
+
+            $originalPassword = $originalUser->getPassword();
+            $refreshedPassword = $refreshedUser->getPassword();
+
+            if (null !== $originalPassword
+                && $refreshedPassword !== $originalPassword
+                && (8 !== \strlen($originalPassword) || hash('crc32c', $refreshedPassword ?? $originalPassword) !== $originalPassword)
+            ) {
+                return true;
+            }
+
+            if ($originalUser instanceof LegacyPasswordAuthenticatedUserInterface xor $refreshedUser instanceof LegacyPasswordAuthenticatedUserInterface) {
+                return true;
+            }
+
+            // Unlike the original, the refreshed user is also checked so the salt can be read, which is equivalent after the check above
+            if ($originalUser instanceof LegacyPasswordAuthenticatedUserInterface && $refreshedUser instanceof LegacyPasswordAuthenticatedUserInterface && $originalUser->getSalt() !== $refreshedUser->getSalt()) {
+                return true;
+            }
+        }
+
+        $userRoles = array_map('strval', (array) $refreshedUser->getRoles());
+        $tokenRoleNames = $token->getRoleNames();
+
+        if (
+            \count($userRoles) !== \count($tokenRoleNames)
+            || \count($userRoles) !== \count(array_intersect($userRoles, $tokenRoleNames))
+        ) {
+            return true;
+        }
+
+        if ($originalUser->getUserIdentifier() !== $refreshedUser->getUserIdentifier()) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -3,14 +3,16 @@
 namespace BabDev\WebSocketBundle\Tests\DependencyInjection\Compiler;
 
 use BabDev\WebSocketBundle\Authentication\Provider\SessionAuthenticationProvider;
-use BabDev\WebSocketBundle\DependencyInjection\Compiler\ResolveSessionAuthenticationFirewallsCompilerPass;
+use BabDev\WebSocketBundle\DependencyInjection\Compiler\ConfigureSessionAuthenticationProviderCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\SessionAuthenticationProviderFactory;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractCompilerPassTestCase;
+use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Exception\RuntimeException;
+use Symfony\Component\DependencyInjection\Reference;
 
-final class ResolveSessionAuthenticationFirewallsCompilerPassTest extends AbstractCompilerPassTestCase
+final class ConfigureSessionAuthenticationProviderCompilerPassTest extends AbstractCompilerPassTestCase
 {
     public function testTheFirewallsParameterIsRequiredWhenUsingAllFirewalls(): void
     {
@@ -59,6 +61,31 @@ final class ResolveSessionAuthenticationFirewallsCompilerPassTest extends Abstra
         self::assertSame(['shared'], $this->getResolvedFirewalls());
     }
 
+    public function testTheUserProvidersFromTheSecurityBundleAreUsed(): void
+    {
+        $this->registerSessionProvider(['main']);
+
+        $userProviders = new IteratorArgument([new Reference('security.user.provider.concrete.users')]);
+
+        // The SecurityBundle sets the user providers as the second argument of the context listener
+        $this->container->register('security.context_listener', 'Symfony\Component\Security\Http\Firewall\ContextListener')
+            ->setArguments([null, $userProviders]);
+
+        $this->compile();
+
+        self::assertSame($userProviders, $this->container->getDefinition('babdev_websocket_server.authentication.provider.session.default')->getArgument(2));
+    }
+
+    public function testNoUserProvidersAreUsedWithoutTheSecurityBundle(): void
+    {
+        $this->registerSessionProvider(['main']);
+
+        $this->compile();
+
+        self::assertSame([], $this->container->getDefinition('babdev_websocket_server.authentication.provider.session')->getArgument(2));
+        self::assertArrayNotHasKey('index_2', $this->container->getDefinition('babdev_websocket_server.authentication.provider.session.default')->getArguments());
+    }
+
     /**
      * @param list<non-empty-string>|null $firewalls
      */
@@ -66,7 +93,7 @@ final class ResolveSessionAuthenticationFirewallsCompilerPassTest extends Abstra
     {
         // The provider is created by its factory the same way as when the bundle extension is loaded
         $this->container->register('babdev_websocket_server.authentication.provider.session', SessionAuthenticationProvider::class)
-            ->setArguments([null]);
+            ->setArguments([null, null, []]);
 
         new SessionAuthenticationProviderFactory()->createAuthenticationProvider($this->container, ['firewalls' => $firewalls]);
     }
@@ -96,6 +123,6 @@ final class ResolveSessionAuthenticationFirewallsCompilerPassTest extends Abstra
 
     protected function registerCompilerPass(ContainerBuilder $container): void
     {
-        $container->addCompilerPass(new ResolveSessionAuthenticationFirewallsCompilerPass());
+        $container->addCompilerPass(new ConfigureSessionAuthenticationProviderCompilerPass());
     }
 }

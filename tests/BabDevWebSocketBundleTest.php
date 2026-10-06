@@ -6,8 +6,8 @@ use BabDev\WebSocketBundle\BabDevWebSocketBundle;
 use BabDev\WebSocketBundle\DependencyInjection\BabDevWebSocketExtension;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\BuildMiddlewareStackCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\ConfigureHttpFactoriesCompilerPass;
+use BabDev\WebSocketBundle\DependencyInjection\Compiler\ConfigureSessionAuthenticationProviderCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\PingDBALConnectionsCompilerPass;
-use BabDev\WebSocketBundle\DependencyInjection\Compiler\ResolveSessionAuthenticationFirewallsCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\RoutingResolverCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\ValidateSessionStorageOptionsCompilerPass;
 use PHPUnit\Framework\TestCase;
@@ -35,7 +35,7 @@ final class BabDevWebSocketBundleTest extends TestCase
 
         $passes = array_map(static fn (object $pass): string => $pass::class, $container->getCompilerPassConfig()->getBeforeOptimizationPasses());
 
-        foreach ([BuildMiddlewareStackCompilerPass::class, ConfigureHttpFactoriesCompilerPass::class, PingDBALConnectionsCompilerPass::class, RoutingResolverCompilerPass::class, ResolveSessionAuthenticationFirewallsCompilerPass::class, ValidateSessionStorageOptionsCompilerPass::class] as $pass) {
+        foreach ([BuildMiddlewareStackCompilerPass::class, ConfigureHttpFactoriesCompilerPass::class, PingDBALConnectionsCompilerPass::class, RoutingResolverCompilerPass::class, ConfigureSessionAuthenticationProviderCompilerPass::class, ValidateSessionStorageOptionsCompilerPass::class] as $pass) {
             self::assertContains($pass, $passes);
         }
     }
@@ -84,7 +84,7 @@ final class BabDevWebSocketBundleTest extends TestCase
         $container->loadFromExtension('security', []);
 
         new MergeExtensionConfigurationPass()->process($container);
-        new ResolveSessionAuthenticationFirewallsCompilerPass()->process($container);
+        new ConfigureSessionAuthenticationProviderCompilerPass()->process($container);
 
         self::assertSame(['main'], $container->getDefinition('babdev_websocket_server.authentication.provider.session.default')->getArgument(0));
     }
