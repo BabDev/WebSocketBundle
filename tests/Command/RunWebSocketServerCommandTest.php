@@ -118,13 +118,15 @@ final class RunWebSocketServerCommandTest extends TestCase
 
         /** @var MockObject&SocketServerFactory $socketServerFactory */
         $socketServerFactory = $this->createMock(SocketServerFactory::class);
-        $socketServerFactory->method('build')
+        $socketServerFactory->expects(self::once())
+            ->method('build')
             ->with($uri)
             ->willReturn($socketServer);
 
         /** @var MockObject&ServerFactory $serverFactory */
         $serverFactory = $this->createMock(ServerFactory::class);
-        $serverFactory->method('build')
+        $serverFactory->expects(self::once())
+            ->method('build')
             ->with($socketServer)
             ->willReturn($server);
 
