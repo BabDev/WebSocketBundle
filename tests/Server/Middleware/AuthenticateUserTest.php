@@ -8,6 +8,7 @@ use BabDev\WebSocket\Server\Connection\AttributeKey;
 use BabDev\WebSocket\Server\Connection\AttributeStore;
 use BabDev\WebSocket\Server\ServerMiddleware;
 use BabDev\WebSocketBundle\Authentication\Authenticator;
+use BabDev\WebSocketBundle\Authentication\Exception\AuthenticationException;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use BabDev\WebSocketBundle\Server\Middleware\AuthenticateUser;
 use PHPUnit\Framework\Attributes\TestDox;
@@ -39,6 +40,37 @@ final class AuthenticateUserTest extends TestCase
         $decoratedMiddleware->expects(self::once())
             ->method('onOpen')
             ->with($connection);
+
+        $middleware->onOpen($connection);
+    }
+
+    #[TestDox('Rejects a connection which cannot be authenticated')]
+    public function testOnOpenWhenAuthenticationFails(): void
+    {
+        /** @var MockObject&ServerMiddleware $decoratedMiddleware */
+        $decoratedMiddleware = $this->createMock(ServerMiddleware::class);
+
+        $exception = new AuthenticationException('Could not authenticate user.');
+
+        $authenticator = self::createStub(Authenticator::class);
+        $authenticator->method('authenticate')
+            ->willThrowException($exception);
+
+        $middleware = $this->createMiddleware(decoratedMiddleware: $decoratedMiddleware, authenticator: $authenticator);
+
+        /** @var MockObject&Connection $connection */
+        $connection = $this->createMock(Connection::class);
+        $connection->expects(self::once())
+            ->method('send')
+            ->with(self::stringStartsWith('HTTP/1.1 401 Unauthorized'));
+
+        $connection->expects(self::once())
+            ->method('close');
+
+        $decoratedMiddleware->expects(self::never())
+            ->method('onOpen');
+
+        $this->expectExceptionObject($exception);
 
         $middleware->onOpen($connection);
     }
