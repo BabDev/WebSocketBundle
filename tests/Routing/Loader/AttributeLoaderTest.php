@@ -47,7 +47,7 @@ final class AttributeLoaderTest extends TestCase
         $collection->add('fallback', new Route('/chat/{room}'));
         $collection->addCollection($routes);
 
-        self::assertSame(['chat_room', 'fallback'], array_keys($collection->all()));
+        self::assertArraysAreIdentical(['chat_room', 'fallback'], array_keys($collection->all()));
     }
 
     public function testARouteIsLoadedForEachLocale(): void

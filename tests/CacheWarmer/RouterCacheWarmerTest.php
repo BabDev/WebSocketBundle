@@ -27,7 +27,7 @@ final class RouterCacheWarmerTest extends TestCase
                 UrlMatcher::class,
             ]);
 
-        self::assertSame([
+        self::assertArraysAreIdentical([
             UrlGenerator::class,
             UrlMatcher::class,
         ], new RouterCacheWarmer($innerCacheWarmer, $cacheFolder)->warmUp($cacheDir, null));
@@ -50,7 +50,7 @@ final class RouterCacheWarmerTest extends TestCase
                 UrlMatcher::class,
             ]);
 
-        self::assertSame([
+        self::assertArraysAreIdentical([
             UrlGenerator::class,
             UrlMatcher::class,
         ], new RouterCacheWarmer($innerCacheWarmer, $cacheFolder)->warmUp($cacheDir, $buildDir));

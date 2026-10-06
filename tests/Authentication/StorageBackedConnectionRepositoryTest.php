@@ -165,7 +165,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $topic->add($connection2);
         $topic->add($connection3);
 
-        self::assertEquals([
+        self::assertArraysAreEqual([
             new TokenConnection($token1, $connection1),
             new TokenConnection($token2, $connection2),
         ], $repository->findAllByUsername($topic, $username1));
@@ -225,7 +225,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $topic->add($connection1);
         $topic->add($connection2);
 
-        self::assertEquals([
+        self::assertArraysAreEqual([
             new TokenConnection($authenticatedToken, $connection1),
         ], $repository->findAll($topic));
     }
@@ -282,7 +282,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $topic->add($connection1);
         $topic->add($connection2);
 
-        self::assertEquals([
+        self::assertArraysAreEqual([
             new TokenConnection($authenticatedToken, $connection1),
             new TokenConnection($guestToken, $connection2),
         ], $repository->findAll($topic, true));
@@ -357,7 +357,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $topic->add($connection2);
         $topic->add($connection3);
 
-        self::assertEquals([
+        self::assertArraysAreEqual([
             new TokenConnection($authenticatedToken1, $connection1),
         ], $repository->findAllWithRoles($topic, ['ROLE_STAFF']));
     }
@@ -455,11 +455,11 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $topic->add($failingConnection);
         $topic->add($authenticatedConnection);
 
-        self::assertEquals(
+        self::assertArraysAreEqual(
             [new TokenConnection(new NullToken(), $failingConnection), new TokenConnection($token, $authenticatedConnection)],
             $repository->findAll($topic, true),
         );
-        self::assertEquals([new TokenConnection($token, $authenticatedConnection)], $repository->findAll($topic));
+        self::assertArraysAreEqual([new TokenConnection($token, $authenticatedConnection)], $repository->findAll($topic));
         self::assertTrue($repository->hasConnectionForUsername($topic, 'user'));
         self::assertTrue($logger->hasWarningThatContains('Could not find the token for a connection'));
     }

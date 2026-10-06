@@ -155,7 +155,7 @@ final class RunWebSocketServerCommandTest extends TestCase
             static fn (?int $signal): bool => null !== $signal,
         ));
 
-        self::assertSame($expectedSignals, $registeredSignals);
+        self::assertArraysAreIdentical($expectedSignals, $registeredSignals);
     }
 
     #[RequiresPhpExtension('pcntl')]
@@ -231,8 +231,8 @@ final class RunWebSocketServerCommandTest extends TestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);
 
-        self::assertSame([\SIGINT, \SIGTERM, \SIGQUIT], $removedSignals, 'All signal handlers should be removed so a second signal stops the server immediately.');
-        self::assertSame([BeforeRunServer::class, AfterServerClosed::class, AfterLoopStopped::class], $dispatchedEvents);
+        self::assertArraysAreIdentical([\SIGINT, \SIGTERM, \SIGQUIT], $removedSignals, 'All signal handlers should be removed so a second signal stops the server immediately.');
+        self::assertArraysAreIdentical([BeforeRunServer::class, AfterServerClosed::class, AfterLoopStopped::class], $dispatchedEvents);
         self::assertStringContainsString('The websocket server has been stopped.', $commandTester->getDisplay());
     }
 
@@ -288,7 +288,7 @@ final class RunWebSocketServerCommandTest extends TestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);
 
-        self::assertSame([BeforeRunServer::class, AfterServerClosed::class, AfterLoopStopped::class], $dispatchedEvents);
+        self::assertArraysAreIdentical([BeforeRunServer::class, AfterServerClosed::class, AfterLoopStopped::class], $dispatchedEvents);
     }
 
     /**
