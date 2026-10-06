@@ -21,14 +21,7 @@ final class SessionAuthenticationProviderFactoryTest extends TestCase
 
     public function testAuthenticationProviderServiceIsCreatedWithDefaultConfiguration(): void
     {
-        $this->container->setParameter(
-            'security.firewalls',
-            [
-                'dev',
-                'main',
-            ]
-        );
-
+        // The "security.firewalls" parameter is intentionally not set, as the SecurityBundle may be loaded after this bundle
         $this->factory->createAuthenticationProvider(
             $this->container,
             [

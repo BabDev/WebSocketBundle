@@ -5,7 +5,6 @@ namespace BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Exception\RuntimeException;
 use Symfony\Component\DependencyInjection\Parameter;
 
 final class SessionAuthenticationProviderFactory implements AuthenticationProviderFactory
@@ -48,8 +47,6 @@ final class SessionAuthenticationProviderFactory implements AuthenticationProvid
      * @param array{firewalls: list<non-empty-string>|non-empty-string|null} $config
      *
      * @return non-empty-string The authentication provider service ID to be used
-     *
-     * @throws RuntimeException if the firewalls node is not configured and the "security.firewalls" container parameter is missing
      */
     public function createAuthenticationProvider(ContainerBuilder $container, array $config): string
     {
@@ -58,10 +55,6 @@ final class SessionAuthenticationProviderFactory implements AuthenticationProvid
         } elseif (\is_string($config['firewalls'])) {
             $firewalls = [$config['firewalls']];
         } else {
-            if (!$container->hasParameter('security.firewalls')) {
-                throw new RuntimeException('The "firewalls" config for the session authentication provider is not set and the "security.firewalls" container parameter has not been set. Ensure the SecurityBundle is configured or set a list of firewalls to use.');
-            }
-
             $firewalls = new Parameter('security.firewalls');
         }
 

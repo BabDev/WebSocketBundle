@@ -8,9 +8,13 @@ use BabDev\WebSocketBundle\DependencyInjection\Compiler\BuildMiddlewareStackComp
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\ConfigureHttpFactoriesCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\PingDBALConnectionsCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\RoutingResolverCompilerPass;
+use BabDev\WebSocketBundle\DependencyInjection\Compiler\ValidateSessionAuthenticationFirewallsCompilerPass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Processor;
+use Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\Parameter;
 
 final class BabDevWebSocketBundleTest extends TestCase
 {
@@ -31,7 +35,7 @@ final class BabDevWebSocketBundleTest extends TestCase
 
         $passes = array_map(static fn (object $pass): string => $pass::class, $container->getCompilerPassConfig()->getBeforeOptimizationPasses());
 
-        foreach ([BuildMiddlewareStackCompilerPass::class, ConfigureHttpFactoriesCompilerPass::class, PingDBALConnectionsCompilerPass::class, RoutingResolverCompilerPass::class] as $pass) {
+        foreach ([BuildMiddlewareStackCompilerPass::class, ConfigureHttpFactoriesCompilerPass::class, PingDBALConnectionsCompilerPass::class, RoutingResolverCompilerPass::class, ValidateSessionAuthenticationFirewallsCompilerPass::class] as $pass) {
             self::assertContains($pass, $passes);
         }
     }
@@ -54,6 +58,35 @@ final class BabDevWebSocketBundleTest extends TestCase
         );
 
         self::assertSame(['providers' => ['session' => ['firewalls' => 'main']]], $config['authentication']);
+    }
+
+    public function testSessionAuthenticationCanUseAllFirewallsWhenTheSecurityBundleIsRegisteredAfterThisBundle(): void
+    {
+        $container = $this->buildContainer();
+
+        // Stands in for the SecurityBundle's extension, which sets this parameter when it is loaded
+        $container->registerExtension(new class extends Extension {
+            public function load(array $configs, ContainerBuilder $container): void
+            {
+                $container->setParameter('security.firewalls', ['main']);
+            }
+
+            public function getAlias(): string
+            {
+                return 'security';
+            }
+        });
+
+        $container->loadFromExtension('babdev_websocket', [
+            'authentication' => ['providers' => ['session' => null]],
+            'server' => ['uri' => 'tcp://127.0.0.1:8080', 'router' => ['resource' => 'websocket_router.yaml'], 'session' => ['handler_service_id' => 'session.handler.test']],
+        ]);
+        $container->loadFromExtension('security', []);
+
+        new MergeExtensionConfigurationPass()->process($container);
+        new ValidateSessionAuthenticationFirewallsCompilerPass()->process($container);
+
+        self::assertEquals(new Parameter('security.firewalls'), $container->getDefinition('babdev_websocket_server.authentication.provider.session.default')->getArgument(1));
     }
 
     public function testTheBundlePathIsThePackageRoot(): void
