@@ -87,16 +87,12 @@ final readonly class Configuration implements ConfigurationInterface
             ->arrayNode('server')
                 ->addDefaultsIfNotSet()
                 ->children()
-                    ->scalarNode('identity')
+                    ->stringNode('identity')
                         ->info('An identifier for the websocket server, disclosed in the response to the WELCOME message from a WAMP client.')
                         ->defaultValue(Server::VERSION)
-                        ->validate()
-                            ->ifTrue(static fn (mixed $identity): bool => !\is_string($identity))
-                            ->thenInvalid('The server identity must be a string')
-                        ->end()
                     ->end()
                     ->integerNode('max_http_request_size')
-                        ->info('The maximum size of the HTTP request body, in bytes, that is allowed for incoming requests.')
+                        ->info('The maximum size, in bytes, of the HTTP request used to open a websocket connection, including its headers; larger requests are rejected with a "413 Payload Too Large" response.')
                         ->defaultValue(4096)
                         ->min(1)
                     ->end()
@@ -147,6 +143,10 @@ final readonly class Configuration implements ConfigurationInterface
                     ->variableNode('context')
                         ->info(\sprintf('Options used to configure the stream context, see the "%s" class documentation for more details.', SocketServer::class))
                         ->defaultValue([])
+                        ->validate()
+                            ->ifTrue(static fn (mixed $context): bool => !\is_array($context))
+                            ->thenInvalid('The stream context options must be an array, %s given.')
+                        ->end()
                     ->end()
                     ->arrayNode('allowed_origins')
                         ->info('A list of origins allowed to connect to the websocket server, each entry can be either a full origin (such as "https://example.com:8443") which must match the scheme, host, and port of the "Origin" header of the HTTP request, or a host (such as "example.com") which matches the host with any scheme or port.')
@@ -168,7 +168,30 @@ final readonly class Configuration implements ConfigurationInterface
                     ->end()
                     ->arrayNode('blocked_ip_addresses')
                         ->info('A list of IP addresses which are not allowed to connect to the websocket server, each entry can be either a single address or a CIDR range.')
-                        ->scalarPrototype()->end()
+                        ->stringPrototype()
+                            ->validate()
+                                ->always(static function (string $address): string {
+                                    // An environment variable is validated with an empty value, which never matches a client address
+                                    if ('' === $address) {
+                                        return $address;
+                                    }
+
+                                    [$ip, $netmask] = str_contains($address, '/') ? explode('/', $address, 2) : [$address, null];
+
+                                    $maxNetmask = match (true) {
+                                        false !== filter_var($ip, \FILTER_VALIDATE_IP, \FILTER_FLAG_IPV4) => 32,
+                                        false !== filter_var($ip, \FILTER_VALIDATE_IP, \FILTER_FLAG_IPV6) => 128,
+                                        default => null,
+                                    };
+
+                                    if (null === $maxNetmask || (null !== $netmask && (!ctype_digit($netmask) || (int) $netmask > $maxNetmask))) {
+                                        throw new \InvalidArgumentException(\sprintf('The blocked IP address "%s" is not a valid IP address or CIDR range.', $address));
+                                    }
+
+                                    return $address;
+                                })
+                            ->end()
+                        ->end()
                     ->end()
                     ->arrayNode('trusted_proxies')
                         ->info('A list of reverse proxies trusted to forward the client IP address, using the same format as the "framework.trusted_proxies" option (single addresses, CIDR ranges, "PRIVATE_SUBNETS", or "REMOTE_ADDR"); can also be a comma-separated string, such as an environment variable.')
@@ -195,7 +218,7 @@ final readonly class Configuration implements ConfigurationInterface
                                 ->children()
                                     ->arrayNode('connections')
                                         ->info(\sprintf('A list of "%s" services to ping.', Connection::class))
-                                        ->scalarPrototype()->end()
+                                        ->stringPrototype()->end()
                                     ->end()
                                     ->integerNode('interval')
                                         ->defaultValue(60)
@@ -209,7 +232,7 @@ final readonly class Configuration implements ConfigurationInterface
                     ->arrayNode('router')
                         ->addDefaultsIfNotSet()
                         ->children()
-                            ->scalarNode('resource')
+                            ->stringNode('resource')
                                 ->isRequired()
                                 ->cannotBeEmpty()
                                 ->info('The main routing resource to import when loading the websocket server route definitions.')

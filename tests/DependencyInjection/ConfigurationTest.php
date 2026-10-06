@@ -47,9 +47,9 @@ final class ConfigurationTest extends TestCase
     public function testConfigurationIsInvalidWithNonStringIdentity(): void
     {
         $this->assertPartialConfigurationIsInvalid(
-            [['server' => ['identity' => null]]],
+            [['server' => ['identity' => 123]]],
             'server.identity',
-            'Invalid configuration for path "babdev_websocket.server.identity": The server identity must be a string',
+            'Invalid type for path "babdev_websocket.server.identity". Expected "string", but got "int".',
         );
     }
 
@@ -350,6 +350,53 @@ final class ConfigurationTest extends TestCase
                     'server' => ['uri' => 'tcp://127.0.0.1:8080', 'router' => ['resource' => '%kernel.project_dir%/config/websocket_router.php'], 'session' => [$sessionOption => 'session.service.test']],
                 ],
             ],
+        );
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function validBlockedIpAddresses(): iterable
+    {
+        yield 'IPv4 address' => ['192.168.1.1'];
+        yield 'IPv4 range' => ['192.168.1.0/24'];
+        yield 'IPv6 address' => ['2001:db8::1'];
+        yield 'IPv6 range' => ['2001:db8::/32'];
+    }
+
+    #[DataProvider('validBlockedIpAddresses')]
+    public function testConfigurationIsValidWithBlockedIpAddress(string $address): void
+    {
+        $this->assertConfigurationIsValid([['server' => ['blocked_ip_addresses' => [$address]]]], 'server.blocked_ip_addresses');
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function invalidBlockedIpAddresses(): iterable
+    {
+        yield 'hostname' => ['example.com'];
+        yield 'IPv4 netmask too large' => ['192.168.1.0/33'];
+        yield 'IPv6 netmask too large' => ['2001:db8::/129'];
+        yield 'non-numeric netmask' => ['192.168.1.0/abc'];
+    }
+
+    #[DataProvider('invalidBlockedIpAddresses')]
+    public function testConfigurationIsInvalidWithBlockedIpAddress(string $address): void
+    {
+        $this->assertPartialConfigurationIsInvalid(
+            [['server' => ['blocked_ip_addresses' => [$address]]]],
+            'server.blocked_ip_addresses',
+            \sprintf('Invalid configuration for path "babdev_websocket.server.blocked_ip_addresses.0": The blocked IP address "%s" is not a valid IP address or CIDR range.', $address),
+        );
+    }
+
+    public function testConfigurationIsInvalidWithNonArrayContext(): void
+    {
+        $this->assertPartialConfigurationIsInvalid(
+            [['server' => ['context' => 'tls']]],
+            'server.context',
+            'Invalid configuration for path "babdev_websocket.server.context": The stream context options must be an array, "tls" given.',
         );
     }
 

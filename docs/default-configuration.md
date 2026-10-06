@@ -13,7 +13,7 @@ babdev_websocket:
     # An identifier for the websocket server, disclosed in the response to the WELCOME message from a WAMP client.
     identity:             BabDev-Websocket-Server/0.1
 
-    # The maximum size of the HTTP request body, in bytes, that is allowed for incoming requests.
+    # The maximum size, in bytes, of the HTTP request used to open a websocket connection, including its headers; larger requests are rejected with a "413 Payload Too Large" response.
     max_http_request_size: 4096
 
     # The time, in seconds, a client has to send its HTTP request before the connection is closed with a "408 Request Timeout" response.
