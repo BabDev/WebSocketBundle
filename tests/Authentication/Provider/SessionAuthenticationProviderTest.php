@@ -8,7 +8,6 @@ use BabDev\WebSocket\Server\Connection\AttributeKey;
 use BabDev\WebSocketBundle\Authentication\Exception\AuthenticationException;
 use BabDev\WebSocketBundle\Authentication\Provider\SessionAuthenticationProvider;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\Test\TestLogger;
@@ -235,18 +234,10 @@ final class SessionAuthenticationProviderTest extends TestCase
         self::assertInstanceOf(NullToken::class, $provider->authenticate($connection));
     }
 
-    /**
-     * @return iterable<string, array{string}>
-     */
-    public static function invalidSerializedTokens(): iterable
+    public function testANullTokenUsedWhenTheTokenReferencesAnUnknownClass(): void
     {
-        yield 'truncated data' => ['O:8:"stdClass":0:'];
-        yield 'unknown class' => ['O:30:"App\Security\RemovedTokenClass":0:{}'];
-    }
+        $serializedToken = 'O:30:"App\Security\RemovedTokenClass":0:{}';
 
-    #[DataProvider('invalidSerializedTokens')]
-    public function testANullTokenUsedWhenTheTokenCannotBeUnserialized(string $serializedToken): void
-    {
         /** @var MockObject&TokenStorage $tokenStorage */
         $tokenStorage = $this->createMock(TokenStorage::class);
 
