@@ -4,6 +4,7 @@ namespace BabDev\WebSocketBundle\Routing\Loader;
 
 use BabDev\WebSocketBundle\Attribute\AsMessageHandler;
 use Symfony\Component\Config\Resource\FileResource;
+use Symfony\Component\Routing\Exception\InvalidArgumentException;
 use Symfony\Component\Routing\Loader\AttributeClassLoader;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
@@ -22,25 +23,7 @@ final class AttributeLoader extends AttributeClassLoader
     {
         parent::__construct($env);
 
-        /** @phpstan-ignore function.alreadyNarrowedType */
-        if (method_exists(AttributeClassLoader::class, 'setRouteAttributeClass')) {
-            $this->setRouteAttributeClass(AsMessageHandler::class);
-        } else {
-            $this->setRouteAnnotationClass(AsMessageHandler::class);
-        }
-    }
-
-    /**
-     * @param class-string $class
-     */
-    #[\Deprecated(message: 'use setRouteAttributeClass() instead', since: 'babdev/websocket-server 0.1')]
-    public function setRouteAnnotationClass(string $class): void
-    {
-        $this->routeAttributeClass = $class;
-
-        if (method_exists(AttributeClassLoader::class, 'setRouteAnnotationClass')) {
-            parent::setRouteAnnotationClass($class); // @phpstan-ignore staticMethod.notFound
-        }
+        $this->setRouteAttributeClass(AsMessageHandler::class);
     }
 
     /**
@@ -109,6 +92,12 @@ final class AttributeLoader extends AttributeClassLoader
         $priority = $attr->priority ?? 0;
 
         $path = $attr->path;
+
+        // Unlike a controller, a message handler has no class and method attributes to combine, so it always needs a path
+        if (null === $path) {
+            throw new InvalidArgumentException(\sprintf('The "%s" attribute on class "%s" must define a path.', $attr::class, $class->getName()));
+        }
+
         $paths = [];
 
         if (\is_array($path)) {

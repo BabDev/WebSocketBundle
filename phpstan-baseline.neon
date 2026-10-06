@@ -67,12 +67,6 @@ parameters:
 			path: src/Routing/Loader/AttributeLoader.php
 
 		-
-			message: '#^Parameter \#1 \$path of method Symfony\\Component\\Routing\\Loader\\AttributeClassLoader\:\:createRoute\(\) expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Routing/Loader/AttributeLoader.php
-
-		-
 			message: '#^Parameter \#1 \$resource of class Symfony\\Component\\Config\\Resource\\FileResource constructor expects string, string\|false given\.$#'
 			identifier: argument.type
 			count: 1

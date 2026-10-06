@@ -2,15 +2,18 @@
 
 namespace BabDev\WebSocketBundle\Tests\Routing\Loader;
 
+use BabDev\WebSocketBundle\Attribute\AsMessageHandler;
 use BabDev\WebSocketBundle\Routing\Loader\AttributeLoader;
 use BabDev\WebSocketBundle\Tests\Fixtures\Routing\AbstractMessageHandler;
 use BabDev\WebSocketBundle\Tests\Fixtures\Routing\DevelopmentMessageHandler;
 use BabDev\WebSocketBundle\Tests\Fixtures\Routing\InvalidRequirementMessageHandler;
 use BabDev\WebSocketBundle\Tests\Fixtures\Routing\LocalizedMessageHandler;
+use BabDev\WebSocketBundle\Tests\Fixtures\Routing\MissingPathMessageHandler;
 use BabDev\WebSocketBundle\Tests\Fixtures\Routing\NamedMessageHandler;
 use BabDev\WebSocketBundle\Tests\Fixtures\Routing\NotAMessageHandler;
 use BabDev\WebSocketBundle\Tests\Fixtures\Routing\SimpleMessageHandler;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Routing\Exception\InvalidArgumentException;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -97,5 +100,13 @@ final class AttributeLoaderTest extends TestCase
         $this->expectExceptionMessage('A placeholder name must be a string (0 given).');
 
         new AttributeLoader()->load(InvalidRequirementMessageHandler::class);
+    }
+
+    public function testAMessageHandlerWithoutAPathIsRejected(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(\sprintf('The "%s" attribute on class "%s" must define a path.', AsMessageHandler::class, MissingPathMessageHandler::class));
+
+        new AttributeLoader()->load(MissingPathMessageHandler::class);
     }
 }
