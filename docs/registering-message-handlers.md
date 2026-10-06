@@ -90,6 +90,24 @@ When using attributes to configure routes, the `BabDev\WebSocketBundle\Attribute
 
 Clients may register a prefix with the WAMP "PREFIX" message and use it in URIs as a CURIE (such as `chat:room`). Following the WAMP specification, a CURIE is resolved by appending the part after the prefix to the prefix's URI exactly as registered, and the resolved URI is matched against your routes. For example, when a client registers the `chat` prefix for `/chat/`, the `chat:room` URI resolves to `/chat/room` and is handled by a message handler with the `/chat/room` path. As nothing is added between the prefix and the rest of the URI, clients should include a trailing separator in the prefix URI.
 
+### Route Parameters
+
+The parameters of the matched route, such as the placeholders in its path, are available to the message handler from the attributes of the `BabDev\WebSocket\Server\WAMP\WAMPMessageRequest` object, both individually and as an array in the `_route_params` attribute:
+
+```php
+$room = $request->attributes->get('room');
+```
+
+### Localized Paths
+
+As with controllers, the `AsMessageHandler` attribute supports a different path for each locale. Each path is handled by the same message handler, and the locale of the matched path is available in the `_locale` attribute of the request; the `_route` attribute contains the route name without the locale suffix.
+
+```php
+#[AsMessageHandler(path: ['en' => '/hello', 'fr' => '/bonjour'], name: 'greeting')]
+```
+
+Unlike an HTTP request, the locale is not applied to anything else, such as the translator, so a message handler which needs it must read it from the request attributes.
+
 ### Debugging the WebSocket Router
 
 The bundle also provides support for debugging the websocket router with the `babdev:websocket-server:debug:router` command, which provides the same capabilities as the framework's `debug:router` command.
