@@ -96,7 +96,9 @@ return static function (ContainerConfigurator $container): void {
         ->args([
             service(TokenStorage::class),
             service(Authenticator::class),
+            service('logger'),
         ])
+        ->tag('monolog.logger', ['channel' => 'websocket'])
     ;
     $services->alias(ConnectionRepository::class, 'babdev_websocket_server.authentication.connection_repository.storage');
 

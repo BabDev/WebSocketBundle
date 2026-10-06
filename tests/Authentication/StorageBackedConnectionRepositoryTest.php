@@ -3,9 +3,14 @@
 namespace BabDev\WebSocketBundle\Tests\Authentication;
 
 use BabDev\WebSocket\Server\Connection;
+use BabDev\WebSocket\Server\Connection\ArrayAttributeStore;
+use BabDev\WebSocket\Server\Connection\AttributeKey;
 use BabDev\WebSocket\Server\WAMP\Topic;
 use BabDev\WebSocket\Server\WAMP\WAMPConnection;
 use BabDev\WebSocketBundle\Authentication\Authenticator;
+use BabDev\WebSocketBundle\Authentication\Exception\AuthenticationException;
+use BabDev\WebSocketBundle\Authentication\Storage\Driver\InMemoryStorageDriver;
+use BabDev\WebSocketBundle\Authentication\Storage\DriverBackedTokenStorage;
 use BabDev\WebSocketBundle\Authentication\Storage\Exception\TokenNotFound;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use BabDev\WebSocketBundle\Authentication\StorageBackedConnectionRepository;
@@ -13,7 +18,11 @@ use BabDev\WebSocketBundle\Authentication\TokenConnection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\Test\TestLogger;
+use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\User\InMemoryUser;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 final class StorageBackedConnectionRepositoryTest extends TestCase
@@ -456,6 +465,67 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $topic->add($connection3);
 
         self::assertTrue($repository->hasConnectionForUsername($topic, $username2));
+    }
+
+    public function testAConnectionWhichCannotBeAuthenticatedIsTreatedAsAnonymousWithoutStoppingTheLookup(): void
+    {
+        $logger = new TestLogger();
+
+        $tokenStorage = new DriverBackedTokenStorage(new InMemoryStorageDriver());
+
+        $authenticator = self::createStub(Authenticator::class);
+        $authenticator->method('authenticate')
+            ->willThrowException(new AuthenticationException('Could not authenticate user.'));
+
+        $repository = new StorageBackedConnectionRepository($tokenStorage, $authenticator, $logger);
+
+        $failingConnection = $this->createConnection('1');
+        $authenticatedConnection = $this->createConnection('2');
+
+        $token = new UsernamePasswordToken(new InMemoryUser('user', 'password'), 'main');
+
+        $tokenStorage->addToken($tokenStorage->generateStorageId($authenticatedConnection), $token);
+
+        // The failing connection is first, so the remaining connections are only found if the lookup continues
+        $topic = new Topic('testing/123');
+        $topic->add($failingConnection);
+        $topic->add($authenticatedConnection);
+
+        self::assertEquals(
+            [new TokenConnection(new NullToken(), $failingConnection), new TokenConnection($token, $authenticatedConnection)],
+            $repository->findAll($topic, true),
+        );
+        self::assertEquals([new TokenConnection($token, $authenticatedConnection)], $repository->findAll($topic));
+        self::assertTrue($repository->hasConnectionForUsername($topic, 'user'));
+        self::assertTrue($logger->hasWarningThatContains('Could not find the token for a connection'));
+    }
+
+    public function testAnUnexpectedErrorWhileFindingATokenIsNotCaught(): void
+    {
+        $authenticator = self::createStub(Authenticator::class);
+        $authenticator->method('authenticate')
+            ->willThrowException(new \LogicException('Something unexpected'));
+
+        $repository = new StorageBackedConnectionRepository(new DriverBackedTokenStorage(new InMemoryStorageDriver()), $authenticator);
+
+        $topic = new Topic('testing/123');
+        $topic->add($this->createConnection('1'));
+
+        $this->expectException(\LogicException::class);
+
+        $repository->findAll($topic);
+    }
+
+    private function createConnection(string $resourceId): WAMPConnection
+    {
+        $attributeStore = new ArrayAttributeStore();
+        $attributeStore->set(AttributeKey::RESOURCE_ID, $resourceId);
+
+        $connection = self::createStub(WAMPConnection::class);
+        $connection->method('getAttributeStore')
+            ->willReturn($attributeStore);
+
+        return $connection;
     }
 
     private function createRepository(?TokenStorage $tokenStorage = null, ?Authenticator $authenticator = null): StorageBackedConnectionRepository

@@ -104,6 +104,8 @@ By default, the bundle provides and uses an in-memory storage driver. You can pr
 
 The `BabDev\WebSocketBundle\Authentication\ConnectionRepository` provides several helper methods for querying the token storage to find the connections and tokens for any connected user. For example, this repository could be used to find all authenticated users connected to a given topic to send a message.
 
+When a connection's token is no longer in the token storage, the repository authenticates the connection again. If this fails while searching a topic's connections, the connection is treated as an anonymous user so the remaining connections are still searched.
+
 ### Token Connection DTO
 
 The `BabDev\WebSocketBundle\Authentication\TokenConnection` object is a DTO which is returned by many of the repository methods and contains the `BabDev\WebSocket\Server\Connection` and its security token from the authenticator. 
