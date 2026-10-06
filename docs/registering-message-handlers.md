@@ -35,6 +35,8 @@ final class AddValuesMessageHandler implements RPCMessageHandler
 }
 ```
 
+When the `onCall()` method throws an exception, the server sends the client a "CALLERROR" message with the `internal-error` error URI before handling the exception, so the client is always told the call failed. A message handler which sends its own error with `$connection->callError()` should return instead of also throwing an exception, otherwise the client receives two errors for the call.
+
 ### Topic Message Handler
 
 This example handler will simply echo the provided event to all subscribers connected to a topic.
@@ -83,6 +85,10 @@ final class EchoMessageHandler implements TopicMessageHandler
 The websocket server uses the [Symfony Routing Component](https://symfony.com/doc/current/routing.html) to manage its routes. This means that with one exception (the attribute class used on message handlers), all configuration for the Symfony router applies to the websocket server as well.
 
 When using attributes to configure routes, the `BabDev\WebSocketBundle\Attribute\AsMessageHandler` class should be used instead of the `Symfony\Component\Routing\Attribute\Route` class.
+
+### Matching URIs with Prefixes
+
+Clients may register a prefix with the WAMP "PREFIX" message and use it in URIs as a CURIE (such as `chat:room`). Following the WAMP specification, a CURIE is resolved by appending the part after the prefix to the prefix's URI exactly as registered, and the resolved URI is matched against your routes. For example, when a client registers the `chat` prefix for `/chat/`, the `chat:room` URI resolves to `/chat/room` and is handled by a message handler with the `/chat/room` path. As nothing is added between the prefix and the rest of the URI, clients should include a trailing separator in the prefix URI.
 
 ### Debugging the WebSocket Router
 

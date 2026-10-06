@@ -43,6 +43,8 @@ Configuring the session handler will add the [`InitializeSession` middleware](/o
 
 When using session authentication, you should also restrict the [allowed origins](/open-source/packages/websocketbundle/docs/1.x/securing-connections#allowed-origins-and-session-authentication) so other websites cannot open connections authenticated as your users.
 
+When the session ID sent by the client is not a valid session ID, or does not match an existing session when PHP's `session.use_strict_mode` setting is enabled, the session is treated as empty and the connection is authenticated as an anonymous user.
+
 By default, the session authentication provider will attempt to authenticate to any of the firewalls set in your `security.firewalls` configuration in the same order which the firewalls are defined. You can specify the firewall(s) to use with the `firewalls` configuration key on the session provider.
 
 ```yaml

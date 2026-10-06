@@ -52,6 +52,8 @@ babdev_websocket:
 
 With this configuration, all connections from `8.8.8.8` and the `192.168.1.0/24` range will be rejected.
 
+Addresses are matched against the client's normalized IP address, where IPv4 clients connecting to a server listening on a dual-stack address (such as `[::]`) use their IPv4 address instead of the IPv4-mapped IPv6 address (for example, `203.0.113.5` instead of `::ffff:203.0.113.5`). Use IPv4 addresses and ranges to block these clients.
+
 ## Limiting Message Sizes
 
 Messages received from clients are buffered in memory until they are complete, so the bundle can be configured to limit the size of the messages and frames a client can send. A connection sending a message or frame over the limit is closed with a "1009 Message Too Big" close frame.
