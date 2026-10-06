@@ -7,14 +7,13 @@ use BabDev\WebSocketBundle\DependencyInjection\BabDevWebSocketExtension;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\BuildMiddlewareStackCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\ConfigureHttpFactoriesCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\PingDBALConnectionsCompilerPass;
+use BabDev\WebSocketBundle\DependencyInjection\Compiler\ResolveSessionAuthenticationFirewallsCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\RoutingResolverCompilerPass;
-use BabDev\WebSocketBundle\DependencyInjection\Compiler\ValidateSessionAuthenticationFirewallsCompilerPass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
-use Symfony\Component\DependencyInjection\Parameter;
 
 final class BabDevWebSocketBundleTest extends TestCase
 {
@@ -35,7 +34,7 @@ final class BabDevWebSocketBundleTest extends TestCase
 
         $passes = array_map(static fn (object $pass): string => $pass::class, $container->getCompilerPassConfig()->getBeforeOptimizationPasses());
 
-        foreach ([BuildMiddlewareStackCompilerPass::class, ConfigureHttpFactoriesCompilerPass::class, PingDBALConnectionsCompilerPass::class, RoutingResolverCompilerPass::class, ValidateSessionAuthenticationFirewallsCompilerPass::class] as $pass) {
+        foreach ([BuildMiddlewareStackCompilerPass::class, ConfigureHttpFactoriesCompilerPass::class, PingDBALConnectionsCompilerPass::class, RoutingResolverCompilerPass::class, ResolveSessionAuthenticationFirewallsCompilerPass::class] as $pass) {
             self::assertContains($pass, $passes);
         }
     }
@@ -84,9 +83,9 @@ final class BabDevWebSocketBundleTest extends TestCase
         $container->loadFromExtension('security', []);
 
         new MergeExtensionConfigurationPass()->process($container);
-        new ValidateSessionAuthenticationFirewallsCompilerPass()->process($container);
+        new ResolveSessionAuthenticationFirewallsCompilerPass()->process($container);
 
-        self::assertEquals(new Parameter('security.firewalls'), $container->getDefinition('babdev_websocket_server.authentication.provider.session.default')->getArgument(1));
+        self::assertSame(['main'], $container->getDefinition('babdev_websocket_server.authentication.provider.session.default')->getArgument(1));
     }
 
     public function testTheBundlePathIsThePackageRoot(): void

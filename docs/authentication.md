@@ -47,6 +47,8 @@ When the session ID sent by the client is not a valid session ID, or does not ma
 
 By default, the session authentication provider will attempt to authenticate to any of the firewalls set in your `security.firewalls` configuration in the same order which the firewalls are defined. You can specify the firewall(s) to use with the `firewalls` configuration key on the session provider.
 
+The security token is read from the session using each firewall's context, which is the firewall name unless the firewall sets a `context` to share authentication with other firewalls. Firewalls sharing a context are only checked once, and stateless firewalls and firewalls with security disabled are skipped as they do not store a token in the session.
+
 ```yaml
 babdev_websocket:
   authentication:

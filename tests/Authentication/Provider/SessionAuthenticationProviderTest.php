@@ -129,6 +129,34 @@ final class SessionAuthenticationProviderTest extends TestCase
         self::assertEquals($token, $authenticatedToken);
     }
 
+    public function testTheNextContextIsCheckedWhenTheSessionHasANonStringValue(): void
+    {
+        $provider = $this->createProvider(firewalls: ['admin', 'main']);
+
+        $token = new UsernamePasswordToken(
+            new InMemoryUser('user', 'password', ['ROLE_USER']),
+            'main',
+            ['ROLE_USER'],
+        );
+
+        $session = self::createStub(SessionInterface::class);
+        $session->method('get')
+            ->willReturnMap([
+                ['_security_admin', false, ['not' => 'a token']],
+                ['_security_main', false, serialize($token)],
+            ]);
+
+        $attributeStore = new ArrayAttributeStore();
+        $attributeStore->set(AttributeKey::SESSION, $session);
+        $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
+
+        $connection = self::createStub(Connection::class);
+        $connection->method('getAttributeStore')
+            ->willReturn($attributeStore);
+
+        self::assertSame('user', $provider->authenticate($connection)->getUserIdentifier());
+    }
+
     public function testANullTokenUsedWhenANonSecurityTokenIsExtractedFromTheSession(): void
     {
         /** @var MockObject&TokenStorage $tokenStorage */
@@ -304,8 +332,11 @@ final class SessionAuthenticationProviderTest extends TestCase
         $provider->authenticate($connection);
     }
 
-    private function createProvider(?TokenStorage $tokenStorage = null): SessionAuthenticationProvider
+    /**
+     * @param list<string> $firewalls
+     */
+    private function createProvider(?TokenStorage $tokenStorage = null, array $firewalls = self::FIREWALLS): SessionAuthenticationProvider
     {
-        return new SessionAuthenticationProvider($tokenStorage ?? self::createStub(TokenStorage::class), self::FIREWALLS);
+        return new SessionAuthenticationProvider($tokenStorage ?? self::createStub(TokenStorage::class), $firewalls);
     }
 }

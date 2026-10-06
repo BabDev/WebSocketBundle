@@ -29,7 +29,7 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
     use LoggerAwareTrait;
 
     /**
-     * @param list<string> $firewalls
+     * @param list<string> $firewalls The security contexts of the firewalls whose token can be read from the session
      */
     public function __construct(
         private readonly TokenStorage $tokenStorage,
@@ -90,7 +90,7 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
                         'type' => get_debug_type($serializedToken),
                     ]);
 
-                    break;
+                    continue;
                 }
 
                 $token = $this->safelyUnserialize($serializedToken, $sessionKey);
