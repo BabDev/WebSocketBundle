@@ -15,21 +15,10 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 final class DriverBackedTokenStorageTest extends TestCase
 {
-    private readonly MockObject&StorageDriver $driver;
-
-    private readonly DriverBackedTokenStorage $storage;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->driver = $this->createMock(StorageDriver::class);
-
-        $this->storage = new DriverBackedTokenStorage($this->driver);
-    }
-
     public function testAStorageIdentifierForAConnectionIsGenerated(): void
     {
+        $storage = $this->createStorage();
+
         $clientId = '42';
 
         /** @var MockObject&AttributeStore $attributeStore */
@@ -39,28 +28,37 @@ final class DriverBackedTokenStorageTest extends TestCase
             ->with(AttributeKey::RESOURCE_ID)
             ->willReturn($clientId);
 
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        $connection = self::createStub(Connection::class);
         $connection->method('getAttributeStore')
             ->willReturn($attributeStore);
 
-        self::assertSame($clientId, $this->storage->generateStorageId($connection));
+        self::assertSame($clientId, $storage->generateStorageId($connection));
     }
 
     public function testTheTokenIsAddedToStorage(): void
     {
+        /** @var MockObject&StorageDriver $driver */
+        $driver = $this->createMock(StorageDriver::class);
+
+        $storage = $this->createStorage(driver: $driver);
+
         /** @var Stub&TokenInterface $token */
         $token = self::createStub(TokenInterface::class);
 
-        $this->driver->expects(self::once())
+        $driver->expects(self::once())
             ->method('store')
             ->willReturn(true);
 
-        $this->storage->addToken('42', $token);
+        $storage->addToken('42', $token);
     }
 
     public function testAnExceptionIsThrownIfTheTokenIsNotAddedToStorage(): void
     {
+        /** @var MockObject&StorageDriver $driver */
+        $driver = $this->createMock(StorageDriver::class);
+
+        $storage = $this->createStorage(driver: $driver);
+
         $this->expectException(StorageError::class);
         $this->expectExceptionMessage('Unable to add client "user" to storage');
 
@@ -70,51 +68,76 @@ final class DriverBackedTokenStorageTest extends TestCase
             ->method('getUserIdentifier')
             ->willReturn('user');
 
-        $this->driver->expects(self::once())
+        $driver->expects(self::once())
             ->method('store')
             ->willReturn(false);
 
-        $this->storage->addToken('42', $token);
+        $storage->addToken('42', $token);
     }
 
     public function testTheTokenIsRetrieved(): void
     {
+        /** @var MockObject&StorageDriver $driver */
+        $driver = $this->createMock(StorageDriver::class);
+
+        $storage = $this->createStorage(driver: $driver);
+
         $storageId = '42';
 
         /** @var Stub&TokenInterface $token */
         $token = self::createStub(TokenInterface::class);
 
-        $this->driver->expects(self::once())
+        $driver->expects(self::once())
             ->method('get')
             ->with($storageId)
             ->willReturn($token);
 
-        self::assertEquals($token, $this->storage->getToken($storageId));
+        self::assertEquals($token, $storage->getToken($storageId));
     }
 
     public function testTheStorageCanBeCheckedToDetermineIfATokenExists(): void
     {
-        $this->driver->expects(self::once())
+        /** @var MockObject&StorageDriver $driver */
+        $driver = $this->createMock(StorageDriver::class);
+
+        $storage = $this->createStorage(driver: $driver);
+
+        $driver->expects(self::once())
             ->method('has')
             ->willReturn(true);
 
-        self::assertTrue($this->storage->hasToken('42'));
+        self::assertTrue($storage->hasToken('42'));
     }
 
     public function testATokenCanBeRemovedFromStorage(): void
     {
-        $this->driver->expects(self::once())
+        /** @var MockObject&StorageDriver $driver */
+        $driver = $this->createMock(StorageDriver::class);
+
+        $storage = $this->createStorage(driver: $driver);
+
+        $driver->expects(self::once())
             ->method('delete')
             ->willReturn(true);
 
-        self::assertTrue($this->storage->removeToken('42'));
+        self::assertTrue($storage->removeToken('42'));
     }
 
     public function testAllTokensCanBeRemovedFromStorage(): void
     {
-        $this->driver->expects(self::once())
+        /** @var MockObject&StorageDriver $driver */
+        $driver = $this->createMock(StorageDriver::class);
+
+        $storage = $this->createStorage(driver: $driver);
+
+        $driver->expects(self::once())
             ->method('clear');
 
-        $this->storage->removeAllTokens();
+        $storage->removeAllTokens();
+    }
+
+    private function createStorage(?StorageDriver $driver = null): DriverBackedTokenStorage
+    {
+        return new DriverBackedTokenStorage($driver ?? self::createStub(StorageDriver::class));
     }
 }

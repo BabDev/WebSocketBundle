@@ -3,6 +3,7 @@
 namespace BabDev\WebSocketBundle\Tests\Server\Middleware;
 
 use BabDev\WebSocket\Server\Connection;
+use BabDev\WebSocket\Server\Connection\ArrayAttributeStore;
 use BabDev\WebSocket\Server\Connection\AttributeKey;
 use BabDev\WebSocket\Server\Connection\AttributeStore;
 use BabDev\WebSocket\Server\ServerMiddleware;
@@ -17,99 +18,107 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 final class AuthenticateUserTest extends TestCase
 {
-    private MockObject&ServerMiddleware $decoratedMiddleware;
-
-    private MockObject&Authenticator $authenticator;
-
-    private MockObject&TokenStorage $tokenStorage;
-
-    private AuthenticateUser $middleware;
-
-    protected function setUp(): void
-    {
-        $this->decoratedMiddleware = $this->createMock(ServerMiddleware::class);
-        $this->authenticator = $this->createMock(Authenticator::class);
-        $this->tokenStorage = $this->createMock(TokenStorage::class);
-
-        $this->middleware = new AuthenticateUser($this->decoratedMiddleware, $this->authenticator, $this->tokenStorage);
-    }
-
     #[TestDox('Handles a new connection being opened')]
     public function testOnOpen(): void
     {
+        /** @var MockObject&ServerMiddleware $decoratedMiddleware */
+        $decoratedMiddleware = $this->createMock(ServerMiddleware::class);
+
+        /** @var MockObject&Authenticator $authenticator */
+        $authenticator = $this->createMock(Authenticator::class);
+
+        $middleware = $this->createMiddleware(decoratedMiddleware: $decoratedMiddleware, authenticator: $authenticator);
+
         /** @var Stub&Connection $connection */
         $connection = self::createStub(Connection::class);
 
-        $this->authenticator->expects(self::once())
+        $authenticator->expects(self::once())
             ->method('authenticate')
             ->with($connection);
 
-        $this->decoratedMiddleware->expects(self::once())
+        $decoratedMiddleware->expects(self::once())
             ->method('onOpen')
             ->with($connection);
 
-        $this->middleware->onOpen($connection);
+        $middleware->onOpen($connection);
     }
 
     #[TestDox('Handles incoming data on the connection')]
     public function testOnMessage(): void
     {
+        /** @var MockObject&ServerMiddleware $decoratedMiddleware */
+        $decoratedMiddleware = $this->createMock(ServerMiddleware::class);
+
+        $middleware = $this->createMiddleware(decoratedMiddleware: $decoratedMiddleware);
+
         $data = 'Testing';
 
         /** @var Stub&Connection $connection */
         $connection = self::createStub(Connection::class);
 
-        $this->decoratedMiddleware->expects(self::once())
+        $decoratedMiddleware->expects(self::once())
             ->method('onMessage')
             ->with($connection, $data);
 
-        $this->middleware->onMessage($connection, $data);
+        $middleware->onMessage($connection, $data);
     }
 
     #[TestDox('Closes the connection')]
     public function testOnClose(): void
     {
-        /** @var MockObject&AttributeStore $attributeStore */
-        $attributeStore = $this->createMock(AttributeStore::class);
-        $attributeStore->method('get')
-            ->with(AttributeKey::RESOURCE_ID)
-            ->willReturn('resource');
+        /** @var MockObject&ServerMiddleware $decoratedMiddleware */
+        $decoratedMiddleware = $this->createMock(ServerMiddleware::class);
 
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $middleware = $this->createMiddleware(decoratedMiddleware: $decoratedMiddleware, tokenStorage: $tokenStorage);
+
+        $attributeStore = new ArrayAttributeStore();
+        $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
+
+        $connection = self::createStub(Connection::class);
         $connection->method('getAttributeStore')
             ->willReturn($attributeStore);
 
-        $this->decoratedMiddleware->expects(self::once())
+        $decoratedMiddleware->expects(self::once())
             ->method('onClose')
             ->with($connection);
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('generateStorageId')
             ->with($connection)
             ->willReturn('resource');
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('hasToken')
             ->with('resource')
             ->willReturn(true);
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('getToken')
             ->with('resource')
             ->willReturn(self::createStub(TokenInterface::class));
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('removeToken')
             ->with('resource')
             ->willReturn(true);
 
-        $this->middleware->onClose($connection);
+        $middleware->onClose($connection);
     }
 
     #[TestDox('Removes the token when the decorated middleware fails while closing a connection')]
     public function testOnCloseRemovesTheTokenWhenTheDecoratedMiddlewareFails(): void
     {
+        /** @var MockObject&ServerMiddleware $decoratedMiddleware */
+        $decoratedMiddleware = $this->createMock(ServerMiddleware::class);
+
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $middleware = $this->createMiddleware(decoratedMiddleware: $decoratedMiddleware, tokenStorage: $tokenStorage);
+
         $attributeStore = self::createStub(AttributeStore::class);
         $attributeStore->method('get')
             ->willReturn('resource');
@@ -120,42 +129,52 @@ final class AuthenticateUserTest extends TestCase
 
         $exception = new \RuntimeException('Failed to close the connection');
 
-        $this->decoratedMiddleware->expects(self::once())
+        $decoratedMiddleware->expects(self::once())
             ->method('onClose')
             ->with($connection)
             ->willThrowException($exception);
 
-        $this->tokenStorage->method('generateStorageId')
+        $tokenStorage->method('generateStorageId')
             ->willReturn('resource');
 
-        $this->tokenStorage->method('hasToken')
+        $tokenStorage->method('hasToken')
             ->willReturn(true);
 
-        $this->tokenStorage->method('getToken')
+        $tokenStorage->method('getToken')
             ->willReturn(self::createStub(TokenInterface::class));
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('removeToken')
             ->with('resource')
             ->willReturn(true);
 
         $this->expectExceptionObject($exception);
 
-        $this->middleware->onClose($connection);
+        $middleware->onClose($connection);
     }
 
     #[TestDox('Handles an error')]
     public function testOnError(): void
     {
+        /** @var MockObject&ServerMiddleware $decoratedMiddleware */
+        $decoratedMiddleware = $this->createMock(ServerMiddleware::class);
+
+        $middleware = $this->createMiddleware(decoratedMiddleware: $decoratedMiddleware);
+
         /** @var Stub&Connection $connection */
         $connection = self::createStub(Connection::class);
 
         $error = new \Exception('Testing');
 
-        $this->decoratedMiddleware->expects(self::once())
+        $decoratedMiddleware->expects(self::once())
             ->method('onError')
             ->with($connection, $error);
 
-        $this->middleware->onError($connection, $error);
+        $middleware->onError($connection, $error);
+    }
+
+    private function createMiddleware(?ServerMiddleware $decoratedMiddleware = null, ?Authenticator $authenticator = null, ?TokenStorage $tokenStorage = null): AuthenticateUser
+    {
+        return new AuthenticateUser($decoratedMiddleware ?? self::createStub(ServerMiddleware::class), $authenticator ?? self::createStub(Authenticator::class), $tokenStorage ?? self::createStub(TokenStorage::class));
     }
 }

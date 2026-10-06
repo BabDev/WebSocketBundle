@@ -5,7 +5,6 @@ namespace BabDev\WebSocketBundle\Tests\PeriodicManager;
 use BabDev\WebSocketBundle\PeriodicManager\ArrayPeriodicManagerRegistry;
 use BabDev\WebSocketBundle\PeriodicManager\Exception\ManagerAlreadyRegistered;
 use BabDev\WebSocketBundle\PeriodicManager\PeriodicManager;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class ArrayPeriodicManagerRegistryTest extends TestCase
@@ -14,8 +13,7 @@ final class ArrayPeriodicManagerRegistryTest extends TestCase
     {
         $registry = new ArrayPeriodicManagerRegistry();
 
-        /** @var MockObject&PeriodicManager $manager */
-        $manager = $this->createMock(PeriodicManager::class);
+        $manager = self::createStub(PeriodicManager::class);
         $manager->method('getName')
             ->willReturn('test');
 
@@ -35,13 +33,11 @@ final class ArrayPeriodicManagerRegistryTest extends TestCase
 
         $registry = new ArrayPeriodicManagerRegistry();
 
-        /** @var MockObject&PeriodicManager $manager1 */
-        $manager1 = $this->createMock(PeriodicManager::class);
+        $manager1 = self::createStub(PeriodicManager::class);
         $manager1->method('getName')
             ->willReturn('test');
 
-        /** @var MockObject&PeriodicManager $manager2 */
-        $manager2 = $this->createMock(PeriodicManager::class);
+        $manager2 = self::createStub(PeriodicManager::class);
         $manager2->method('getName')
             ->willReturn('test');
 

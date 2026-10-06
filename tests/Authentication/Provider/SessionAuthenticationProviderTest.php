@@ -22,46 +22,40 @@ final class SessionAuthenticationProviderTest extends TestCase
 {
     private const array FIREWALLS = ['main'];
 
-    private readonly MockObject&TokenStorage $tokenStorage;
-
-    private readonly SessionAuthenticationProvider $provider;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->tokenStorage = $this->createMock(TokenStorage::class);
-
-        $this->provider = new SessionAuthenticationProvider($this->tokenStorage, self::FIREWALLS);
-    }
-
     public function testTheProviderSupportsAConnectionWhenItHasASession(): void
     {
+        $provider = $this->createProvider();
+
         $attributeStore = new ArrayAttributeStore();
         $attributeStore->set(AttributeKey::SESSION, self::createStub(SessionInterface::class));
 
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        $connection = self::createStub(Connection::class);
         $connection->method('getAttributeStore')
             ->willReturn($attributeStore);
 
-        self::assertTrue($this->provider->supports($connection));
+        self::assertTrue($provider->supports($connection));
     }
 
     public function testTheProviderDoesNotSupportAConnectionWhenItDoesNotHaveASession(): void
     {
+        $provider = $this->createProvider();
+
         $attributeStore = new ArrayAttributeStore();
 
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        $connection = self::createStub(Connection::class);
         $connection->method('getAttributeStore')
             ->willReturn($attributeStore);
 
-        self::assertFalse($this->provider->supports($connection));
+        self::assertFalse($provider->supports($connection));
     }
 
     public function testATokenIsCreatedAndAddedToStorageWhenAGuestUserWithoutASessionConnects(): void
     {
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $provider = $this->createProvider(tokenStorage: $tokenStorage);
+
         /** @var MockObject&SessionInterface $session */
         $session = $this->createMock(SessionInterface::class);
         $session->expects(self::once())
@@ -73,26 +67,30 @@ final class SessionAuthenticationProviderTest extends TestCase
         $attributeStore->set(AttributeKey::SESSION, $session);
         $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
 
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        $connection = self::createStub(Connection::class);
         $connection->method('getAttributeStore')
             ->willReturn($attributeStore);
 
         $storageIdentifier = '42';
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('generateStorageId')
             ->willReturn($storageIdentifier);
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('addToken')
             ->with($storageIdentifier, self::isInstanceOf(TokenInterface::class));
 
-        self::assertInstanceOf(NullToken::class, $this->provider->authenticate($connection));
+        self::assertInstanceOf(NullToken::class, $provider->authenticate($connection));
     }
 
     public function testAnAuthenticatedUserFromASharedSessionIsAuthenticated(): void
     {
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $provider = $this->createProvider(tokenStorage: $tokenStorage);
+
         $token = new UsernamePasswordToken(
             new InMemoryUser('user', 'password', ['ROLE_USER']),
             'main',
@@ -110,22 +108,21 @@ final class SessionAuthenticationProviderTest extends TestCase
         $attributeStore->set(AttributeKey::SESSION, $session);
         $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
 
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        $connection = self::createStub(Connection::class);
         $connection->method('getAttributeStore')
             ->willReturn($attributeStore);
 
         $storageIdentifier = '42';
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('generateStorageId')
             ->willReturn($storageIdentifier);
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('addToken')
             ->with($storageIdentifier, self::isInstanceOf(TokenInterface::class));
 
-        $authenticatedToken = $this->provider->authenticate($connection);
+        $authenticatedToken = $provider->authenticate($connection);
 
         // After https://github.com/symfony/symfony/pull/59558 (introduced in Symfony 7.3), the roleNames property is lazily initialized so we need to trigger that
         $authenticatedToken->getRoleNames();
@@ -135,6 +132,11 @@ final class SessionAuthenticationProviderTest extends TestCase
 
     public function testANullTokenUsedWhenANonSecurityTokenIsExtractedFromTheSession(): void
     {
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $provider = $this->createProvider(tokenStorage: $tokenStorage);
+
         /** @var MockObject&SessionInterface $session */
         $session = $this->createMock(SessionInterface::class);
         $session->expects(self::once())
@@ -146,26 +148,30 @@ final class SessionAuthenticationProviderTest extends TestCase
         $attributeStore->set(AttributeKey::SESSION, $session);
         $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
 
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        $connection = self::createStub(Connection::class);
         $connection->method('getAttributeStore')
             ->willReturn($attributeStore);
 
         $storageIdentifier = '42';
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('generateStorageId')
             ->willReturn($storageIdentifier);
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('addToken')
             ->with($storageIdentifier, self::isInstanceOf(TokenInterface::class));
 
-        self::assertInstanceOf(NullToken::class, $this->provider->authenticate($connection));
+        self::assertInstanceOf(NullToken::class, $provider->authenticate($connection));
     }
 
     public function testANullTokenUsedWhenANonStringIsExtractedFromTheSession(): void
     {
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $provider = $this->createProvider(tokenStorage: $tokenStorage);
+
         /** @var MockObject&SessionInterface $session */
         $session = $this->createMock(SessionInterface::class);
         $session->expects(self::once())
@@ -177,26 +183,30 @@ final class SessionAuthenticationProviderTest extends TestCase
         $attributeStore->set(AttributeKey::SESSION, $session);
         $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
 
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        $connection = self::createStub(Connection::class);
         $connection->method('getAttributeStore')
             ->willReturn($attributeStore);
 
         $storageIdentifier = '42';
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('generateStorageId')
             ->willReturn($storageIdentifier);
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('addToken')
             ->with($storageIdentifier, self::isInstanceOf(TokenInterface::class));
 
-        self::assertInstanceOf(NullToken::class, $this->provider->authenticate($connection));
+        self::assertInstanceOf(NullToken::class, $provider->authenticate($connection));
     }
 
     public function testANullTokenUsedWhenUnserializingTheTokenRaisesAnError(): void
     {
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $provider = $this->createProvider(tokenStorage: $tokenStorage);
+
         /** @var MockObject&SessionInterface $session */
         $session = $this->createMock(SessionInterface::class);
         $session->expects(self::once())
@@ -208,22 +218,21 @@ final class SessionAuthenticationProviderTest extends TestCase
         $attributeStore->set(AttributeKey::SESSION, $session);
         $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
 
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        $connection = self::createStub(Connection::class);
         $connection->method('getAttributeStore')
             ->willReturn($attributeStore);
 
         $storageIdentifier = '42';
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('generateStorageId')
             ->willReturn($storageIdentifier);
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('addToken')
             ->with($storageIdentifier, self::isInstanceOf(TokenInterface::class));
 
-        self::assertInstanceOf(NullToken::class, $this->provider->authenticate($connection));
+        self::assertInstanceOf(NullToken::class, $provider->authenticate($connection));
     }
 
     /**
@@ -238,9 +247,14 @@ final class SessionAuthenticationProviderTest extends TestCase
     #[DataProvider('invalidSerializedTokens')]
     public function testANullTokenUsedWhenTheTokenCannotBeUnserialized(string $serializedToken): void
     {
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $provider = $this->createProvider(tokenStorage: $tokenStorage);
+
         $logger = new TestLogger();
 
-        $this->provider->setLogger($logger);
+        $provider->setLogger($logger);
 
         $session = self::createStub(SessionInterface::class);
         $session->method('get')
@@ -254,20 +268,25 @@ final class SessionAuthenticationProviderTest extends TestCase
         $connection->method('getAttributeStore')
             ->willReturn($attributeStore);
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('generateStorageId')
             ->willReturn('42');
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('addToken')
             ->with('42', self::isInstanceOf(NullToken::class));
 
-        self::assertInstanceOf(NullToken::class, $this->provider->authenticate($connection));
+        self::assertInstanceOf(NullToken::class, $provider->authenticate($connection));
         self::assertTrue($logger->hasWarningThatContains('Failed to unserialize the security token from the session.'));
     }
 
     public function testDoesNotAuthenticateWhenATokenWithoutAUserIsUnserialized(): void
     {
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $provider = $this->createProvider(tokenStorage: $tokenStorage);
+
         /** @var MockObject&SessionInterface $session */
         $session = $this->createMock(SessionInterface::class);
         $session->expects(self::once())
@@ -279,19 +298,23 @@ final class SessionAuthenticationProviderTest extends TestCase
         $attributeStore->set(AttributeKey::SESSION, $session);
         $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
 
-        /** @var MockObject&Connection $connection */
-        $connection = $this->createMock(Connection::class);
+        $connection = self::createStub(Connection::class);
         $connection->method('getAttributeStore')
             ->willReturn($attributeStore);
 
-        $this->tokenStorage->expects(self::never())
+        $tokenStorage->expects(self::never())
             ->method('generateStorageId');
 
-        $this->tokenStorage->expects(self::never())
+        $tokenStorage->expects(self::never())
             ->method('addToken');
 
         $this->expectException(AuthenticationException::class);
 
-        $this->provider->authenticate($connection);
+        $provider->authenticate($connection);
+    }
+
+    private function createProvider(?TokenStorage $tokenStorage = null): SessionAuthenticationProvider
+    {
+        return new SessionAuthenticationProvider($tokenStorage ?? self::createStub(TokenStorage::class), self::FIREWALLS);
     }
 }

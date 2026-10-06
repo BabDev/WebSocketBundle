@@ -18,24 +18,13 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 final class StorageBackedConnectionRepositoryTest extends TestCase
 {
-    private readonly MockObject&TokenStorage $tokenStorage;
-
-    private readonly MockObject&Authenticator $authenticator;
-
-    private readonly StorageBackedConnectionRepository $repository;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->tokenStorage = $this->createMock(TokenStorage::class);
-        $this->authenticator = $this->createMock(Authenticator::class);
-
-        $this->repository = new StorageBackedConnectionRepository($this->tokenStorage, $this->authenticator);
-    }
-
     public function testFindTokenForConnection(): void
     {
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $repository = $this->createRepository(tokenStorage: $tokenStorage);
+
         /** @var Stub&Connection $connection */
         $connection = self::createStub(Connection::class);
 
@@ -44,21 +33,29 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         /** @var Stub&TokenInterface $token */
         $token = self::createStub(TokenInterface::class);
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('generateStorageId')
             ->with($connection)
             ->willReturn((string) $storageId);
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('getToken')
             ->with($storageId)
             ->willReturn($token);
 
-        self::assertSame($token, $this->repository->findTokenForConnection($connection));
+        self::assertSame($token, $repository->findTokenForConnection($connection));
     }
 
     public function testFindTokenForConnectionAfterReauthenticating(): void
     {
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        /** @var MockObject&Authenticator $authenticator */
+        $authenticator = $this->createMock(Authenticator::class);
+
+        $repository = $this->createRepository(tokenStorage: $tokenStorage, authenticator: $authenticator);
+
         /** @var Stub&Connection $connection */
         $connection = self::createStub(Connection::class);
 
@@ -67,12 +64,12 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         /** @var Stub&TokenInterface $token */
         $token = self::createStub(TokenInterface::class);
 
-        $this->tokenStorage->expects(self::once())
+        $tokenStorage->expects(self::once())
             ->method('generateStorageId')
             ->with($connection)
             ->willReturn((string) $storageId);
 
-        $this->tokenStorage->expects(self::exactly(2))
+        $tokenStorage->expects(self::exactly(2))
             ->method('getToken')
             ->with($storageId)
             ->willReturnOnConsecutiveCalls(
@@ -80,15 +77,20 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
                 $token
             );
 
-        $this->authenticator->expects(self::once())
+        $authenticator->expects(self::once())
             ->method('authenticate')
             ->with($connection);
 
-        self::assertSame($token, $this->repository->findTokenForConnection($connection));
+        self::assertSame($token, $repository->findTokenForConnection($connection));
     }
 
     public function testAllConnectionsForAUserCanBeFoundByUsername(): void
     {
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $repository = $this->createRepository(tokenStorage: $tokenStorage);
+
         /** @var Stub&WAMPConnection $connection1 */
         $connection1 = self::createStub(WAMPConnection::class);
 
@@ -129,7 +131,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
             [$connection3, (string) $storageId3],
         ];
 
-        $this->tokenStorage->expects(self::exactly(\count($generateSeries)))
+        $tokenStorage->expects(self::exactly(\count($generateSeries)))
             ->method('generateStorageId')
             ->willReturnCallback(function (Connection $connection) use (&$generateSeries): string {
                 [$expectedConnection, $storageId] = array_shift($generateSeries);
@@ -145,7 +147,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
             [(string) $storageId3, $token3],
         ];
 
-        $this->tokenStorage->expects(self::exactly(\count($tokenSeries)))
+        $tokenStorage->expects(self::exactly(\count($tokenSeries)))
             ->method('getToken')
             ->willReturnCallback(function (string $id) use (&$tokenSeries): TokenInterface {
                 [$expectedId, $token] = array_shift($tokenSeries);
@@ -163,11 +165,16 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         self::assertEquals([
             new TokenConnection($token1, $connection1),
             new TokenConnection($token2, $connection2),
-        ], $this->repository->findAllByUsername($topic, $username1));
+        ], $repository->findAllByUsername($topic, $username1));
     }
 
     public function testFetchingAllConnectionsByDefaultOnlyReturnsAuthenticatedUsers(): void
     {
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $repository = $this->createRepository(tokenStorage: $tokenStorage);
+
         /** @var Stub&WAMPConnection $connection1 */
         $connection1 = self::createStub(WAMPConnection::class);
 
@@ -194,7 +201,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
             [$connection2, (string) $storageId2],
         ];
 
-        $this->tokenStorage->expects(self::exactly(\count($generateSeries)))
+        $tokenStorage->expects(self::exactly(\count($generateSeries)))
             ->method('generateStorageId')
             ->willReturnCallback(function (Connection $connection) use (&$generateSeries): string {
                 [$expectedConnection, $storageId] = array_shift($generateSeries);
@@ -209,7 +216,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
             [(string) $storageId2, $guestToken],
         ];
 
-        $this->tokenStorage->expects(self::exactly(\count($tokenSeries)))
+        $tokenStorage->expects(self::exactly(\count($tokenSeries)))
             ->method('getToken')
             ->willReturnCallback(function (string $id) use (&$tokenSeries): TokenInterface {
                 [$expectedId, $token] = array_shift($tokenSeries);
@@ -225,11 +232,16 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
 
         self::assertEquals([
             new TokenConnection($authenticatedToken, $connection1),
-        ], $this->repository->findAll($topic));
+        ], $repository->findAll($topic));
     }
 
     public function testFetchingAllConnectionsWithAnonymousFlagReturnsAllConnectedUsers(): void
     {
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $repository = $this->createRepository(tokenStorage: $tokenStorage);
+
         /** @var Stub&WAMPConnection $connection1 */
         $connection1 = self::createStub(WAMPConnection::class);
 
@@ -254,7 +266,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
             [$connection2, (string) $storageId2],
         ];
 
-        $this->tokenStorage->expects(self::exactly(\count($generateSeries)))
+        $tokenStorage->expects(self::exactly(\count($generateSeries)))
             ->method('generateStorageId')
             ->willReturnCallback(function (Connection $connection) use (&$generateSeries): string {
                 [$expectedConnection, $storageId] = array_shift($generateSeries);
@@ -269,7 +281,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
             [(string) $storageId2, $guestToken],
         ];
 
-        $this->tokenStorage->expects(self::exactly(\count($tokenSeries)))
+        $tokenStorage->expects(self::exactly(\count($tokenSeries)))
             ->method('getToken')
             ->willReturnCallback(function (string $id) use (&$tokenSeries): TokenInterface {
                 [$expectedId, $token] = array_shift($tokenSeries);
@@ -286,11 +298,16 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         self::assertEquals([
             new TokenConnection($authenticatedToken, $connection1),
             new TokenConnection($guestToken, $connection2),
-        ], $this->repository->findAll($topic, true));
+        ], $repository->findAll($topic, true));
     }
 
     public function testFetchingAllUsersWithDefinedRolesOnlyReturnsMatchingUsers(): void
     {
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $repository = $this->createRepository(tokenStorage: $tokenStorage);
+
         /** @var Stub&WAMPConnection $connection1 */
         $connection1 = self::createStub(WAMPConnection::class);
 
@@ -328,7 +345,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
             [$connection3, (string) $storageId3],
         ];
 
-        $this->tokenStorage->expects(self::exactly(\count($generateSeries)))
+        $tokenStorage->expects(self::exactly(\count($generateSeries)))
             ->method('generateStorageId')
             ->willReturnCallback(function (Connection $connection) use (&$generateSeries): string {
                 [$expectedConnection, $storageId] = array_shift($generateSeries);
@@ -344,7 +361,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
             [(string) $storageId3, $guestToken],
         ];
 
-        $this->tokenStorage->expects(self::exactly(\count($tokenSeries)))
+        $tokenStorage->expects(self::exactly(\count($tokenSeries)))
             ->method('getToken')
             ->willReturnCallback(function (string $id) use (&$tokenSeries): TokenInterface {
                 [$expectedId, $token] = array_shift($tokenSeries);
@@ -361,11 +378,16 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
 
         self::assertEquals([
             new TokenConnection($authenticatedToken1, $connection1),
-        ], $this->repository->findAllWithRoles($topic, ['ROLE_STAFF']));
+        ], $repository->findAllWithRoles($topic, ['ROLE_STAFF']));
     }
 
     public function testReportsWhetherAUserWithTheGivenUsernameHasAConnection(): void
     {
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+
+        $repository = $this->createRepository(tokenStorage: $tokenStorage);
+
         /** @var Stub&WAMPConnection $connection1 */
         $connection1 = self::createStub(WAMPConnection::class);
 
@@ -403,7 +425,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
             [$connection2, (string) $storageId2],
         ];
 
-        $this->tokenStorage->expects(self::exactly(\count($generateSeries)))
+        $tokenStorage->expects(self::exactly(\count($generateSeries)))
             ->method('generateStorageId')
             ->willReturnCallback(function (Connection $connection) use (&$generateSeries): string {
                 [$expectedConnection, $storageId] = array_shift($generateSeries);
@@ -418,7 +440,7 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
             [(string) $storageId2, $token2],
         ];
 
-        $this->tokenStorage->expects(self::exactly(\count($tokenSeries)))
+        $tokenStorage->expects(self::exactly(\count($tokenSeries)))
             ->method('getToken')
             ->willReturnCallback(function (string $id) use (&$tokenSeries): TokenInterface {
                 [$expectedId, $token] = array_shift($tokenSeries);
@@ -433,6 +455,11 @@ final class StorageBackedConnectionRepositoryTest extends TestCase
         $topic->add($connection2);
         $topic->add($connection3);
 
-        self::assertTrue($this->repository->hasConnectionForUsername($topic, $username2));
+        self::assertTrue($repository->hasConnectionForUsername($topic, $username2));
+    }
+
+    private function createRepository(?TokenStorage $tokenStorage = null, ?Authenticator $authenticator = null): StorageBackedConnectionRepository
+    {
+        return new StorageBackedConnectionRepository($tokenStorage ?? self::createStub(TokenStorage::class), $authenticator ?? self::createStub(Authenticator::class));
     }
 }

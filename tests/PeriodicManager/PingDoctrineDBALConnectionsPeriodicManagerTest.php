@@ -14,32 +14,6 @@ use React\EventLoop\TimerInterface;
 
 final class PingDoctrineDBALConnectionsPeriodicManagerTest extends TestCase
 {
-    /**
-     * @var array<MockObject&Connection>
-     */
-    private readonly array $connections;
-
-    private readonly PingDoctrineDBALConnectionsPeriodicManager $manager;
-
-    protected function setUp(): void
-    {
-        $this->connections = [
-            $this->createMock(Connection::class),
-            $this->createMock(Connection::class),
-            $this->createMock(Connection::class),
-        ];
-
-        $this->manager = new PingDoctrineDBALConnectionsPeriodicManager($this->connections);
-        $this->manager->setLogger(new TestLogger());
-    }
-
-    protected function tearDown(): void
-    {
-        $this->manager->cancelTimers();
-
-        parent::tearDown();
-    }
-
     public function testTheManagerIsRegistered(): void
     {
         /** @var MockObject&LoopInterface $loop */
@@ -49,12 +23,14 @@ final class PingDoctrineDBALConnectionsPeriodicManagerTest extends TestCase
             ->method('addPeriodicTimer')
             ->willReturn(self::createStub(TimerInterface::class));
 
-        $this->manager->register($loop);
+        $this->createManager()->register($loop);
     }
 
     public function testTheManagerPingsAllConnections(): void
     {
-        foreach ($this->connections as $connection) {
+        $connections = $this->createConnections();
+
+        foreach ($connections as $connection) {
             $query = 'SELECT 1';
 
             /** @var MockObject&AbstractPlatform $platform */
@@ -72,16 +48,19 @@ final class PingDoctrineDBALConnectionsPeriodicManagerTest extends TestCase
                 ->with($query);
         }
 
-        $this->manager->pingConnections();
+        $this->createManager($connections)->pingConnections();
     }
 
     public function testAConnectionWhichCannotBePingedIsClosedWithoutStoppingTheOtherPings(): void
     {
         $logger = new TestLogger();
 
-        $this->manager->setLogger($logger);
+        $connections = $this->createConnections();
 
-        foreach ($this->connections as $index => $connection) {
+        $manager = $this->createManager($connections);
+        $manager->setLogger($logger);
+
+        foreach ($connections as $index => $connection) {
             $platform = self::createStub(AbstractPlatform::class);
             $platform->method('getDummySelectSQL')
                 ->willReturn('SELECT 1');
@@ -105,7 +84,7 @@ final class PingDoctrineDBALConnectionsPeriodicManagerTest extends TestCase
             }
         }
 
-        $this->manager->pingConnections();
+        $manager->pingConnections();
 
         self::assertTrue($logger->hasEmergencyThatContains('Could not ping database server'));
     }
@@ -181,10 +160,31 @@ final class PingDoctrineDBALConnectionsPeriodicManagerTest extends TestCase
             ->method('cancelTimer')
             ->with($timer);
 
-        $this->manager->register($loop);
-        $this->manager->cancelTimers();
+        $manager = $this->createManager();
+        $manager->register($loop);
+        $manager->cancelTimers();
 
         // A second call has no timer left to cancel
-        $this->manager->cancelTimers();
+        $manager->cancelTimers();
+    }
+
+    /**
+     * @return list<MockObject&Connection>
+     */
+    private function createConnections(): array
+    {
+        return [
+            $this->createMock(Connection::class),
+            $this->createMock(Connection::class),
+            $this->createMock(Connection::class),
+        ];
+    }
+
+    /**
+     * @param list<Connection> $connections
+     */
+    private function createManager(array $connections = []): PingDoctrineDBALConnectionsPeriodicManager
+    {
+        return new PingDoctrineDBALConnectionsPeriodicManager($connections);
     }
 }

@@ -15,19 +15,6 @@ use React\Socket\ServerInterface;
 
 final class PeriodicManagerSubscriberTest extends TestCase
 {
-    private readonly MockObject&PeriodicManagerRegistry $registry;
-
-    private readonly PeriodicManagerSubscriber $subscriber;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->registry = $this->createMock(PeriodicManagerRegistry::class);
-
-        $this->subscriber = new PeriodicManagerSubscriber($this->registry);
-    }
-
     public function testCancelsPeriodicManagers(): void
     {
         /** @var Stub&LoopInterface $loop */
@@ -41,10 +28,11 @@ final class PeriodicManagerSubscriberTest extends TestCase
         $manager->expects(self::once())
             ->method('cancelTimers');
 
-        $this->registry->method('getManagers')
+        $registry = self::createStub(PeriodicManagerRegistry::class);
+        $registry->method('getManagers')
             ->willReturn(['test' => $manager]);
 
-        $this->subscriber->onAfterServerClosed(new AfterServerClosed($server, $loop));
+        new PeriodicManagerSubscriber($registry)->onAfterServerClosed(new AfterServerClosed($server, $loop));
     }
 
     public function testInitializesPeriodicManagers(): void
@@ -61,9 +49,10 @@ final class PeriodicManagerSubscriberTest extends TestCase
             ->method('register')
             ->with($loop);
 
-        $this->registry->method('getManagers')
+        $registry = self::createStub(PeriodicManagerRegistry::class);
+        $registry->method('getManagers')
             ->willReturn(['test' => $manager]);
 
-        $this->subscriber->onBeforeRunServer(new BeforeRunServer($server, $loop));
+        new PeriodicManagerSubscriber($registry)->onBeforeRunServer(new BeforeRunServer($server, $loop));
     }
 }
