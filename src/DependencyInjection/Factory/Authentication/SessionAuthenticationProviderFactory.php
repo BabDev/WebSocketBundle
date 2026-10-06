@@ -61,7 +61,7 @@ final class SessionAuthenticationProviderFactory implements AuthenticationProvid
         $providerId = 'babdev_websocket_server.authentication.provider.session.default';
 
         $container->setDefinition($providerId, new ChildDefinition('babdev_websocket_server.authentication.provider.session'))
-            ->replaceArgument(1, $firewalls);
+            ->replaceArgument(0, $firewalls);
 
         return $providerId;
     }

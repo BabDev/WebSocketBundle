@@ -9,7 +9,6 @@ use BabDev\WebSocket\Server\OptionsHandler;
 use BabDev\WebSocket\Server\WebSocketException;
 use BabDev\WebSocketBundle\Authentication\Exception\AuthenticationException;
 use BabDev\WebSocketBundle\Authentication\Exception\InvalidTokenException;
-use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -32,7 +31,6 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
      * @param list<string> $firewalls The security contexts of the firewalls whose token can be read from the session
      */
     public function __construct(
-        private readonly TokenStorage $tokenStorage,
         private readonly array $firewalls,
         private readonly OptionsHandler $optionsHandler = new IniOptionsHandler(),
     ) {}
@@ -56,19 +54,6 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
 
             throw new AuthenticationException('Could not authenticate user.', previous: $exception);
         }
-
-        $storageId = $this->tokenStorage->generateStorageId($connection);
-
-        $this->tokenStorage->addToken($storageId, $token);
-
-        $this->logger?->info(
-            '{user} connected',
-            [
-                'resource_id' => $connection->getAttributeStore()->get(AttributeKey::RESOURCE_ID),
-                'storage_id' => $storageId,
-                'user' => $token->getUserIdentifier() ?: 'Unknown User',
-            ],
-        );
 
         return $token;
     }

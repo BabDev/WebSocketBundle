@@ -104,7 +104,6 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set('babdev_websocket_server.authentication.provider.session', SessionAuthenticationProvider::class)
         ->args([
-            service(TokenStorage::class),
             abstract_arg('firewalls'),
             service(OptionsHandler::class),
         ])

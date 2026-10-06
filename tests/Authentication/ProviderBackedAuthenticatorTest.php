@@ -3,14 +3,20 @@
 namespace BabDev\WebSocketBundle\Tests\Authentication;
 
 use BabDev\WebSocket\Server\Connection;
+use BabDev\WebSocket\Server\Connection\ArrayAttributeStore;
+use BabDev\WebSocket\Server\Connection\AttributeKey;
 use BabDev\WebSocketBundle\Authentication\Provider\AuthenticationProvider;
+use BabDev\WebSocketBundle\Authentication\Provider\SessionAuthenticationProvider;
 use BabDev\WebSocketBundle\Authentication\ProviderBackedAuthenticator;
 use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\User\InMemoryUser;
 
 final class ProviderBackedAuthenticatorTest extends TestCase
 {
@@ -116,5 +122,34 @@ final class ProviderBackedAuthenticatorTest extends TestCase
             ->method('authenticate');
 
         new ProviderBackedAuthenticator([$authenticationProvider1, $authenticationProvider2, $authenticationProvider3], $tokenStorage)->authenticate($connection);
+    }
+
+    public function testTheTokenFromTheSessionAuthenticationProviderIsStoredOnce(): void
+    {
+        $token = new UsernamePasswordToken(new InMemoryUser('user', 'password'), 'main');
+
+        $session = self::createStub(SessionInterface::class);
+        $session->method('get')
+            ->willReturn(serialize($token));
+
+        $attributeStore = new ArrayAttributeStore();
+        $attributeStore->set(AttributeKey::SESSION, $session);
+        $attributeStore->set(AttributeKey::RESOURCE_ID, 'resource');
+
+        $connection = self::createStub(Connection::class);
+        $connection->method('getAttributeStore')
+            ->willReturn($attributeStore);
+
+        /** @var MockObject&TokenStorage $tokenStorage */
+        $tokenStorage = $this->createMock(TokenStorage::class);
+        $tokenStorage->method('generateStorageId')
+            ->willReturn('resource');
+
+        // Providers only return the token, which is stored by the authenticator
+        $tokenStorage->expects(self::once())
+            ->method('addToken')
+            ->with('resource', self::isInstanceOf(UsernamePasswordToken::class));
+
+        new ProviderBackedAuthenticator([new SessionAuthenticationProvider(['main'])], $tokenStorage)->authenticate($connection);
     }
 }

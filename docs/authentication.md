@@ -9,7 +9,7 @@ An authentication provider is an implementation of `BabDev\WebSocketBundle\Authe
 A provider is required to have two methods:
 
 - `supports()` - Determines if the provider can authenticate the given connection
-- `authenticate()` - Authenticates the connection
+- `authenticate()` - Authenticates the connection and returns the security token
 
 ### Session Authentication
 

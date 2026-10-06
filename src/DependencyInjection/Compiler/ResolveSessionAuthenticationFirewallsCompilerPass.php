@@ -31,7 +31,7 @@ final class ResolveSessionAuthenticationFirewallsCompilerPass implements Compile
         $provider = $container->getDefinition(self::PROVIDER_ID);
 
         /** @var list<string>|Parameter $firewalls */
-        $firewalls = $provider->getArgument(1);
+        $firewalls = $provider->getArgument(0);
 
         if ($firewalls instanceof Parameter) {
             if (!$container->hasParameter((string) $firewalls)) {
@@ -57,7 +57,7 @@ final class ResolveSessionAuthenticationFirewallsCompilerPass implements Compile
             }
         }
 
-        $provider->replaceArgument(1, array_values(array_unique($contexts)));
+        $provider->replaceArgument(0, array_values(array_unique($contexts)));
     }
 
     /**

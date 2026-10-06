@@ -66,7 +66,7 @@ final class ResolveSessionAuthenticationFirewallsCompilerPassTest extends Abstra
     {
         // The provider is created by its factory the same way as when the bundle extension is loaded
         $this->container->register('babdev_websocket_server.authentication.provider.session', SessionAuthenticationProvider::class)
-            ->setArguments([null, null]);
+            ->setArguments([null]);
 
         new SessionAuthenticationProviderFactory()->createAuthenticationProvider($this->container, ['firewalls' => $firewalls]);
     }
@@ -91,7 +91,7 @@ final class ResolveSessionAuthenticationFirewallsCompilerPassTest extends Abstra
      */
     private function getResolvedFirewalls(): mixed
     {
-        return $this->container->getDefinition('babdev_websocket_server.authentication.provider.session.default')->getArgument(1);
+        return $this->container->getDefinition('babdev_websocket_server.authentication.provider.session.default')->getArgument(0);
     }
 
     protected function registerCompilerPass(ContainerBuilder $container): void

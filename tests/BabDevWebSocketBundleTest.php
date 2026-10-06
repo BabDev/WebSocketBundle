@@ -85,7 +85,7 @@ final class BabDevWebSocketBundleTest extends TestCase
         new MergeExtensionConfigurationPass()->process($container);
         new ResolveSessionAuthenticationFirewallsCompilerPass()->process($container);
 
-        self::assertSame(['main'], $container->getDefinition('babdev_websocket_server.authentication.provider.session.default')->getArgument(1));
+        self::assertSame(['main'], $container->getDefinition('babdev_websocket_server.authentication.provider.session.default')->getArgument(0));
     }
 
     public function testTheBundlePathIsThePackageRoot(): void
