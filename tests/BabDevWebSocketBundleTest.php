@@ -9,6 +9,7 @@ use BabDev\WebSocketBundle\DependencyInjection\Compiler\ConfigureHttpFactoriesCo
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\PingDBALConnectionsCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\ResolveSessionAuthenticationFirewallsCompilerPass;
 use BabDev\WebSocketBundle\DependencyInjection\Compiler\RoutingResolverCompilerPass;
+use BabDev\WebSocketBundle\DependencyInjection\Compiler\ValidateSessionStorageOptionsCompilerPass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationPass;
@@ -34,7 +35,7 @@ final class BabDevWebSocketBundleTest extends TestCase
 
         $passes = array_map(static fn (object $pass): string => $pass::class, $container->getCompilerPassConfig()->getBeforeOptimizationPasses());
 
-        foreach ([BuildMiddlewareStackCompilerPass::class, ConfigureHttpFactoriesCompilerPass::class, PingDBALConnectionsCompilerPass::class, RoutingResolverCompilerPass::class, ResolveSessionAuthenticationFirewallsCompilerPass::class] as $pass) {
+        foreach ([BuildMiddlewareStackCompilerPass::class, ConfigureHttpFactoriesCompilerPass::class, PingDBALConnectionsCompilerPass::class, RoutingResolverCompilerPass::class, ResolveSessionAuthenticationFirewallsCompilerPass::class, ValidateSessionStorageOptionsCompilerPass::class] as $pass) {
             self::assertContains($pass, $passes);
         }
     }

@@ -41,6 +41,8 @@ babdev_websocket:
 
 Configuring the session handler will add the [`InitializeSession` middleware](/open-source/packages/websocket-server/docs/1.x/middleware/initialize-session) to the websocket server which will provide a read-only interface for the session data from your website.
 
+The `handler_service_id` option reads sessions using the same options as your website, such as the session cookie name, so sessions must be enabled in the `framework.session` configuration. To read sessions without the FrameworkBundle session configuration, use the `factory_service_id` or `storage_factory_service_id` option instead.
+
 When using session authentication, you should also restrict the [allowed origins](/open-source/packages/websocketbundle/docs/1.x/securing-connections#allowed-origins-and-session-authentication) so other websites cannot open connections authenticated as your users.
 
 When the session ID sent by the client is not a valid session ID, or does not match an existing session when PHP's `session.use_strict_mode` setting is enabled, the session is treated as empty and the connection is authenticated as an anonymous user.
