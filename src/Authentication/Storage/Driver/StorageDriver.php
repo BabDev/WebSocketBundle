@@ -4,10 +4,11 @@ namespace BabDev\WebSocketBundle\Authentication\Storage\Driver;
 
 use BabDev\WebSocketBundle\Authentication\Storage\Exception\StorageError;
 use BabDev\WebSocketBundle\Authentication\Storage\Exception\TokenNotFound;
+use BabDev\WebSocketBundle\Authentication\Storage\TokenStorage;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 /**
- * A storage driver provides the backend storage implementation for the token storage API.
+ * Saves, reads and deletes security tokens by ID, as the backend of the {@see TokenStorage}.
  */
 interface StorageDriver
 {

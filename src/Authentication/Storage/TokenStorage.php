@@ -8,7 +8,7 @@ use BabDev\WebSocketBundle\Authentication\Storage\Exception\TokenNotFound;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 /**
- * The token storage provides an API for managing TokenInterface objects for all connections to the websocket server.
+ * Stores the security token of each connection to the websocket server under an ID generated for the connection.
  */
 interface TokenStorage
 {

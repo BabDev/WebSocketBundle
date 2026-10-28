@@ -4,6 +4,9 @@ namespace BabDev\WebSocketBundle\PeriodicManager;
 
 use BabDev\WebSocketBundle\PeriodicManager\Exception\ManagerAlreadyRegistered;
 
+/**
+ * Holds the periodic managers that add their timers to the event loop when the websocket server starts.
+ */
 interface PeriodicManagerRegistry
 {
     /**

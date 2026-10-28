@@ -6,8 +6,7 @@ use BabDev\WebSocket\Server\Server;
 use React\Socket\ServerInterface;
 
 /**
- * The server factory creates the {@see Server} instance powering the websocket server using a
- * {@see ServerInterface} implementation.
+ * Creates the websocket server, which runs the middleware stack on the connections of a socket server.
  */
 interface ServerFactory
 {

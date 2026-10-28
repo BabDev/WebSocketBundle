@@ -4,6 +4,9 @@ namespace BabDev\WebSocketBundle\PeriodicManager;
 
 use React\EventLoop\LoopInterface;
 
+/**
+ * Adds timers to the websocket server's event loop when the server starts, and cancels them when it stops.
+ */
 interface PeriodicManager
 {
     public function getName(): string;

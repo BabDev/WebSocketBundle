@@ -5,6 +5,9 @@ namespace BabDev\WebSocketBundle\Server;
 use BabDev\WebSocket\Server\ServerMiddleware;
 use BabDev\WebSocketBundle\Exception\MiddlewareNotConfigured;
 
+/**
+ * Builds the middleware stack that handles the connections to the websocket server and their messages.
+ */
 interface MiddlewareStackBuilder
 {
     /**

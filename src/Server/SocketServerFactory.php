@@ -5,8 +5,7 @@ namespace BabDev\WebSocketBundle\Server;
 use React\Socket\ServerInterface;
 
 /**
- * The socket server factory interface is responsible for creating the {@see ServerInterface} implementation
- * for the websocket server.
+ * Creates the socket server that listens for connections to the websocket server on a URI.
  */
 interface SocketServerFactory
 {

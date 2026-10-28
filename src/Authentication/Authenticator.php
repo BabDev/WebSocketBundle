@@ -5,6 +5,9 @@ namespace BabDev\WebSocketBundle\Authentication;
 use BabDev\WebSocket\Server\Connection;
 use BabDev\WebSocketBundle\Authentication\Exception\AuthenticationException;
 
+/**
+ * Authenticates a connection to the websocket server and stores the resulting security token for it.
+ */
 interface Authenticator
 {
     /**

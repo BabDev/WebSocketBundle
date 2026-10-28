@@ -5,7 +5,7 @@ namespace BabDev\WebSocketBundle\Attribute;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * Attribute used to configure message handlers.
+ * Registers a WAMP message handler as a service and adds its route to the websocket server's router.
  *
  * This attribute serves two purposes:
  *

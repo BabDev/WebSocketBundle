@@ -7,6 +7,9 @@ use BabDev\WebSocket\Server\WAMP\Topic;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+/**
+ * Finds the connections subscribed to a topic by username or role, and gives access to each connection's security token and user.
+ */
 interface ConnectionRepository
 {
     /**
