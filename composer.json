@@ -23,7 +23,7 @@
         "symfony/event-dispatcher": "^7.4 || ^8.1",
         "symfony/event-dispatcher-contracts": "^2.0 || ^3.0",
         "symfony/framework-bundle": "^7.4 || ^8.1",
-        "symfony/http-foundation": "^7.4 || ^8.1",
+        "symfony/http-foundation": "^7.4.23 || ^8.1.11",
         "symfony/http-kernel": "^7.4 || ^8.1",
         "symfony/routing": "^7.4 || ^8.1",
         "symfony/security-core": "^7.4 || ^8.1"
