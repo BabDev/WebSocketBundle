@@ -25,6 +25,14 @@ final class NullableFloatNode extends FloatNode
         parent::__construct($name, $parent, $min, $max, $pathSeparator);
     }
 
+    /**
+     * Reports that null is accepted, as the default value does not tell; Symfony 8.2 uses this to describe the node in the generated JSON schema.
+     */
+    public function isNullable(): bool
+    {
+        return true;
+    }
+
     protected function validateType(mixed $value): void
     {
         if (null === $value) {

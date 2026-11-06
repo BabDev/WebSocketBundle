@@ -37,6 +37,24 @@ parameters:
 			path: src/Routing/Loader/AttributeLoader.php
 
 		-
+			message: '#^Call to method dump\(\) on an unknown class Symfony\\Component\\Config\\Definition\\Dumper\\JsonSchemaDumper\.$#'
+			identifier: class.notFound
+			count: 1
+			path: tests/DependencyInjection/ConfigurationTest.php
+
+		-
+			message: '#^Class Symfony\\Component\\Config\\Definition\\Dumper\\JsonSchemaDumper not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: tests/DependencyInjection/ConfigurationTest.php
+
+		-
+			message: '#^Instantiated class Symfony\\Component\\Config\\Definition\\Dumper\\JsonSchemaDumper not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: tests/DependencyInjection/ConfigurationTest.php
+
+		-
 			message: '#^Cannot cast mixed to string\.$#'
 			identifier: cast.string
 			count: 1

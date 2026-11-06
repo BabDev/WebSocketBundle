@@ -7,8 +7,10 @@ use BabDev\WebSocketBundle\DependencyInjection\Configuration;
 use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\SessionAuthenticationProviderFactory;
 use Matthias\SymfonyConfigTest\PhpUnit\ConfigurationTestCaseTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\Config\Definition\Dumper\JsonSchemaDumper;
 
 final class ConfigurationTest extends TestCase
 {
@@ -462,5 +464,28 @@ final class ConfigurationTest extends TestCase
             'authentication.providers.session.firewalls',
             'Invalid configuration for path "babdev_websocket.authentication.providers.session.firewalls": The firewalls node must be an array, a string, or null',
         );
+    }
+
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function nullableServerOptions(): iterable
+    {
+        yield 'request_timeout' => ['request_timeout', 'number_null'];
+        yield 'write_buffer_limit' => ['write_buffer_limit', 'integer_null'];
+        yield 'shutdown_timeout' => ['shutdown_timeout', 'number_null'];
+        yield 'max_message_payload_size' => ['max_message_payload_size', 'integer_null'];
+        yield 'max_frame_payload_size' => ['max_frame_payload_size', 'integer_null'];
+        yield 'keepalive' => ['keepalive', 'integer_null'];
+    }
+
+    #[DataProvider('nullableServerOptions')]
+    #[RequiresClass(JsonSchemaDumper::class)]
+    public function testTheJsonSchemaAllowsNullForNullableOptions(string $option, string $expectedType): void
+    {
+        /** @var array{properties: array{server: array{properties: array<string, array{'$ref': string}>}}} $schema */
+        $schema = new JsonSchemaDumper()->dump($this->getConfiguration()->getConfigTreeBuilder()->buildTree());
+
+        self::assertSame('#/$defs/types/'.$expectedType, $schema['properties']['server']['properties'][$option]['$ref']);
     }
 }
