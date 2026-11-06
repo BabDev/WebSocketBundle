@@ -9,8 +9,11 @@ use BabDev\WebSocketBundle\DependencyInjection\Factory\Authentication\SessionAut
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\AbstractExtensionTestCase;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\ContainerHasParameterConstraint;
 use Matthias\SymfonyDependencyInjectionTest\PhpUnit\DefinitionHasMethodCallConstraint;
+use PHPUnit\Framework\Attributes\RequiresClass;
 use PHPUnit\Framework\Constraint\LogicalNot;
 use React\EventLoop\LoopInterface;
+use Symfony\Bundle\FrameworkBundle\CacheWarmer\RouterCacheWarmer as FrameworkRouterCacheWarmer;
+use Symfony\Bundle\FrameworkBundle\Routing\Router as FrameworkRouter;
 use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
 use Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationPass;
 use Symfony\Component\DependencyInjection\Compiler\RegisterEnvVarProcessorsPass;
@@ -21,6 +24,9 @@ use Symfony\Component\DependencyInjection\Reference;
 
 final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
 {
+    private const string ROUTING_COMPONENT_ROUTER = 'Symfony\\Component\\Routing\\DependencyInjection\\Router';
+    private const string ROUTING_COMPONENT_ROUTER_CACHE_WARMER = 'Symfony\\Component\\Routing\\CacheWarmer\\RouterCacheWarmer';
+
     public function testContainerIsLoadedWithValidConfiguration(): void
     {
         $identity = 'BabDev-Websocket-Bundle/1.0';
@@ -149,6 +155,41 @@ final class BabDevWebSocketExtensionTest extends AbstractExtensionTestCase
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.factory');
         $this->assertContainerBuilderNotHasService('babdev_websocket_server.server.session.storage.factory.read_only_native');
         self::assertThat($this->container, new LogicalNot(new ContainerHasParameterConstraint('babdev_websocket_server.ping_dbal_connections', null, false)));
+    }
+
+    #[RequiresClass(self::ROUTING_COMPONENT_ROUTER)]
+    public function testContainerUsesTheRoutingComponentRouterClasses(): void
+    {
+        $this->load([
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'router' => [
+                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
+                ],
+            ],
+        ]);
+
+        $this->assertContainerBuilderHasService('babdev_websocket_server.router', self::ROUTING_COMPONENT_ROUTER);
+        $this->assertContainerBuilderHasService('babdev_websocket_server.router.cache_warmer.inner', self::ROUTING_COMPONENT_ROUTER_CACHE_WARMER);
+    }
+
+    public function testContainerUsesTheFrameworkBundleRouterClassesBeforeSymfony82(): void
+    {
+        if (class_exists(self::ROUTING_COMPONENT_ROUTER)) {
+            self::markTestSkipped('The router classes are provided by the Routing component.');
+        }
+
+        $this->load([
+            'server' => [
+                'uri' => 'tcp://127.0.0.1:8080',
+                'router' => [
+                    'resource' => '%kernel.project_dir%/config/websocket_router.php',
+                ],
+            ],
+        ]);
+
+        $this->assertContainerBuilderHasService('babdev_websocket_server.router', FrameworkRouter::class);
+        $this->assertContainerBuilderHasService('babdev_websocket_server.router.cache_warmer.inner', FrameworkRouterCacheWarmer::class);
     }
 
     public function testContainerIsLoadedWithTrustedProxies(): void

@@ -55,11 +55,13 @@ use Ratchet\RFC6455\Handshake\RequestVerifier;
 use Ratchet\RFC6455\Handshake\ServerNegotiator;
 use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
-use Symfony\Bundle\FrameworkBundle\CacheWarmer\RouterCacheWarmer as BaseRouterCacheWarmer;
+use Symfony\Bundle\FrameworkBundle\CacheWarmer\RouterCacheWarmer as FrameworkRouterCacheWarmer;
 use Symfony\Bundle\FrameworkBundle\Command\RouterDebugCommand;
-use Symfony\Bundle\FrameworkBundle\Routing\Router;
+use Symfony\Bundle\FrameworkBundle\Routing\Router as FrameworkRouter;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;
+use Symfony\Component\Routing\CacheWarmer\RouterCacheWarmer as BaseRouterCacheWarmer;
+use Symfony\Component\Routing\DependencyInjection\Router;
 use Symfony\Component\Routing\Generator\CompiledUrlGenerator;
 use Symfony\Component\Routing\Generator\Dumper\CompiledUrlGeneratorDumper;
 use Symfony\Component\Routing\Loader\AttributeDirectoryLoader;
@@ -77,6 +79,9 @@ use Symfony\Component\Routing\RequestContext;
 
 return static function (ContainerConfigurator $container): void {
     $websocketRouterFolder = 'websocket-router';
+
+    $routerClass = class_exists(Router::class) ? Router::class : FrameworkRouter::class;
+    $routerCacheWarmerClass = class_exists(BaseRouterCacheWarmer::class) ? BaseRouterCacheWarmer::class : FrameworkRouterCacheWarmer::class;
 
     $services = $container->services();
 
@@ -208,7 +213,7 @@ return static function (ContainerConfigurator $container): void {
     ;
     $services->alias(PeriodicManagerRegistry::class, 'babdev_websocket_server.periodic_manager.registry');
 
-    $services->set('babdev_websocket_server.router', Router::class)
+    $services->set('babdev_websocket_server.router', $routerClass)
         ->args([
             service(PsrContainerInterface::class),
             abstract_arg('routing resource'),
@@ -232,7 +237,7 @@ return static function (ContainerConfigurator $container): void {
         ->tag('container.service_subscriber', ['key' => 'routing.loader', 'id' => 'babdev_websocket_server.routing.loader'])
     ;
 
-    $services->set('babdev_websocket_server.router.cache_warmer.inner', BaseRouterCacheWarmer::class)
+    $services->set('babdev_websocket_server.router.cache_warmer.inner', $routerCacheWarmerClass)
         ->args([
             service(PsrContainerInterface::class),
         ])
