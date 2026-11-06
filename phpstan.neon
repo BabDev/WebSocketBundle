@@ -12,3 +12,8 @@ parameters:
   ignoreErrors:
     -
       identifier: missingType.iterableValue
+    -
+      # The refreshed user check was added in Symfony 8.2, its tests are skipped on older versions
+      message: '#CheckRefreshedUserEvent|RefreshedUserCheckerListener#'
+      path: %currentWorkingDirectory%/tests/Authentication/Provider/SessionAuthenticationProviderTest.php
+      reportUnmatched: false

@@ -11,6 +11,7 @@ use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Exception\RuntimeException;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 final class ConfigureSessionAuthenticationProviderCompilerPassTest extends AbstractCompilerPassTestCase
 {
@@ -61,6 +62,36 @@ final class ConfigureSessionAuthenticationProviderCompilerPassTest extends Abstr
         self::assertSame(['shared'], $this->getResolvedFirewalls());
     }
 
+    public function testTheEventDispatcherOfTheFirstFirewallUsingEachContextIsUsed(): void
+    {
+        $this->registerSessionProvider(['admin', 'main', 'secondary', 'dev']);
+
+        $this->registerFirewall('admin', 'shared');
+        $this->registerFirewall('main', 'shared');
+        $this->registerFirewall('secondary', 'secondary');
+        $this->registerFirewall('dev', securityEnabled: false);
+
+        foreach (['admin', 'main', 'secondary', 'dev'] as $firewall) {
+            $this->registerFirewallEventDispatcher($firewall);
+        }
+
+        $this->compile();
+
+        self::assertEquals(
+            ['shared' => new Reference('security.event_dispatcher.admin'), 'secondary' => new Reference('security.event_dispatcher.secondary')],
+            $this->container->getDefinition('babdev_websocket_server.authentication.provider.session.default')->getArgument(3),
+        );
+    }
+
+    public function testNoEventDispatcherIsUsedForAConfiguredValueWithoutAFirewall(): void
+    {
+        $this->registerSessionProvider(['shared']);
+
+        $this->compile();
+
+        self::assertSame([], $this->container->getDefinition('babdev_websocket_server.authentication.provider.session.default')->getArgument(3));
+    }
+
     public function testTheUserProvidersFromTheSecurityBundleAreUsed(): void
     {
         $this->registerSessionProvider(['main']);
@@ -93,7 +124,7 @@ final class ConfigureSessionAuthenticationProviderCompilerPassTest extends Abstr
     {
         // The provider is created by its factory the same way as when the bundle extension is loaded
         $this->container->register('babdev_websocket_server.authentication.provider.session', SessionAuthenticationProvider::class)
-            ->setArguments([null, null, []]);
+            ->setArguments([null, null, [], []]);
 
         new SessionAuthenticationProviderFactory()->createAuthenticationProvider($this->container, ['firewalls' => $firewalls]);
     }
@@ -111,6 +142,14 @@ final class ConfigureSessionAuthenticationProviderCompilerPassTest extends Abstr
         if ($securityEnabled) {
             $config->replaceArgument(6, $context);
         }
+    }
+
+    /**
+     * Registers a firewall's event dispatcher the same way as the SecurityBundle.
+     */
+    private function registerFirewallEventDispatcher(string $name): void
+    {
+        $this->container->register('security.event_dispatcher.'.$name, EventDispatcher::class);
     }
 
     /**

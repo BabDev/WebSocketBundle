@@ -9,19 +9,26 @@ use BabDev\WebSocket\Server\IniOptionsHandler;
 use BabDev\WebSocketBundle\Authentication\Exception\AuthenticationException;
 use BabDev\WebSocketBundle\Authentication\Provider\SessionAuthenticationProvider;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\Test\TestLogger;
 use Symfony\Component\DependencyInjection\Argument\RewindableGenerator;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\InMemoryUser;
 use Symfony\Component\Security\Core\User\InMemoryUserProvider;
+use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Component\Security\Http\Event\CheckRefreshedUserEvent;
+use Symfony\Component\Security\Http\EventListener\RefreshedUserCheckerListener;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class SessionAuthenticationProviderTest extends TestCase
 {
@@ -356,6 +363,67 @@ final class SessionAuthenticationProviderTest extends TestCase
         self::assertInstanceOf(NullToken::class, $token);
     }
 
+    #[RequiresClass(CheckRefreshedUserEvent::class)]
+    public function testTheRefreshedUserIsCheckedWithTheFirewallEventDispatcher(): void
+    {
+        $userChecker = self::createStub(UserCheckerInterface::class);
+        $userChecker->method('checkPreAuth')
+            ->willThrowException(new CustomUserMessageAccountStatusException('Your account is disabled.'));
+
+        // The listener registered on the firewall's event dispatcher by the "user_checker_on_refresh" firewall option
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addListener(CheckRefreshedUserEvent::class, new RefreshedUserCheckerListener($userChecker));
+
+        $logger = new TestLogger();
+
+        $token = $this->authenticateWithSessionToken(
+            new UsernamePasswordToken(new InMemoryUser('user', 'password', ['ROLE_USER']), 'main', ['ROLE_USER']),
+            [new InMemoryUserProvider(['user' => ['password' => 'password', 'roles' => ['ROLE_USER']]])],
+            ['main' => $eventDispatcher],
+            $logger,
+        );
+
+        self::assertInstanceOf(NullToken::class, $token);
+        self::assertTrue($logger->hasDebug(['message' => 'User was deauthenticated after refreshing it.', 'context' => ['reason' => 'Your account is disabled.']]));
+    }
+
+    #[RequiresClass(CheckRefreshedUserEvent::class)]
+    public function testAnEventListenerCanKeepAChangedUserAuthenticated(): void
+    {
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addListener(CheckRefreshedUserEvent::class, static function (CheckRefreshedUserEvent $event): void {
+            $event->setUserChanged(false);
+        });
+
+        $token = $this->authenticateWithSessionToken(
+            new UsernamePasswordToken(new InMemoryUser('user', 'password', ['ROLE_USER']), 'main', ['ROLE_USER']),
+            [new InMemoryUserProvider(['user' => ['password' => 'password', 'roles' => ['ROLE_ADMIN']]])],
+            ['main' => $eventDispatcher],
+        );
+
+        self::assertInstanceOf(UsernamePasswordToken::class, $token);
+        self::assertSame(['ROLE_ADMIN'], $token->getUser()?->getRoles());
+    }
+
+    #[RequiresClass(CheckRefreshedUserEvent::class)]
+    public function testTheEventDispatcherOfTheContextTheTokenWasReadFromIsUsed(): void
+    {
+        $deauthenticatingDispatcher = new EventDispatcher();
+        $deauthenticatingDispatcher->addListener(CheckRefreshedUserEvent::class, static function (CheckRefreshedUserEvent $event): void {
+            $event->setUserChanged(true);
+        });
+
+        $token = $this->authenticateWithSessionToken(
+            new UsernamePasswordToken(new InMemoryUser('user', 'password', ['ROLE_USER']), 'admin', ['ROLE_USER']),
+            [new InMemoryUserProvider(['user' => ['password' => 'password', 'roles' => ['ROLE_USER']]])],
+            ['main' => $deauthenticatingDispatcher, 'admin' => new EventDispatcher()],
+            firewalls: ['main', 'admin'],
+            tokenContext: 'admin',
+        );
+
+        self::assertSame('user', $token->getUserIdentifier());
+    }
+
     /**
      * @param list<string> $firewalls
      */
@@ -365,13 +433,15 @@ final class SessionAuthenticationProviderTest extends TestCase
     }
 
     /**
-     * @param iterable<mixed> $userProviders
+     * @param iterable<mixed>                         $userProviders
+     * @param array<string, EventDispatcherInterface> $eventDispatchers
+     * @param list<string>                            $firewalls
      */
-    private function authenticateWithSessionToken(TokenInterface $token, iterable $userProviders): TokenInterface
+    private function authenticateWithSessionToken(TokenInterface $token, iterable $userProviders, array $eventDispatchers = [], ?TestLogger $logger = null, array $firewalls = self::FIREWALLS, string $tokenContext = 'main'): TokenInterface
     {
         $session = self::createStub(SessionInterface::class);
         $session->method('get')
-            ->willReturn(serialize($token));
+            ->willReturnCallback(static fn (string $name, mixed $default = null): mixed => '_security_'.$tokenContext === $name ? serialize($token) : $default);
 
         $attributeStore = new ArrayAttributeStore();
         $attributeStore->set(AttributeKey::SESSION, $session);
@@ -381,6 +451,12 @@ final class SessionAuthenticationProviderTest extends TestCase
         $connection->method('getAttributeStore')
             ->willReturn($attributeStore);
 
-        return new SessionAuthenticationProvider(self::FIREWALLS, new IniOptionsHandler(), $userProviders)->authenticate($connection);
+        $provider = new SessionAuthenticationProvider($firewalls, new IniOptionsHandler(), $userProviders, $eventDispatchers);
+
+        if (null !== $logger) {
+            $provider->setLogger($logger);
+        }
+
+        return $provider->authenticate($connection);
     }
 }

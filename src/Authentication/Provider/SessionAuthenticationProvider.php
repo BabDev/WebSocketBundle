@@ -23,6 +23,9 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Authentication\Token\SwitchUserToken;
 use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
+use Symfony\Component\Security\Core\Exception\AuthenticationException as SecurityAuthenticationException;
+use Symfony\Component\Security\Http\Event\CheckRefreshedUserEvent;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * The session authentication provider uses the HTTP session for your website's frontend for authenticating to the websocket server.
@@ -36,13 +39,15 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
     use LoggerAwareTrait;
 
     /**
-     * @param list<string>    $firewalls     The security contexts of the firewalls whose token can be read from the session
-     * @param iterable<mixed> $userProviders The user providers used to refresh the user from the token, the same as the SecurityBundle uses when reading the token for an HTTP request
+     * @param list<string>                            $firewalls        The security contexts of the firewalls whose token can be read from the session
+     * @param iterable<mixed>                         $userProviders    The user providers used to refresh the user from the token, the same as the SecurityBundle uses when reading the token for an HTTP request
+     * @param array<string, EventDispatcherInterface> $eventDispatchers The event dispatchers of the firewalls, keyed by their security context, used to check the refreshed user in the same way as the SecurityBundle
      */
     public function __construct(
         private readonly array $firewalls,
         private readonly OptionsHandler $optionsHandler = new IniOptionsHandler(),
         private readonly iterable $userProviders = [],
+        private readonly array $eventDispatchers = [],
     ) {}
 
     public function supports(Connection $connection): bool
@@ -76,6 +81,7 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
         $session = $connection->getAttributeStore()->get(AttributeKey::SESSION);
 
         $sessionKey = null;
+        $tokenContext = null;
 
         foreach ($this->firewalls as $firewall) {
             if (false !== $serializedToken = $session->get($sessionKey = '_security_'.$firewall, false)) {
@@ -89,6 +95,7 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
                 }
 
                 $token = $this->safelyUnserialize($serializedToken, $sessionKey);
+                $tokenContext = $firewall;
 
                 $this->logger?->debug('Read existing security token from the session.', [
                     'key' => $sessionKey,
@@ -104,7 +111,7 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
                 throw new InvalidTokenException(\sprintf('Cannot authenticate a "%s" token because it doesn\'t store a user.', $token::class));
             }
 
-            $token = $this->refreshUserFromToken($token);
+            $token = $this->refreshUserFromToken($token, null !== $tokenContext ? $this->eventDispatchers[$tokenContext] ?? null : null);
         } elseif (null !== $token) {
             $this->logger?->warning('Expected a security token from the session, got something else.', ['key' => $sessionKey, 'received' => $token]);
 
@@ -121,13 +128,13 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
      *
      * @throws \RuntimeException if no user provider supports the user from the token
      */
-    private function refreshUserFromToken(TokenInterface $token): TokenInterface
+    private function refreshUserFromToken(TokenInterface $token, ?EventDispatcherInterface $eventDispatcher): TokenInterface
     {
         if (!$this->hasUserProviders()) {
             return $token;
         }
 
-        $refreshedToken = $this->refreshUser($token);
+        $refreshedToken = $this->refreshUser($token, $eventDispatcher);
 
         if (!$refreshedToken instanceof TokenInterface) {
             $this->logger?->debug('Token was deauthenticated after trying to refresh it.');
@@ -149,13 +156,18 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
     }
 
     /**
-     * Forked from {@see \Symfony\Component\Security\Http\Firewall\ContextListener::refreshUser}.
+     * Forked from {@see ContextListener::refreshUser}.
+     *
+     * Since Symfony 8.2, the firewall's event dispatcher is used to dispatch the {@see CheckRefreshedUserEvent}, so
+     * listeners such as the one enabled with the "user_checker_on_refresh" firewall option can deauthenticate the user.
+     * Unlike the original, a {@see TokenDeauthenticatedEvent} is not dispatched as there is no HTTP request for it;
+     * the reason is logged instead.
      *
      * @throws \RuntimeException if no user provider supports the user from the token
      */
-    private function refreshUser(TokenInterface $token): ?TokenInterface
+    private function refreshUser(TokenInterface $token, ?EventDispatcherInterface $eventDispatcher): ?TokenInterface
     {
-        if ($token instanceof SwitchUserToken && $token->getOriginalToken()->getUser() && !$this->refreshUser($token->getOriginalToken())) {
+        if ($token instanceof SwitchUserToken && $token->getOriginalToken()->getUser() && !$this->refreshUser($token->getOriginalToken(), $eventDispatcher)) {
             return null;
         }
 
@@ -164,6 +176,7 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
 
         $userNotFoundByProvider = false;
         $userDeauthenticated = false;
+        $userChangedBecause = null;
         $userClass = $user::class;
 
         foreach ($this->userProviders as $provider) {
@@ -179,7 +192,19 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
                 $refreshedUser = $provider->refreshUser($user);
 
                 // tokens can be deauthenticated if the user has been changed.
-                if ($token instanceof AbstractToken && self::hasUserChanged($token, $user, $refreshedUser)) {
+                $userChanged = $token instanceof AbstractToken && self::hasUserChanged($token, $user, $refreshedUser);
+
+                if (null !== $eventDispatcher && class_exists(CheckRefreshedUserEvent::class)) {
+                    $event = $eventDispatcher->dispatch(new CheckRefreshedUserEvent($token, $user, $refreshedUser, $userChanged));
+
+                    $userChanged = $event->isUserChanged();
+
+                    if (($exception = $event->getException()) instanceof SecurityAuthenticationException) {
+                        $userChangedBecause ??= $exception;
+                    }
+                }
+
+                if ($userChanged) {
                     $userDeauthenticated = true;
 
                     $this->logger?->debug('Cannot refresh token because user has changed.', ['username' => $refreshedUser->getUserIdentifier(), 'provider' => $provider::class]);
@@ -211,6 +236,8 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
         }
 
         if ($userDeauthenticated) {
+            $this->logger?->debug('User was deauthenticated after refreshing it.', ['reason' => self::getDeauthenticationReason($userChangedBecause)]);
+
             return null;
         }
 
@@ -222,7 +249,19 @@ final class SessionAuthenticationProvider implements AuthenticationProvider, Log
     }
 
     /**
-     * Forked from {@see \Symfony\Component\Security\Http\Firewall\ContextListener::hasUserChanged}.
+     * Mirrors the reason given to the {@see TokenDeauthenticatedEvent} by the {@see ContextListener}.
+     */
+    private static function getDeauthenticationReason(?SecurityAuthenticationException $exception): string
+    {
+        if (null === $exception) {
+            return 'the user has changed';
+        }
+
+        return $exception->getMessage() ?: $exception->getMessageKey();
+    }
+
+    /**
+     * Forked from {@see ContextListener::hasUserChanged}.
      */
     private static function hasUserChanged(AbstractToken $token, UserInterface $originalUser, UserInterface $refreshedUser): bool
     {

@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\OutOfBoundsException;
 use Symfony\Component\DependencyInjection\Exception\RuntimeException;
 use Symfony\Component\DependencyInjection\Parameter;
+use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * The configure session authentication provider compiler pass configures the session authentication provider from the
@@ -43,6 +44,7 @@ final class ConfigureSessionAuthenticationProviderCompilerPass implements Compil
         }
 
         $contexts = [];
+        $eventDispatchers = [];
 
         foreach ($firewalls as $firewall) {
             // Without the firewall's configuration, the configured value is used as the context
@@ -52,12 +54,20 @@ final class ConfigureSessionAuthenticationProviderCompilerPass implements Compil
                 continue;
             }
 
-            if (null !== $context = $this->getFirewallContext($container->getDefinition($configId))) {
-                $contexts[] = $context;
+            if (null === $context = $this->getFirewallContext($container->getDefinition($configId))) {
+                continue;
+            }
+
+            $contexts[] = $context;
+
+            // The token of a context shared by several firewalls is checked with the event dispatcher of the first one, in the same order the contexts are read
+            if (!isset($eventDispatchers[$context]) && $container->hasDefinition($dispatcherId = 'security.event_dispatcher.'.$firewall)) {
+                $eventDispatchers[$context] = new Reference($dispatcherId);
             }
         }
 
         $provider->replaceArgument(0, array_values(array_unique($contexts)));
+        $provider->replaceArgument(3, $eventDispatchers);
 
         // The SecurityBundle gives the context listener the user providers to refresh the user with
         if ($container->hasDefinition('security.context_listener')) {

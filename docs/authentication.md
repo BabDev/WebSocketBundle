@@ -51,7 +51,11 @@ By default, the session authentication provider will attempt to authenticate to 
 
 The security token is read from the session using each firewall's context, which is the firewall name unless the firewall sets a `context` to share authentication with other firewalls. Firewalls sharing a context are only checked once, and stateless firewalls and firewalls with security disabled are skipped as they do not store a token in the session.
 
-When a connection is authenticated, the user from the session's token is refreshed from your user providers in the same way as when the token is read for an HTTP request. If the user has changed (for example, their roles or password changed) or no longer exists, the connection is authenticated as an anonymous user. The user is only refreshed when the connection is authenticated, so a long-lived connection keeps the user from when it was opened; if your application needs to check the user again while the connection is open, this should be handled by your message handlers.
+When a connection is authenticated, the user from the session's token is refreshed from your user providers in the same way as when the token is read for an HTTP request. If the user has changed (for example, their roles or password changed) or no longer exists, the connection is authenticated as an anonymous user.
+
+Since Symfony 8.2, the `Symfony\Component\Security\Http\Event\CheckRefreshedUserEvent` is also dispatched on the event dispatcher of the firewall the token was read for, so the firewall's `user_checker_on_refresh` option and your own listeners for this event can reject a user, such as an account disabled during the session, the same way as for an HTTP request. When several firewalls share a context, the event dispatcher of the first of those firewalls is used, in the order the firewalls are checked. The `Symfony\Component\Security\Http\Event\TokenDeauthenticatedEvent` is not dispatched for websocket connections as it requires an HTTP request.
+
+The user is only refreshed when the connection is authenticated, so a long-lived connection keeps the user from when it was opened; if your application needs to check the user again while the connection is open, this should be handled by your message handlers.
 
 ```yaml
 babdev_websocket:

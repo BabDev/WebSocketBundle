@@ -112,6 +112,7 @@ return static function (ContainerConfigurator $container): void {
             abstract_arg('firewalls'),
             service(OptionsHandler::class),
             [], // user providers, set from the SecurityBundle configuration by a compiler pass
+            [], // firewall event dispatchers keyed by security context, set from the SecurityBundle configuration by a compiler pass
         ])
         ->call('setLogger', [
             service('logger'),
